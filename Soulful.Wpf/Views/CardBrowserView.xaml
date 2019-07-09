@@ -56,7 +56,7 @@
                                 <md:Card Background="White" Foreground="Black"
                                          Width="150" Height="200" UniformCornerRadius="4"
                                          Padding="8" Margin="8">
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap"
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="16"
                                                Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
                                 </md:Card>
                             </DataTemplate>
@@ -73,13 +73,17 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
-                                         MinWidth="150" MinHeight="200" UniformCornerRadius="4"
+                                         Width="150" Height="200" UniformCornerRadius="4"
                                          Padding="8" Margin="8">
                                     <Grid>
-                                        <TextBlock Text="{Binding Item1}" TextWrapping="Wrap"
+                                        <TextBlock Text="{Binding Item1}" TextWrapping="Wrap" FontSize="16"
                                                    Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
-                                        <Border Background="White" CornerRadius="100">
-                                            <TextBlock Text="{Binding Item2}" Foreground="Black"/>
+                                        <Border Background="White" CornerRadius="100"
+                                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                Margin="4" Height="20" Width="20">
+                                            <TextBlock Text="{Binding Item2}" Foreground="Black"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       FontWeight="Bold"/>
                                         </Border>
                                     </Grid>
                                 </md:Card>

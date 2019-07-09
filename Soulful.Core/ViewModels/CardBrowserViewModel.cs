@@ -51,28 +51,29 @@ namespace Soulful.Core.ViewModels
         public CardBrowserViewModel(IMvxNavigationService navigationService, ICardLoaderService cardLoader)
             : base(navigationService)
         {
-            WhiteCards = new ObservableCollection<string>();
-            BlackCards = new ObservableCollection<Tuple<string, int>>();
+            _cardLoader = cardLoader;
+
             CardPacks = cardLoader.Packs;
             SelectedPack = CardPacks?.Keys.First();
-            _cardLoader = cardLoader;
         }
 
-        private async Task LoadCards()
+        #region Card Loading
+
+        private async void LoadCards()
         {
             await Task.WhenAll(LoadBlackCards(), LoadWhiteCards()).ConfigureAwait(false);
         }
 
         private async Task LoadBlackCards()
         {
-            foreach (Tuple<string, int> element in await _cardLoader.GetBlackCardsAsync(SelectedPack).ConfigureAwait(false))
-                BlackCards.Add(element);
+            BlackCards = new ObservableCollection<Tuple<string, int>>(await _cardLoader.GetPackBlackCardsAsync(SelectedPack).ConfigureAwait(false));
         }
 
         private async Task LoadWhiteCards()
         {
-            foreach (string element in await _cardLoader.GetWhiteCardsAsync(SelectedPack).ConfigureAwait(false))
-                WhiteCards.Add(element);
+            WhiteCards = new ObservableCollection<string>(await _cardLoader.GetPackWhiteCardsAsync(SelectedPack).ConfigureAwait(false));
         }
+
+        #endregion
     }
 }

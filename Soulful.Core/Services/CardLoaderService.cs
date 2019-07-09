@@ -15,6 +15,8 @@ namespace Soulful.Core.Services
         public const string RESOURCE_LOCATION = "Soulful.Core.Resources.Cards.";
 
         private readonly Assembly _resourceAssembly;
+        private List<Tuple<string, int>> _blackCards;
+        private List<string> _whiteCards;
 
         public Dictionary<string, PackInfo> Packs { get; protected set; }
 
@@ -26,22 +28,42 @@ namespace Soulful.Core.Services
 
         public async Task<Tuple<string, int>> GetBlackCardAsync(int index)
         {
-            throw new NotImplementedException();
+            if (_blackCards == null)
+                await LoadWhiteCards().ConfigureAwait(false);
+
+            return _blackCards[index];
         }
 
-        public Task<IEnumerable<Tuple<string, int>>> GetBlackCardsAsync(string packKey)
+        public async Task<List<Tuple<string, int>>> GetPackBlackCardsAsync(string packKey)
         {
-            throw new NotImplementedException();
+            if (!Packs.ContainsKey(packKey))
+                throw new ArgumentException("A pack with this key does not exist");
+
+            if (_blackCards == null)
+                await LoadBlackCards().ConfigureAwait(false);
+
+            PackInfo info = Packs[packKey];
+            return _blackCards.GetRange(info.BlackStartRange, info.BlackCount);
         }
 
         public async Task<string> GetWhiteCardAsync(int index)
         {
-            throw new NotImplementedException();
+            if (_whiteCards == null)
+                await LoadWhiteCards().ConfigureAwait(false);
+
+            return _whiteCards[index];
         }
 
-        public Task<IEnumerable<string>> GetWhiteCardsAsync(string packKey)
+        public async Task<List<string>> GetPackWhiteCardsAsync(string packKey)
         {
-            throw new NotImplementedException();
+            if (!Packs.ContainsKey(packKey))
+                throw new ArgumentException("A pack with this key does not exist");
+
+            if (_whiteCards == null)
+                await LoadWhiteCards().ConfigureAwait(false);
+
+            PackInfo info = Packs[packKey];
+            return _whiteCards.GetRange(info.WhiteStartRange, info.WhiteCount);
         }
 
         private async void LoadPackInfo()
@@ -56,6 +78,35 @@ namespace Soulful.Core.Services
                     PackInfo info = PackInfo.Parse(await reader.ReadLineAsync().ConfigureAwait(false), out string key);
                     Packs.Add(key, info);
                 }
+            }
+        }
+
+        private async Task LoadBlackCards()
+        {
+            _blackCards = new List<Tuple<string, int>>();
+
+            using (Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + BLACK_CARDS_FILENAME))
+            using (StreamReader reader = new StreamReader(packsResource, Encoding.UTF8))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string card = await reader.ReadLineAsync().ConfigureAwait(false);
+                    string[] components = card.Split('|');
+                    components[0] = components[0].Replace("/", "\n");
+                    _blackCards.Add(new Tuple<string, int>(components[0], int.Parse(components[1])));
+                }
+            }
+        }
+
+        private async Task LoadWhiteCards()
+        {
+            _whiteCards = new List<string>();
+
+            using (Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + WHITE_CARDS_FILENAME))
+            using (StreamReader reader = new StreamReader(packsResource, Encoding.UTF8))
+            {
+                while (!reader.EndOfStream)
+                    _whiteCards.Add(await reader.ReadLineAsync().ConfigureAwait(false));
             }
         }
     }

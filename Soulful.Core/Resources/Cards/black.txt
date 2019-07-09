@@ -2,7 +2,7 @@
 I got 99 problems but _ ain't one.|1
 What's a girl's best friend?|1
 What's that smell?|1
-This is the way the world ends / This is the way the world ends / Not with a bang but with _.|1
+This is the way the world ends/This is the way the world ends/Not with a bang but with _.|1
 What is Batman's guilty pleasure?|1
 TSA guidelines now prohibit _ on airplanes.|1
 What ended my last relationship?|1
@@ -11,7 +11,7 @@ I drink to forget _.|1
 I'm sorry, Professor, but I couldn't complete my homework because of _.|1
 Alternative medicine is now embracing the curative powers of _.|1
 What's that sound?|1
-What's the next Happy Meal&reg; toy?|1
+What's the next Happy Meal®; toy?|1
 It's a pity that kids these days are all getting involved with _.|1
 In the new Disney Channel Original Movie, Hannah Montana struggles with _ for the first time.|1
 _. That's how I want to die.|1
@@ -22,7 +22,7 @@ Next from J.K. Rowling: Harry Potter and the Chamber of _.|1
 A romantic, candlelit dinner would be incomplete without _.|1
 White people like _.|1
 _. Betcha can't have just one!|1
-War!<br><br>What is it good for?|1
+War!//What is it good for?|1
 BILLY MAYS HERE FOR _.|1
 _. High five, bro.|1
 During sex, I like to think about _.|1
@@ -65,7 +65,7 @@ _: kid-tested, mother-approved.|1
 What gets better with age?|1
 I never truly understood _ until I encountered _.|2
 Rumor has it that Vladimir Putin's favorite delicacy is _ stuffed with _.|2
-Lifetime&reg; presents _, the story of _.|2
+Lifetime®; presents _, the story of _.|2
 Make a haiku.|3
 In M. Night Shyamalan's new movie, Bruce Willis discovers that _ had really been _ all along.|2
 _ is a slippery slope that leads to _.|2
@@ -74,16 +74,16 @@ That's right, I killed _. How, you ask? _.|2
 When I was tripping on acid, _ turned into _.|2
 _ + _ = _.|3
 What's the next superhero/sidekick duo?|2
-Dear Abby,<br><br>I'm having some trouble with _ and would like your advice.|1
+Dear Abby,//I'm having some trouble with _ and would like your advice.|1
 After the earthquake, Sean Penn brought _ to the people of Haiti.|1
 In L.A. County Jail, word is you can trade 200 cigarettes for _.|1
 Maybe she's born with it. Maybe it's _.|1
 Life for American Indians was forever changed when the White Man introduced them to _.|1
 Next on ESPN2, the World Series of _.|1
 Step 1: _. Step 2: _. Step 3: Profit.|2
-Here is the church<br>Here is the steeple<br>Open the doors<br>And there is _.|1
+Here is the church/Here is the steeple/Open the doors/And there is _.|1
 How did I lose my virginity?|1
-During his childhood, Salvador Dal&iacute; produced hundreds of paintings of _.|1
+During his childhood, Salvador Dalí; produced hundreds of paintings of _.|1
 In 1,000 years, when paper money is a distant memory, how will we pay for goods and services?|1
 What don't you want to find in your Kung Pao chicken?|1
 The Smithsonian Museum of Natural History has just opened an exhibit on _.|1
