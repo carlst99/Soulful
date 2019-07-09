@@ -6,6 +6,13 @@ namespace Soulful.Core.ViewModels
 {
     public class StartGameViewModel : Base.ViewModelBase
     {
+        #region Constants
+
+        public const double MIN_PLAYERS = 3;
+        public const double MAX_PLAYERS = 100;
+
+        #endregion
+
         #region Fields
 
         private int _gamePin;
@@ -39,6 +46,7 @@ namespace Soulful.Core.ViewModels
             : base(navigationService)
         {
             GenerateGamePin();
+            _maxPlayers = 20;
         }
 
         private void NavigateBack()

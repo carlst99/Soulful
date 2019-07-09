@@ -4,6 +4,7 @@
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                   xmlns:local="clr-namespace:Soulful.Wpf.Views"
+                  xmlns:constants="clr-namespace:Soulful.Core.ViewModels;assembly=Soulful.Core"
                   xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
                   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
                   mc:Ignorable="d" 
@@ -14,6 +15,11 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="0.5*"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
         <Button Content="{md:PackIcon Kind=ArrowBack}"
                 ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"
@@ -24,6 +30,7 @@
             <!-- Game pin -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
+                <TextBlock Text="Pin:" VerticalAlignment="Top" Margin="0,8,16,0"/>
                 <TextBlock Text="{Binding GamePin}"
                            Style="{StaticResource MaterialDesignDisplay2TextBlock}"/>
                 <Button Content="{md:PackIcon Kind=Refresh}"
@@ -34,19 +41,23 @@
             </StackPanel>
 
             <!-- Max players -->
-            <TextBlock Text="{Binding [Label_MaxPlayers]}" Margin="0,16,0,0"/>
+            <TextBlock Text="{Binding [Label_MaxPlayers], Mode=OneTime}" Margin="0,16,0,0"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Slider Value="{Binding MaxPlayers}"
-                        TickFrequency="10" TickPlacement="BottomRight"
-                        Minimum="0" Maximum="100"/>
+                        Minimum="{x:Static constants:StartGameViewModel.MIN_PLAYERS}" 
+                        Maximum="{x:Static constants:StartGameViewModel.MAX_PLAYERS}"/>
                 <TextBlock Text="{Binding MaxPlayers}"
                            Grid.Column="1"
                            Margin="8,0,0,0"/>
             </Grid>
         </StackPanel>
+
+        <GridSplitter Grid.Row="1" Grid.ColumnSpan="3"
+                      Height="3" HorizontalAlignment="Stretch" Margin="32,0"
+                      Background="{StaticResource PrimaryHueLightBrush}"/>
     </Grid>
 </views:MvxWpfView>
