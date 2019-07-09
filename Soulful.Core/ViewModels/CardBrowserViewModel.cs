@@ -16,7 +16,6 @@ namespace Soulful.Core.ViewModels
         private ObservableCollection<string> _whiteCards;
         private ObservableCollection<Tuple<string, int>> _blackCards;
         private Dictionary<string, PackInfo> _cardPacks;
-        private string _selectedPack;
 
         public ObservableCollection<string> WhiteCards
         {
@@ -36,42 +35,32 @@ namespace Soulful.Core.ViewModels
             set => SetProperty(ref _cardPacks, value);
         }
 
-        public string SelectedPack
-        {
-            get => _selectedPack;
-            set
-            {
-                SetProperty(ref _selectedPack, value);
-                LoadCards();
-            }
-        }
-
         public IMvxCommand NavigateBackCommand => new MvxCommand(() => NavigationService.Navigate<HomeViewModel>());
+        public IMvxCommand ChangeSelectedPackCommand => new MvxCommand<string>(LoadCards);
 
         public CardBrowserViewModel(IMvxNavigationService navigationService, ICardLoaderService cardLoader)
             : base(navigationService)
         {
             _cardLoader = cardLoader;
-
             CardPacks = cardLoader.Packs;
-            SelectedPack = CardPacks?.Keys.First();
+            LoadCards(CardPacks.Keys.First());
         }
 
         #region Card Loading
 
-        private async void LoadCards()
+        private async void LoadCards(string selectedPack)
         {
-            await Task.WhenAll(LoadBlackCards(), LoadWhiteCards()).ConfigureAwait(false);
+            await Task.WhenAll(LoadBlackCards(selectedPack), LoadWhiteCards(selectedPack)).ConfigureAwait(false);
         }
 
-        private async Task LoadBlackCards()
+        private async Task LoadBlackCards(string selectedPack)
         {
-            BlackCards = new ObservableCollection<Tuple<string, int>>(await _cardLoader.GetPackBlackCardsAsync(SelectedPack).ConfigureAwait(false));
+            BlackCards = new ObservableCollection<Tuple<string, int>>(await _cardLoader.GetPackBlackCardsAsync(selectedPack).ConfigureAwait(false));
         }
 
-        private async Task LoadWhiteCards()
+        private async Task LoadWhiteCards(string selectedPack)
         {
-            WhiteCards = new ObservableCollection<string>(await _cardLoader.GetPackWhiteCardsAsync(SelectedPack).ConfigureAwait(false));
+            WhiteCards = new ObservableCollection<string>(await _cardLoader.GetPackWhiteCardsAsync(selectedPack).ConfigureAwait(false));
         }
 
         #endregion

@@ -12,7 +12,7 @@
                  Background="{DynamicResource MaterialDesignPaper}"
                  FontFamily="{DynamicResource MaterialDesignFont}"
                  mc:Ignorable="d"
-                 Title="MvvmCross WPF" Height="450" Width="800">
+                 Title="MvvmCross WPF" Height="500" Width="800">
     <Grid>
     </Grid>
 </views:MvxWindow>

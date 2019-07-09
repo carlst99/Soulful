@@ -7,6 +7,7 @@
                   xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
                   xmlns:mvx="clr-namespace:MvvmCross.Platforms.Wpf.Binding;assembly=MvvmCross.Platforms.Wpf"
                   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+                  xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
                   mc:Ignorable="d" 
                   d:DesignHeight="450" d:DesignWidth="800">
 
@@ -27,13 +28,14 @@
         </Grid.RowDefinitions>
 
         <md:ColorZone Mode="Accent"
-                      Padding="8,8,8,0">
+                      Padding="8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+                
                 <Button Content="{md:PackIcon Kind=ArrowBack}"
                         ToolTip="{Binding [ToolTip_NavigateBack]}"
                         Command="{Binding NavigateBackCommand}"
@@ -46,12 +48,20 @@
                               Panel.ZIndex="1" CornerRadius="2"
                               md:ShadowAssist.ShadowDepth="Depth2">
                     <ComboBox ItemsSource="{Binding CardPacks}"
-                              SelectedItem="{Binding SelectedPack}">
+                              SelectedIndex="0"
+                              x:Name="CmbxPacks">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Path=Value.Name}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
+                        
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding ChangeSelectedPackCommand}"
+                                                       CommandParameter="{Binding SelectedItem.Key, ElementName=CmbxPacks}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
                     </ComboBox>
                 </md:ColorZone>
             </Grid>
