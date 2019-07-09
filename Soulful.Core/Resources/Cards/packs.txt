@@ -1,0 +1,30 @@
+﻿Base|Base Set|0|90|0|460
+CAHe1|The First Expansion|90|20|460|80
+CAHe2|The Second Expansion|110|25|540|75
+CAHe3|The Third Expansion|135|25|615|75
+CAHe4|The Fourth Expansion|160|30|690|70
+CAHe5|The Fifth Expansion|190|25|760|75
+CAHe6|The Sixth Expansion|215|25|835|75
+greenbox|Green Box Expansion|240|55|910|245
+90s|90s Nostalgia Pack|295|7|1155|23
+Box|Box Expansion|-1|-1|1178|21
+fantasy|Fantasy Pack|302|6|1199|26
+food|Food Pack|308|6|1225|24
+science|Science Pack|314|7|1249|23
+www|World Wide Web Pack|321|9|1272|21
+hillary|Vote for Hillary Pack|330|3|1293|11
+trumpvote|Vote for Trump Pack|332|3|1304|12
+trumpbag|Trump Survival Pack|335|3|1316|22
+xmas2012|2012 Holiday Pack|338|7|1338|23
+xmas2013|2013 Holiday Pack|345|9|1361|21
+PAXE2013|PAX East 2013|354|6|1382|24
+PAXP2013|PAX Prime 2013|360|7|1406|37
+PAXE2014|PAX East 2014|367|5|1443|22
+PAXEP2014|PAX East 2014 Panel Pack|372|2|1465|8
+PAXPP2014|PAX Prime 2014 Panel Pack|374|5|1472|6
+PAX2015|PAX Prime 2015 Food Packs|308|6|1225|24
+HOCAH|House of Cards Against Humanity|382|9|1478|16
+reject|Reject Pack|391|8|1493|16
+reject2|Reject Pack 2|399|10|1509|24
+Canadian|Canadian|409|5|1533|21
+misprint|Misprint Replacement Bonus Cards|89|1|451|9

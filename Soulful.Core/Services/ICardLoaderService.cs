@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Soulful.Core.Services
 {
     public interface ICardLoaderService
     {
-        List<string> PackKeys { get; }
-        Dictionary<string, string> PackNames { get; }
+        Dictionary<string, PackInfo> Packs { get; }
+
+        Task<IEnumerable<Tuple<string, int>>> GetBlackCardsAsync(string packKey);
+        Task<IEnumerable<string>> GetWhiteCardsAsync(string packKey);
+
+        Task<Tuple<string, int>> GetBlackCardAsync(int index);
+        Task<string> GetWhiteCardAsync(int index);
     }
 }

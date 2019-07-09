@@ -4,11 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace CardHelper
 {
     public static class Program
     {
+        public const char SEPARATOR = '|';
+
+
         public const string PACK_KEY_IDENTIFIER = "order";
 
         public const string BLACK_CARDS_IDENTIFIER = "blackCards";
@@ -18,10 +22,15 @@ namespace CardHelper
         public const string WHITE_CARDS_RANGE_IDENTIFIER = "white";
         public const string PACK_NAME_IDENTIFIER = "name";
 
+        private static string _saveDirectory;
+
         public static void Main(string[] args)
         {
             if (args.Length != 2)
                 throw new ArgumentException("Required: pathToFile, pathToOutputDirectory");
+            _saveDirectory = Path.GetFullPath(args[1]);
+            if (!Directory.Exists(_saveDirectory))
+                Directory.CreateDirectory(_saveDirectory);
 
             using (StreamReader reader = File.OpenText(args[0]))
             {
@@ -32,70 +41,108 @@ namespace CardHelper
                 if (packKeys == null || packKeys.Count <= 0)
                     throw new Exception("The loaded file contains no pack keys");
 
-                // Get all the cards
+                // Save all the black cards
                 List<JObject> blackCards = (cardList[BLACK_CARDS_IDENTIFIER] as JArray)?.Select(c => (JObject)c).ToList();
                 if (blackCards == null || blackCards.Count <= 0)
                     throw new Exception("The loaded file contains no black cards");
+                else
+                    SaveBlackCards(blackCards);
+
                 List<string> whiteCards = (cardList[WHITE_CARDS_IDENTIFIER] as JArray)?.Select(c => c.ToString()).ToList();
                 if (whiteCards == null || whiteCards.Count <= 0)
                     throw new Exception("The loaded file contains no white cards");
+                else
+                    SaveWhiteCards(whiteCards);
 
-                // Operate on each pack
+                // Save all the packs
+                List<PackInfo> packInfos = new List<PackInfo>();
                 foreach (string key in packKeys)
                 {
                     List<int> blackRange = (cardList[key][BLACK_CARDS_RANGE_IDENTIFIER] as JArray)?.Select(n => (int)n).ToList();
                     List<int> whiteRange = (cardList[key][WHITE_CARDS_RANGE_IDENTIFIER] as JArray)?.Select(n => (int)n).ToList();
-
                     string name = cardList[key][PACK_NAME_IDENTIFIER].ToString();
 
-                    // Get black cards
-                    List<JObject> blackCardsTake;
-                    if (blackRange?.Count > 0)
-                        blackCardsTake = blackCards.GetRange(blackRange[0], blackRange.Count).ToList();
-                    else
-                        blackCardsTake = new List<JObject>();
+                    PackInfo info = new PackInfo
+                    {
+                        Name = name,
+                        Key = key,
+                        BlackStartRange = blackRange.Count > 0 ? blackRange[0] : -1,
+                        BlackCount = blackRange.Count > 0 ? blackRange.Count : -1,
+                        WhiteStartRange = whiteRange.Count > 0 ? whiteRange[0] : -1,
+                        WhiteCount = whiteRange.Count > 0 ? whiteRange.Count : -1
+                    };
+                    packInfos.Add(info);
+                }
+                SavePacks(packInfos);
+            }
+        }
 
-                    // Get white cards
-                    List<string> whiteCardsTake;
-                    if (whiteRange?.Count > 0)
-                        whiteCardsTake = whiteCards.GetRange(whiteRange[0], whiteRange.Count).ToList();
-                    else
-                        whiteCardsTake = new List<string>();
-
-                    SaveCardList(args[1], key, name, blackCardsTake, whiteCardsTake);
+        public static void SaveBlackCards(List<JObject> cards)
+        {
+            using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "black.txt"), false, Encoding.UTF8))
+            {
+                foreach (JObject card in cards)
+                {
+                    string entry = card["text"].ToString();
+                    entry += SEPARATOR;
+                    entry += card["pick"].ToString();
+                    writer.WriteLine(entry);
                 }
             }
         }
 
-        public static void SaveCardList(string path, string key, string name, List<JObject> blackCards, List<string> whiteCards)
+        public static void SaveWhiteCards(List<string> cards)
         {
-            string directory = Path.GetFullPath(path);
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-            string filePath = Path.Combine(directory, key + ".json");
-
-            JObject json =
-                new JObject(
-                    new JProperty(PACK_NAME_IDENTIFIER, name),
-                    new JProperty(BLACK_CARDS_IDENTIFIER,
-                        new JArray(
-                            from c in blackCards
-                            select c
-                            )),
-                    new JProperty(WHITE_CARDS_IDENTIFIER,
-                        new JArray(
-                            from c in whiteCards
-                            select new JValue(c))));
-
-            File.WriteAllText(filePath, json.ToString());
-            Console.WriteLine(name + " cards saved to " + filePath);
-            Console.WriteLine("=========");
+            using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "white.txt"), false, Encoding.UTF8))
+            {
+                foreach (string card in cards)
+                    writer.WriteLine(card);
+            }
         }
 
-        private static void PrintList<T>(List<T> list)
+        public static void SavePacks(List<PackInfo> packs)
         {
-            foreach (T element in list)
-                Console.WriteLine("-->" + element);
+            using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "packs.txt"), false, Encoding.UTF8))
+            {
+                foreach (PackInfo pack in packs)
+                    writer.WriteLine(pack.ToString());
+            }
+        }
+
+        public struct PackInfo
+        {
+            public string Key { get; set; }
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the point at which the black cards for this pack start
+            /// </summary>
+            public int BlackStartRange { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of black cards in the pack
+            /// </summary>
+            public int BlackCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the point at which the white cards for this pack start
+            /// </summary>
+            public int WhiteStartRange { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of white cards in the pack
+            /// </summary>
+            public int WhiteCount { get; set; }
+
+            public override string ToString()
+            {
+                return Key + SEPARATOR
+                    + Name + SEPARATOR
+                    + BlackStartRange + SEPARATOR
+                    + BlackCount + SEPARATOR
+                    + WhiteStartRange + SEPARATOR
+                    + WhiteCount;
+            }
         }
     }
 }
