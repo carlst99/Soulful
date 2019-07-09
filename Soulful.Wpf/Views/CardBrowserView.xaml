@@ -29,16 +29,34 @@
         <md:ColorZone Mode="Accent"
                       Padding="8,8,8,0">
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <Button Content="{md:PackIcon Kind=ArrowBack}"
                         ToolTip="{Binding [ToolTip_NavigateBack]}"
                         Command="{Binding NavigateBackCommand}"
-                        HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0"/>
                 <TextBlock Text="{Binding [Header_CardBrowser]}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"
                            Style="{StaticResource MaterialDesignHeadlineTextBlock}"/>
+                <md:ColorZone Mode="Standard" Margin="64,0,0,0" Padding="8,2"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"
+                              Panel.ZIndex="1" CornerRadius="2"
+                              md:ShadowAssist.ShadowDepth="Depth2">
+                    <ComboBox ItemsSource="{Binding CardPacks}"
+                              SelectedItem="{Binding SelectedPack}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Value.Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </md:ColorZone>
             </Grid>
         </md:ColorZone>
-        
+
         <TabControl Grid.Row="1"
                     Background="{StaticResource SecondaryAccentBrush}"
                     local:TabControlAssist.TabHeaderForeground="{StaticResource SecondaryAccentForegroundBrush}"
