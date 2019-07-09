@@ -54,7 +54,7 @@ namespace Soulful.Core.ViewModels
             WhiteCards = new ObservableCollection<string>();
             BlackCards = new ObservableCollection<Tuple<string, int>>();
             CardPacks = cardLoader.Packs;
-            SelectedPack = CardPacks.Keys.First();
+            SelectedPack = CardPacks?.Keys.First();
             _cardLoader = cardLoader;
         }
 
