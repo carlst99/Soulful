@@ -37,10 +37,10 @@
                 </Grid.ColumnDefinitions>
                 
                 <Button Content="{md:PackIcon Kind=ArrowBack}"
-                        ToolTip="{Binding [ToolTip_NavigateBack]}"
+                        ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"
                         Command="{Binding NavigateBackCommand}"
                         HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0"/>
-                <TextBlock Text="{Binding [Header_CardBrowser]}"
+                <TextBlock Text="{Binding [Header_CardBrowser], Mode=OneTime}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"
                            Style="{StaticResource MaterialDesignHeadlineTextBlock}"/>
                 <md:ColorZone Mode="Standard" Margin="64,0,0,0" Padding="8,2"
@@ -60,7 +60,8 @@
                     local:TabControlAssist.TabHeaderAlignment="Stretch"
                     local:TabControlAssist.TabHeaderInactiveBrush="{StaticResource SecondaryAccentForegroundBrush}">
             <!-- White cards -->
-            <TabItem Header="{Binding [Header_WhiteCards]}" HeaderTemplate="{StaticResource TabItemHeaderTemplate}">
+            <TabItem Header="{Binding [Header_WhiteCards], Mode=OneTime}" 
+                     HeaderTemplate="{StaticResource TabItemHeaderTemplate}">
                 <ScrollViewer>
                     <ItemsControl ItemsSource="{Binding WhiteCards}"
                                   HorizontalAlignment="Center" Margin="0,16,0,0"
@@ -79,7 +80,8 @@
                 </ScrollViewer>
             </TabItem>
             <!-- Black cards -->
-            <TabItem Header="{Binding [Header_BlackCards]}" HeaderTemplate="{StaticResource TabItemHeaderTemplate}">
+            <TabItem Header="{Binding [Header_BlackCards], Mode=OneTime}" 
+                     HeaderTemplate="{StaticResource TabItemHeaderTemplate}">
                 <ScrollViewer Background="White">
                     <ItemsControl ItemsSource="{Binding BlackCards}"
                                   HorizontalAlignment="Center" Margin="0,16,0,0"
