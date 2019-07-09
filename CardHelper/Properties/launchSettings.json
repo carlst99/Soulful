@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CardHelper": {
+      "commandName": "Project",
+      "commandLineArgs": "cards.json Cards"
+    }
+  }
+}
