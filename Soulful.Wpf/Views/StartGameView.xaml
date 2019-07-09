@@ -9,13 +9,21 @@
                   mc:Ignorable="d" 
                   d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.5*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0.5*"/>
+        </Grid.ColumnDefinitions>
+        
         <Button Content="{md:PackIcon Kind=ArrowBack}"
                 ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"
                 Command="{Binding NavigateBackCommand}"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"/>
         
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel Orientation="Horizontal">
+        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1">
+            <!-- Game pin -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
                 <TextBlock Text="{Binding GamePin}"
                            Style="{StaticResource MaterialDesignDisplay2TextBlock}"/>
                 <Button Content="{md:PackIcon Kind=Refresh}"
@@ -24,6 +32,21 @@
                         Style="{StaticResource MaterialDesignFlatButton}"
                         Margin="16,0,0,0"/>
             </StackPanel>
+
+            <!-- Max players -->
+            <TextBlock Text="{Binding [Label_MaxPlayers]}" Margin="0,16,0,0"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Slider Value="{Binding MaxPlayers}"
+                        TickFrequency="10" TickPlacement="BottomRight"
+                        Minimum="0" Maximum="100"/>
+                <TextBlock Text="{Binding MaxPlayers}"
+                           Grid.Column="1"
+                           Margin="8,0,0,0"/>
+            </Grid>
         </StackPanel>
     </Grid>
 </views:MvxWpfView>

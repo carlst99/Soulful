@@ -133,6 +133,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Max Players.
+        /// </summary>
+        public static string Label_MaxPlayers {
+            get {
+                return ResourceManager.GetString("Label_MaxPlayers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Go Back.
         /// </summary>
         public static string ToolTip_NavigateBack {
