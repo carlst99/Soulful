@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using System.Windows.Media;
 using System.Windows;
 
 namespace Soulful.Wpf.UIEnhancements

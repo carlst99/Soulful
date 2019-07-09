@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soulful.Wpf", "Soulful.Wpf\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soulful.Core.Tests", "Soulful.Core.Tests\Soulful.Core.Tests.csproj", "{6BB2E4BE-05DF-472F-A6F3-1445E7E926C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardHelper", "CardHelper\CardHelper.csproj", "{C48B3EC4-EBD4-4BAA-A494-91E839E0AC62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{6BB2E4BE-05DF-472F-A6F3-1445E7E926C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BB2E4BE-05DF-472F-A6F3-1445E7E926C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BB2E4BE-05DF-472F-A6F3-1445E7E926C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C48B3EC4-EBD4-4BAA-A494-91E839E0AC62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C48B3EC4-EBD4-4BAA-A494-91E839E0AC62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C48B3EC4-EBD4-4BAA-A494-91E839E0AC62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C48B3EC4-EBD4-4BAA-A494-91E839E0AC62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
