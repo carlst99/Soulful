@@ -6,7 +6,7 @@ namespace Soulful.Core.Services
 {
     public interface ICardLoaderService
     {
-        Dictionary<string, PackInfo> Packs { get; }
+        List<PackInfo> Packs { get; }
 
         Task<List<Tuple<string, int>>> GetPackBlackCardsAsync(string packKey);
         Task<List<string>> GetPackWhiteCardsAsync(string packKey);

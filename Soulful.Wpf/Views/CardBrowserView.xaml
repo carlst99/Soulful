@@ -48,21 +48,7 @@
                               Panel.ZIndex="1" CornerRadius="2"
                               md:ShadowAssist.ShadowDepth="Depth2">
                     <ComboBox ItemsSource="{Binding CardPacks}"
-                              SelectedIndex="0"
-                              x:Name="CmbxPacks">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Path=Value.Name}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                        
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding ChangeSelectedPackCommand}"
-                                                       CommandParameter="{Binding SelectedItem.Key, ElementName=CmbxPacks}"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </ComboBox>
+                              SelectedItem="{Binding SelectedPack}"/>
                 </md:ColorZone>
             </Grid>
         </md:ColorZone>
