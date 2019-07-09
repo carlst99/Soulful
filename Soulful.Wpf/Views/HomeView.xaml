@@ -9,8 +9,32 @@
                   mc:Ignorable="d" 
                   d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock Text="Welcome to MvvmCross WPF!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.5*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0.5*"/>
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                    Grid.Column="1">
+            <TextBlock Text="{Binding [App_Title]}"
+                       Style="{StaticResource MaterialDesignDisplay2TextBlock}"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding [App_Subtitle]}"
+                       Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                       FontStyle="Oblique" IsEnabled="False"
+                       HorizontalAlignment="Center"/>
+
+            <Button Content="{Binding [Command_StartGame]}"
+                    Command="{Binding StartGameCommand}"
+                    Margin="0,16,0,0"/>
+            <Button Content="{Binding [Command_JoinGame]}"
+                    Command="{Binding StartGameCommand}"
+                    Margin="0,16,0,0"/>
+            <Button Content="{Binding [Command_BrowseCards]}"
+                    Command="{Binding BrowseCardsCommand}"
+                    Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                    Margin="0,16,0,0"/>
+        </StackPanel>
     </Grid>
 </views:MvxWpfView>
