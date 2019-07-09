@@ -54,7 +54,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <md:Card Background="White" Foreground="Black"
-                                         MinWidth="130" MinHeight="200"
+                                         Width="150" Height="200" UniformCornerRadius="4"
                                          Padding="8" Margin="8">
                                     <TextBlock Text="{Binding}" TextWrapping="Wrap"
                                                Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
@@ -73,7 +73,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
-                                         MinWidth="130" MinHeight="200"
+                                         MinWidth="150" MinHeight="200" UniformCornerRadius="4"
                                          Padding="8" Margin="8">
                                     <Grid>
                                         <TextBlock Text="{Binding Item1}" TextWrapping="Wrap"
