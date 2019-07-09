@@ -56,7 +56,6 @@ namespace Soulful.Core.Services
 
         public async Task<List<string>> GetPackWhiteCardsAsync(string packKey)
         {
-
             if (_whiteCards == null)
                 await LoadWhiteCards().ConfigureAwait(false);
 
