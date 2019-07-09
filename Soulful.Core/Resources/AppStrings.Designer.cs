@@ -140,5 +140,14 @@ namespace Soulful.Core.Resources {
                 return ResourceManager.GetString("ToolTip_NavigateBack", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Pin.
+        /// </summary>
+        public static string ToolTip_RefreshGamePin {
+            get {
+                return ResourceManager.GetString("ToolTip_RefreshGamePin", resourceCulture);
+            }
+        }
     }
 }

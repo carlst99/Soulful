@@ -153,4 +153,8 @@
     <value>Go Back</value>
     <comment>This tooltip appears on a control which navigates the user back to the last viewed page</comment>
   </data>
+  <data name="ToolTip_RefreshGamePin" xml:space="preserve">
+    <value>Refresh Pin</value>
+    <comment>This tooltip appears on a control which refreshes the pin of a new game</comment>
+  </data>
 </root>

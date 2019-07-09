@@ -1,20 +1,57 @@
-﻿using MvvmCross.Navigation;
+﻿using MvvmCross.Commands;
+using MvvmCross.Navigation;
+using System;
 
 namespace Soulful.Core.ViewModels
 {
     public class StartGameViewModel : Base.ViewModelBase
     {
-        private int _gamePin;
+        #region Fields
 
-        public int GamePin
+        private int _gamePin;
+        private int _maxPlayers;
+
+        #endregion
+
+        #region Properties
+
+        public string GamePin
         {
-            get => _gamePin;
-            set => SetProperty(ref _gamePin, value);
+            get => _gamePin.ToString("000000");
         }
+
+        public int MaxPlayers
+        {
+            get => _maxPlayers;
+            set => SetProperty(ref _maxPlayers, value);
+        }
+
+        #endregion
+
+        #region Commands
+
+        public IMvxCommand RefreshGamePinCommand => new MvxCommand(GenerateGamePin);
+        public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
+
+        #endregion
 
         public StartGameViewModel(IMvxNavigationService navigationService)
             : base(navigationService)
         {
+            GenerateGamePin();
+        }
+
+        private void NavigateBack()
+        {
+            // TODO close server etc.
+            NavigationService.Navigate<HomeViewModel>();
+        }
+
+        private void GenerateGamePin()
+        {
+            Random r = new Random();
+            _gamePin = r.Next(100000, 999999);
+            RaisePropertyChanged(nameof(GamePin));
         }
     }
 }
