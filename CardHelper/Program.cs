@@ -12,7 +12,6 @@ namespace CardHelper
     {
         public const char SEPARATOR = '|';
 
-
         public const string PACK_KEY_IDENTIFIER = "order";
 
         public const string BLACK_CARDS_IDENTIFIER = "blackCards";
@@ -84,6 +83,7 @@ namespace CardHelper
                 foreach (JObject card in cards)
                 {
                     string entry = card["text"].ToString();
+                    entry = PruneString(entry);
                     entry += SEPARATOR;
                     entry += card["pick"].ToString();
                     writer.WriteLine(entry);
@@ -96,7 +96,10 @@ namespace CardHelper
             using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "white.txt"), false, Encoding.UTF8))
             {
                 foreach (string card in cards)
-                    writer.WriteLine(card);
+                {
+                    string pruned = PruneString(card);
+                    writer.WriteLine(pruned);
+                }
             }
         }
 
@@ -143,6 +146,20 @@ namespace CardHelper
                     + WhiteStartRange + SEPARATOR
                     + WhiteCount;
             }
+        }
+
+        private static string PruneString(string s)
+        {
+            string mod = s.Replace("<br>", "/");
+            mod = mod.Replace("&reg;", "®");
+            mod = mod.Replace("&reg", "®");
+            mod = mod.Replace("&copy;", "©");
+            mod = mod.Replace("&copy", "©");
+            mod = mod.Replace("&trade;", "™");
+            mod = mod.Replace("&trade", "™");
+            mod = mod.Replace("&Uuml;", "Ü");
+            mod = mod.Trim('.');
+            return mod;
         }
     }
 }
