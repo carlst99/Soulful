@@ -7,6 +7,7 @@ namespace Soulful.Wpf.Views
         public HomeView()
         {
             InitializeComponent();
+            TxtBxName.Focus();
         }
     }
 }

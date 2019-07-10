@@ -133,6 +133,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Player Name.
+        /// </summary>
+        public static string Hint_PlayerName {
+            get {
+                return ResourceManager.GetString("Hint_PlayerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Max Players.
         /// </summary>
         public static string Label_MaxPlayers {

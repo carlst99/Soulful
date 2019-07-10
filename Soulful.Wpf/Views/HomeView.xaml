@@ -25,11 +25,17 @@
                        FontStyle="Oblique" IsEnabled="False"
                        HorizontalAlignment="Center"/>
 
+            <TextBox md:HintAssist.Hint="{Binding [Hint_PlayerName], Mode=OneTime}"
+                     Text="{Binding PlayerName, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                     HorizontalAlignment="Stretch" Margin="0,16,0,0"
+                     HorizontalContentAlignment="Center"
+                     x:Name="TxtBxName"/>
+
             <Button Content="{Binding [Command_StartGame], Mode=OneTime}"
-                    Command="{Binding StartGameCommand}"
+                    Command="{Binding StartGameCommand}" IsEnabled="{Binding CanNavigateToGamePlay}"
                     Margin="0,16,0,0"/>
             <Button Content="{Binding [Command_JoinGame], Mode=OneTime}"
-                    Command="{Binding StartGameCommand}"
+                    Command="{Binding StartGameCommand}" IsEnabled="{Binding CanNavigateToGamePlay}"
                     Margin="0,16,0,0"/>
             <Button Content="{Binding [Command_BrowseCards], Mode=OneTime}"
                     Command="{Binding BrowseCardsCommand}"

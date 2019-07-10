@@ -149,6 +149,10 @@
     <value>White Cards</value>
     <comment>This header appears above a list of white cards</comment>
   </data>
+  <data name="Hint_PlayerName" xml:space="preserve">
+    <value>Player Name</value>
+    <comment>This hint appears in a textbox which allows the user to enter their player name</comment>
+  </data>
   <data name="Label_MaxPlayers" xml:space="preserve">
     <value>Max Players</value>
     <comment>This label appears beside the maximum number of players allowed into the game</comment>

@@ -4,7 +4,7 @@ using System;
 
 namespace Soulful.Core.ViewModels
 {
-    public class StartGameViewModel : Base.ViewModelBase
+    public class StartGameViewModel : Base.ViewModelBase<string>
     {
         #region Constants
 
@@ -17,6 +17,7 @@ namespace Soulful.Core.ViewModels
 
         private int _gamePin;
         private int _maxPlayers;
+        private string _playerName;
 
         #endregion
 
@@ -60,6 +61,11 @@ namespace Soulful.Core.ViewModels
             Random r = new Random();
             _gamePin = r.Next(100000, 999999);
             RaisePropertyChanged(nameof(GamePin));
+        }
+
+        public override void Prepare(string parameter)
+        {
+            _playerName = parameter;
         }
     }
 }
