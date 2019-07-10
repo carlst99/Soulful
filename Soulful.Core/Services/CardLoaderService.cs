@@ -41,7 +41,7 @@ namespace Soulful.Core.Services
 
             PackInfo info = Packs.Find(p => p.Key == packKey);
             if (info.Equals(default))
-                throw new ArgumentException("A pack with that key does not exist");
+                throw App.CreateError<ArgumentException>("The specified pack does not exist: " + packKey);
 
             return _blackCards.GetRange(info.BlackStartRange, info.BlackCount);
         }
@@ -61,7 +61,7 @@ namespace Soulful.Core.Services
 
             PackInfo info = Packs.Find(p => p.Key == packKey);
             if (info.Equals(default))
-                throw new ArgumentException("A pack with that key does not exist");
+                throw App.CreateError<ArgumentException>("The specified pack does not exist" + packKey);
 
             return _whiteCards.GetRange(info.WhiteStartRange, info.WhiteCount);
         }
