@@ -1,6 +1,6 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.Navigation;
-using Soulful.Core.Services;
+using Soulful.Core.Net;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
@@ -64,13 +64,19 @@ namespace Soulful.Core.ViewModels
         {
             _client = client;
             _client.ConnectedToServer += OnConnectionSucceeded;
+            _client.GameEvent += OnGameEvent;
         }
 
         private void OnConnectionSucceeded(object sender, System.EventArgs e)
         {
             _attemptFinished = true;
             ShowConfirmationLabel = true;
-            // TODO - navigate to gameplay view
+        }
+
+        private void OnGameEvent(object sender, GameKeyPackage e)
+        {
+            if (e.Key == GameKey.GameStart)
+                NavigationService.Navigate<GameViewModel, string>(_playerName);
         }
 
         private async void JoinGame()

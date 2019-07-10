@@ -1,6 +1,5 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.Navigation;
-using System;
 
 namespace Soulful.Core.ViewModels
 {

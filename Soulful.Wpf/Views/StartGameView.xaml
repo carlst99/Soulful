@@ -54,10 +54,25 @@
                            Grid.Column="1"
                            Margin="8,0,0,0"/>
             </Grid>
+            
+            <!-- Start game -->
+            <Button Content="{Binding [Command_StartGame], Mode=OneTime}"
+                    Command="{Binding StartGameCommand}"
+                    IsEnabled="{Binding CanStartGame}"
+                    Margin="0,8,0,0"/>
         </StackPanel>
 
         <GridSplitter Grid.Row="1" Grid.ColumnSpan="3"
                       Height="3" HorizontalAlignment="Stretch" Margin="32,0"
                       Background="{StaticResource PrimaryHueLightBrush}"/>
+
+        <ListView Grid.Row="2"
+                  ItemsSource="{Binding Server.Players}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Tag}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </views:MvxWpfView>

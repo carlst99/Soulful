@@ -1,7 +1,7 @@
 ﻿using LiteNetLib;
 using System.Collections.ObjectModel;
 
-namespace Soulful.Core.Services
+namespace Soulful.Core.Net
 {
     public interface IGameServerService
     {
@@ -12,5 +12,6 @@ namespace Soulful.Core.Services
         void Stop();
         void ChangeConnectPin(string pin);
         void ChangeMaxPlayers(int maxPlayers, bool kickLast = true);
+        void RunGame();
     }
 }

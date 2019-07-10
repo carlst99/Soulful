@@ -1,7 +1,9 @@
-﻿using MvvmCross.Commands;
+﻿using MvvmCross;
+using MvvmCross.Commands;
 using MvvmCross.Navigation;
-using Soulful.Core.Services;
+using Soulful.Core.Net;
 using System;
+using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
@@ -16,7 +18,6 @@ namespace Soulful.Core.ViewModels
 
         #region Fields
 
-        private readonly IGameServerService _server;
 
         private int _gamePin;
         private int _maxPlayers;
@@ -37,9 +38,17 @@ namespace Soulful.Core.ViewModels
             set
             {
                 SetProperty(ref _maxPlayers, value);
-                _server.ChangeMaxPlayers(value);
+                Server.ChangeMaxPlayers(value);
             }
         }
+
+        public IGameServerService Server { get; }
+
+#if DEBUG
+        public bool CanStartGame => Server.Players.Count >= 1;
+#else
+        public bool CanStartGame => Server.Players.Count >= MIN_PLAYERS - 1;
+#endif
 
         #endregion
 
@@ -47,23 +56,41 @@ namespace Soulful.Core.ViewModels
 
         public IMvxCommand RefreshGamePinCommand => new MvxCommand(GenerateGamePin);
         public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
+        public IMvxCommand StartGameCommand => new MvxCommand(StartGame);
 
         #endregion
 
         public StartGameViewModel(IMvxNavigationService navigationService, IGameServerService server)
             : base(navigationService)
         {
-            _server = server;
+            Server = server;
             _maxPlayers = 20;
 
             GenerateGamePin();
-            _server.Start(MaxPlayers, GamePin);
+            Server.Players.CollectionChanged += (s, e) => RaisePropertyChanged(nameof(CanStartGame));
+            Server.Start(MaxPlayers, GamePin);
+        }
+
+        private async void StartGame()
+        {
+            if (!CanStartGame)
+                return;
+
+            IGameClientService client = Mvx.IoCProvider.Resolve<IGameClientService>();
+            client.Start(GamePin, _playerName);
+            await Task.Run(async () =>
+            {
+                while (!client.IsRunning)
+                    await Task.Delay(15).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            await NavigationService.Navigate<GameViewModel, string>(_playerName).ConfigureAwait(false);
         }
 
         private void NavigateBack()
         {
-            if (_server.IsRunning)
-                _server.Stop();
+            if (Server.IsRunning)
+                Server.Stop();
             NavigationService.Navigate<HomeViewModel>();
         }
 
@@ -72,7 +99,7 @@ namespace Soulful.Core.ViewModels
             Random r = new Random();
             _gamePin = r.Next(100000, 999999);
             RaisePropertyChanged(nameof(GamePin));
-            _server.ChangeConnectPin(GamePin);
+            Server.ChangeConnectPin(GamePin);
         }
 
         public override void Prepare(string parameter)

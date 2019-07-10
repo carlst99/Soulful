@@ -7,7 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Soulful.Core.Services
+namespace Soulful.Core.Net
 {
     public sealed class GameServerService : IGameServerService
     {
@@ -31,6 +31,7 @@ namespace Soulful.Core.Services
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
+            _listener.PeerDisconnectedEvent += OnPeerDisconnected;
 
             _server = new NetManager(_listener)
             {
@@ -75,6 +76,12 @@ namespace Soulful.Core.Services
             Log.Information("Server stopped");
         }
 
+        public void RunGame()
+        {
+            _server.SendToAll(NetConstants.GetKeyValue(GameKey.GameStart), DeliveryMethod.ReliableOrdered);
+            // TODO - run game
+        }
+
         /// <summary>
         /// Changes the pin required to connect to the server
         /// </summary>
@@ -112,8 +119,10 @@ namespace Soulful.Core.Services
                 string pin = request.Data.GetString();
                 if (pin == Pin)
                 {
-                    request.Accept();
+                    NetPeer peer = request.Accept();
                     string userName = request.Data.GetString();
+                    peer.Tag = userName;
+                    //Players.Add(peer);
                     _temporaryConnections.Add(request.RemoteEndPoint, userName);
                     Log.Information("Connection request from {endPoint} with username {userName} accepted", request.RemoteEndPoint, userName);
                 }
@@ -144,6 +153,14 @@ namespace Soulful.Core.Services
                 peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectUnknownError));
                 Log.Error("Peer connected with no request: {endPoint}", peer.EndPoint);
             }
+        }
+
+        private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
+        {
+            if (Players.Contains(peer))
+                Players.Remove(peer);
+
+            Log.Information("Peer at {endPoint} disconnected", peer.EndPoint);
         }
 
         private void OnReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)

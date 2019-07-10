@@ -1,19 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Soulful.Core.Services
+﻿namespace Soulful.Core.Net
 {
-    public static class NetConstants
-    {
-        public const int PORT = 6259;
-
-        public static byte[] GetKeyValue(NetKey value)
-        {
-            return new byte[] { (byte)value };
-        }
-    }
-
+    /// <summary>
+    /// Contains network-related keys
+    /// </summary>
     public enum NetKey : byte
     {
         /// <summary>
@@ -39,6 +28,11 @@ namespace Soulful.Core.Services
         /// <summary>
         /// Disconnected due to an unknown error
         /// </summary>
-        DisconnectUnknownError = 4
+        DisconnectUnknownError = 4,
+
+        /// <summary>
+        /// Disconnected due to a user action
+        /// </summary>
+        DisconnectUserAction = 5
     }
 }
