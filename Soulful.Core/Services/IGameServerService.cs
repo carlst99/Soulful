@@ -1,12 +1,16 @@
-﻿namespace Soulful.Core.Services
+﻿using LiteNetLib;
+using System.Collections.ObjectModel;
+
+namespace Soulful.Core.Services
 {
     public interface IGameServerService
     {
         bool IsRunning { get; }
+        ObservableCollection<NetPeer> Players { get; }
 
-        void Start(int maxPlayers, string key);
+        void Start(int maxPlayers, string pin);
         void Stop();
-        void ChangeConnectPin(string key);
+        void ChangeConnectPin(string pin);
         void ChangeMaxPlayers(int maxPlayers, bool kickLast = true);
     }
 }

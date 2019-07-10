@@ -29,6 +29,16 @@ namespace Soulful.Core.Services
         /// <summary>
         /// Disconnected as the server is closing
         /// </summary>
-        DisconnectServerClosed = 2
+        DisconnectServerClosed = 2,
+
+        /// <summary>
+        /// Disconnected as an invalid pin was provided
+        /// </summary>
+        DisconnectInvalidPin = 3,
+
+        /// <summary>
+        /// Disconnected due to an unknown error
+        /// </summary>
+        DisconnectUnknownError = 4
     }
 }

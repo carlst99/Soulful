@@ -2,8 +2,8 @@
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.Services
@@ -12,18 +12,23 @@ namespace Soulful.Core.Services
     {
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _server;
+        private readonly Dictionary<IPEndPoint, string> _temporaryConnections;
         private Task _pollTask;
 
         public int MaxPlayers { get; private set; }
         public string Pin { get; private set; }
         public bool IsRunning => _server.IsRunning;
+        public ObservableCollection<NetPeer> Players { get; private set; }
 
         public GameServerService()
         {
+            _temporaryConnections = new Dictionary<IPEndPoint, string>();
+            Players = new ObservableCollection<NetPeer>();
+
             _listener = new EventBasedNetListener();
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;
-            _listener.NetworkReceiveUnconnectedEvent += OnDiscoveryBroadcast;
+            _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
 
             _server = new NetManager(_listener)
             {
@@ -97,21 +102,51 @@ namespace Soulful.Core.Services
         private void OnConnectionRequested(ConnectionRequest request)
         {
             if (_server.PeersCount < MaxPlayers)
-                request.AcceptIfKey(Pin);
+            {
+                string pin = request.Data.GetString();
+                if (pin == Pin)
+                {
+                    request.Accept();
+                    string userName = request.Data.GetString();
+                    _temporaryConnections.Add(request.RemoteEndPoint, userName);
+                    Log.Information("Connection request from {endPoint} with username {userName} accepted", request.RemoteEndPoint, userName);
+                }
+                else
+                {
+                    request.Reject(NetConstants.GetKeyValue(NetKey.DisconnectInvalidPin));
+                    Log.Information("Connection request from {endPoint} rejected due to invalid key", request.RemoteEndPoint);
+                }
+            }
             else
+            {
                 request.Reject(NetConstants.GetKeyValue(NetKey.DisconnectServerFull));
+                Log.Information("Connection request from {endPoint} rejected as server full", request.RemoteEndPoint);
+            }
         }
 
         private void OnPeerConnected(NetPeer peer)
         {
-            // TODO - add peer to peer list
+            if (_temporaryConnections.ContainsKey(peer.EndPoint))
+            {
+                peer.Tag = _temporaryConnections[peer.EndPoint];
+                _temporaryConnections.Remove(peer.EndPoint);
+
+                Players.Add(peer);
+                Log.Information("Peer completed connection from {endPoint}", peer.EndPoint);
+            } else
+            {
+                peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectUnknownError));
+                Log.Error("Peer connected with no request: {endPoint}", peer.EndPoint);
+            }
         }
 
-        private void OnDiscoveryBroadcast(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+        private void OnReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
         {
             if (messageType == UnconnectedMessageType.DiscoveryRequest)
             {
-                // TODO - send response saying you may connect
+                string pin = reader.GetString();
+                if (pin == Pin)
+                    _server.SendDiscoveryResponse(new byte[0], remoteEndPoint);
             }
         }
     }
