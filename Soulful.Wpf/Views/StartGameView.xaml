@@ -30,7 +30,7 @@
             <!-- Game pin -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
-                <TextBlock Text="Pin:" VerticalAlignment="Top" Margin="0,8,16,0"/>
+                <TextBlock Text="{Binding [Label_GamePin], Mode=OneTime}" VerticalAlignment="Top" Margin="0,8,16,0"/>
                 <TextBlock Text="{Binding GamePin}"
                            Style="{StaticResource MaterialDesignDisplay2TextBlock}"/>
                 <Button Content="{md:PackIcon Kind=Refresh}"

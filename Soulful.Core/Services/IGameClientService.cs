@@ -7,7 +7,7 @@ namespace Soulful.Core.Services
         bool IsRunning { get; }
         event EventHandler ConnectedToServer;
 
-        void Start(string pin, string userName);
+        void Start(string pin, string playerName);
         void Stop();
     }
 }

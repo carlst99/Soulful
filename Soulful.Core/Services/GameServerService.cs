@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.Services
@@ -14,6 +15,7 @@ namespace Soulful.Core.Services
         private readonly NetManager _server;
         private readonly Dictionary<IPEndPoint, string> _temporaryConnections;
         private Task _pollTask;
+        private CancellationTokenSource _cancelPollToken;
 
         public int MaxPlayers { get; private set; }
         public string Pin { get; private set; }
@@ -32,39 +34,43 @@ namespace Soulful.Core.Services
 
             _server = new NetManager(_listener)
             {
-                UnconnectedMessagesEnabled = true
+                DiscoveryEnabled = true
             };
         }
 
         public void Start(int maxPlayers, string pin)
         {
-            if (_server.IsRunning)
+            if (IsRunning)
                 throw App.CreateError<InvalidOperationException>("Server is already running");
 
+            _cancelPollToken = new CancellationTokenSource();
             MaxPlayers = maxPlayers;
             Pin = pin;
+
             _server.Start(NetConstants.PORT);
             _pollTask = Task.Run(async () =>
             {
-                if (_server.IsRunning)
+                while (!_cancelPollToken.IsCancellationRequested)
+                {
                     _server.PollEvents();
-                else
-                    return;
-                await Task.Delay(15).ConfigureAwait(false);
-            });
+                    await Task.Delay(15).ConfigureAwait(false);
+                }
+            }, _cancelPollToken.Token);
 
             Log.Information("Server started");
         }
 
         public void Stop()
         {
-            if (!_server.IsRunning)
+            if (!IsRunning)
                 throw App.CreateError<InvalidOperationException>("Server is not running");
+
+            _cancelPollToken.Cancel();
+            _pollTask.Wait();
 
             foreach (NetPeer peer in _server.ConnectedPeerList)
                 peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectServerClosed));
             _server.Stop();
-            _pollTask.Wait();
 
             Log.Information("Server stopped");
         }

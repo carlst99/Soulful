@@ -32,7 +32,8 @@ namespace Soulful.Core.ViewModels
 
         public IMvxCommand StartGameCommand => new MvxCommand(() => NavigationService.Navigate<StartGameViewModel, string>(PlayerName));
 
-        public IMvxCommand JoinGameCommand => new MvxCommand(JoinGame);
+        public IMvxCommand JoinGameCommand => new MvxCommand(() => NavigationService.Navigate<JoinGameViewModel, string>(PlayerName));
+
         public IMvxCommand BrowseCardsCommand => new MvxCommand(() => NavigationService.Navigate<CardBrowserViewModel>());
 
         #endregion
@@ -40,11 +41,6 @@ namespace Soulful.Core.ViewModels
         public HomeViewModel(IMvxNavigationService navigationService)
             : base(navigationService)
         {
-        }
-
-        private void JoinGame()
-        {
-            throw new NotImplementedException();
         }
     }
 }

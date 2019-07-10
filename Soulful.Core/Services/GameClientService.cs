@@ -3,6 +3,7 @@ using LiteNetLib.Utils;
 using Serilog;
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.Services
@@ -12,6 +13,7 @@ namespace Soulful.Core.Services
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _client;
         private Task _pollTask;
+        private CancellationTokenSource _cancelPollToken;
 
         public bool IsRunning => _client.IsRunning;
         public string Pin { get; private set; }
@@ -27,10 +29,7 @@ namespace Soulful.Core.Services
             _listener = new EventBasedNetListener();
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
 
-            _client = new NetManager(_listener)
-            {
-                UnconnectedMessagesEnabled = true
-            };
+            _client = new NetManager(_listener);
         }
 
         public void Start(string pin, string userName)
@@ -38,18 +37,19 @@ namespace Soulful.Core.Services
             if (_client.IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is already running");
 
+            _cancelPollToken = new CancellationTokenSource();
             Pin = pin;
             UserName = userName;
 
             _client.Start();
             _pollTask = Task.Run(async () =>
             {
-                if (_client.IsRunning)
+                while (!_cancelPollToken.IsCancellationRequested)
+                {
                     _client.PollEvents();
-                else
-                    return;
-                await Task.Delay(15).ConfigureAwait(false);
-            });
+                    await Task.Delay(15).ConfigureAwait(false);
+                }
+            }, _cancelPollToken.Token);
 
             NetDataWriter writer = new NetDataWriter();
             writer.Put(pin);
@@ -64,8 +64,9 @@ namespace Soulful.Core.Services
             if (!_client.IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is not running");
 
-            _client.Stop(true);
+            _cancelPollToken.Cancel();
             _pollTask.Wait();
+            _client.Stop(true);
 
             Log.Information("Client stopped");
         }

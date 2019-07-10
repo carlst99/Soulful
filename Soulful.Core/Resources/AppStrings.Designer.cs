@@ -133,11 +133,38 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Game Pin.
+        /// </summary>
+        public static string Hint_GamePin {
+            get {
+                return ResourceManager.GetString("Hint_GamePin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Player Name.
         /// </summary>
         public static string Hint_PlayerName {
             get {
                 return ResourceManager.GetString("Hint_PlayerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re in! Wait for the host to start!.
+        /// </summary>
+        public static string Label_ConnectedToServer {
+            get {
+                return ResourceManager.GetString("Label_ConnectedToServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pin:.
+        /// </summary>
+        public static string Label_GamePin {
+            get {
+                return ResourceManager.GetString("Label_GamePin", resourceCulture);
             }
         }
         

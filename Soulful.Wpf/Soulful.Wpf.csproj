@@ -97,12 +97,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UIEnhancements\BoolInversionConverter.cs" />
+    <Compile Include="UIEnhancements\BoolToVisibilityConverter.cs" />
     <Compile Include="UIEnhancements\TabControlAssist.cs" />
     <Compile Include="Views\CardBrowserView.xaml.cs">
       <DependentUpon>CardBrowserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\HomeView.xaml.cs">
       <DependentUpon>HomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\JoinGameView.xaml.cs">
+      <DependentUpon>JoinGameView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\StartGameView.xaml.cs">
       <DependentUpon>StartGameView.xaml</DependentUpon>
@@ -128,6 +133,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\HomeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\JoinGameView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
