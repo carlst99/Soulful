@@ -1,7 +1,10 @@
 ﻿using LiteNetLib;
+using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Soulful.Core.Services
 {
@@ -9,23 +12,56 @@ namespace Soulful.Core.Services
     {
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _server;
+        private Task _pollTask;
 
         public int MaxPlayers { get; private set; }
         public string Pin { get; private set; }
+        public bool IsRunning => _server.IsRunning;
 
         public GameServerService()
         {
             _listener = new EventBasedNetListener();
             _listener.ConnectionRequestEvent += OnConnectionRequested;
+            _listener.PeerConnectedEvent += OnPeerConnected;
+            _listener.NetworkReceiveUnconnectedEvent += OnDiscoveryBroadcast;
 
-            _server = new NetManager(_listener);
+            _server = new NetManager(_listener)
+            {
+                UnconnectedMessagesEnabled = true
+            };
         }
 
         public void Start(int maxPlayers, string pin)
         {
+            if (_server.IsRunning)
+                throw App.CreateError<InvalidOperationException>("Server is already running");
+
             MaxPlayers = maxPlayers;
             Pin = pin;
             _server.Start(NetConstants.PORT);
+            _pollTask = Task.Run(async () =>
+            {
+                if (_server.IsRunning)
+                    _server.PollEvents();
+                else
+                    return;
+                await Task.Delay(15).ConfigureAwait(false);
+            });
+
+            Log.Information("Server started");
+        }
+
+        public void Stop()
+        {
+            if (!_server.IsRunning)
+                throw App.CreateError<InvalidOperationException>("Server is not running");
+
+            foreach (NetPeer peer in _server.ConnectedPeerList)
+                peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectServerClosed));
+            _server.Stop();
+            _pollTask.Wait();
+
+            Log.Information("Server stopped");
         }
 
         /// <summary>
@@ -46,11 +82,11 @@ namespace Soulful.Core.Services
             if (disconnectAll)
             {
                 foreach (NetPeer peer in _server.ConnectedPeerList)
-                    peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectServerFull));
+                    peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectLimitChanged));
             } else
             {
                 while (_server.PeersCount > MaxPlayers)
-                    _server.ConnectedPeerList[_server.PeersCount - 1].Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectServerFull));
+                    _server.ConnectedPeerList[_server.PeersCount - 1].Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectLimitChanged));
             }
         }
 
@@ -64,6 +100,19 @@ namespace Soulful.Core.Services
                 request.AcceptIfKey(Pin);
             else
                 request.Reject(NetConstants.GetKeyValue(NetKey.DisconnectServerFull));
+        }
+
+        private void OnPeerConnected(NetPeer peer)
+        {
+            // TODO - add peer to peer list
+        }
+
+        private void OnDiscoveryBroadcast(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+        {
+            if (messageType == UnconnectedMessageType.DiscoveryRequest)
+            {
+                // TODO - send response saying you may connect
+            }
         }
     }
 }

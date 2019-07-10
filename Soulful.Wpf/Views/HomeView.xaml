@@ -35,7 +35,7 @@
                     Command="{Binding StartGameCommand}" IsEnabled="{Binding CanNavigateToGamePlay}"
                     Margin="0,16,0,0"/>
             <Button Content="{Binding [Command_JoinGame], Mode=OneTime}"
-                    Command="{Binding StartGameCommand}" IsEnabled="{Binding CanNavigateToGamePlay}"
+                    Command="{Binding JoinGameCommand}" IsEnabled="{Binding CanNavigateToGamePlay}"
                     Margin="0,16,0,0"/>
             <Button Content="{Binding [Command_BrowseCards], Mode=OneTime}"
                     Command="{Binding BrowseCardsCommand}"

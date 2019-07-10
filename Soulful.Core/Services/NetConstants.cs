@@ -16,6 +16,19 @@ namespace Soulful.Core.Services
 
     public enum NetKey : byte
     {
-        DisconnectServerFull = 0
+        /// <summary>
+        /// Disconnected as the server is full
+        /// </summary>
+        DisconnectServerFull = 0,
+
+        /// <summary>
+        /// Disconnected as the max connections of the server has changed
+        /// </summary>
+        DisconnectLimitChanged = 1,
+
+        /// <summary>
+        /// Disconnected as the server is closing
+        /// </summary>
+        DisconnectServerClosed = 2
     }
 }

@@ -30,8 +30,7 @@ namespace Soulful.Core.ViewModels
 
         #region Commands
 
-        public IMvxCommand StartGameCommand
-            => new MvxCommand(() => NavigationService.Navigate<StartGameViewModel, string>(PlayerName));
+        public IMvxCommand StartGameCommand => new MvxCommand(() => NavigationService.Navigate<StartGameViewModel, string>(PlayerName));
 
         public IMvxCommand JoinGameCommand => new MvxCommand(JoinGame);
         public IMvxCommand BrowseCardsCommand => new MvxCommand(() => NavigationService.Navigate<CardBrowserViewModel>());

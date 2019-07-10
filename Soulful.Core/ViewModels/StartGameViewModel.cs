@@ -1,5 +1,6 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Soulful.Core.Services;
 using System;
 
 namespace Soulful.Core.ViewModels
@@ -14,6 +15,8 @@ namespace Soulful.Core.ViewModels
         #endregion
 
         #region Fields
+
+        private readonly IGameServerService _server;
 
         private int _gamePin;
         private int _maxPlayers;
@@ -31,7 +34,11 @@ namespace Soulful.Core.ViewModels
         public int MaxPlayers
         {
             get => _maxPlayers;
-            set => SetProperty(ref _maxPlayers, value);
+            set
+            {
+                SetProperty(ref _maxPlayers, value);
+                _server.ChangeMaxPlayers(value);
+            }
         }
 
         #endregion
@@ -43,16 +50,20 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public StartGameViewModel(IMvxNavigationService navigationService)
+        public StartGameViewModel(IMvxNavigationService navigationService, IGameServerService server)
             : base(navigationService)
         {
-            GenerateGamePin();
+            _server = server;
             _maxPlayers = 20;
+
+            GenerateGamePin();
+            _server.Start(MaxPlayers, GamePin);
         }
 
         private void NavigateBack()
         {
-            // TODO close server etc.
+            if (_server.IsRunning)
+                _server.Stop();
             NavigationService.Navigate<HomeViewModel>();
         }
 
@@ -61,6 +72,7 @@ namespace Soulful.Core.ViewModels
             Random r = new Random();
             _gamePin = r.Next(100000, 999999);
             RaisePropertyChanged(nameof(GamePin));
+            _server.ChangeConnectPin(GamePin);
         }
 
         public override void Prepare(string parameter)

@@ -9,6 +9,7 @@ using Serilog.Events;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Soulful.Core.Services;
 
 [assembly: InternalsVisibleTo("MvvmCrossCoreTestProject")]
 
