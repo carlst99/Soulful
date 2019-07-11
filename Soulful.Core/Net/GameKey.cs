@@ -8,6 +8,11 @@
         /// <summary>
         /// The server has started the game
         /// </summary>
-        GameStart = 0
+        GameStart = 0,
+
+        /// <summary>
+        /// The client has successfully joined the game server
+        /// </summary>
+        JoinedGame = 1
     }
 }

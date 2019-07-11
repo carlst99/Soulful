@@ -79,13 +79,13 @@ namespace Soulful.Core.ViewModels
                 NavigationService.Navigate<GameViewModel, string>(_playerName);
         }
 
-        private async void JoinGame()
+        private void JoinGame()
         {
             _client.Start(GamePin, _playerName);
             AttemptingConnection = true;
             _attemptFinished = false;
             // TODO - need awaiter? need to continue in same context?
-            await Task.Run(async () =>
+            Task.Run(async () =>
             {
                 await Task.Delay(3000).ConfigureAwait(false);
                 if (!_attemptFinished)

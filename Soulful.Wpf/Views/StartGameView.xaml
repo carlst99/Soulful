@@ -66,13 +66,13 @@
                       Height="3" HorizontalAlignment="Stretch" Margin="32,0"
                       Background="{StaticResource PrimaryHueLightBrush}"/>
 
-        <ListView Grid.Row="2"
+        <!--<ListView Grid.Row="2"
                   ItemsSource="{Binding Server.Players}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Tag}"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
-        </ListView>
+        </ListView>-->
     </Grid>
 </views:MvxWpfView>

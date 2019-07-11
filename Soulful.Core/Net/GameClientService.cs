@@ -36,6 +36,11 @@ namespace Soulful.Core.Net
         public event EventHandler ConnectedToServer;
 
         /// <summary>
+        /// Invoked when the client is disconnected
+        /// </summary>
+        public event EventHandler DisconnectedFromServer;
+
+        /// <summary>
         /// Invoked when a game-related event occurs
         /// </summary>
         public event EventHandler<GameKeyPackage> GameEvent;
@@ -47,6 +52,7 @@ namespace Soulful.Core.Net
             _listener = new EventBasedNetListener();
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
             _listener.NetworkReceiveEvent += OnReceive;
+            _listener.PeerDisconnectedEvent += OnPeerDisconnect;
 
             _client = new NetManager(_listener);
         }
@@ -94,11 +100,21 @@ namespace Soulful.Core.Net
         private void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
             GameKey key = (GameKey)reader.GetByte();
-            GameKeyPackage package = new GameKeyPackage(key, reader, peer);
-            GameEvent?.Invoke(this, package);
+            if (key == GameKey.JoinedGame)
+            {
+                ConnectedToServer?.Invoke(this, EventArgs.Empty);
+                Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
+            }
+            else
+            {
+                GameKeyPackage package = new GameKeyPackage(key, reader, peer);
+                GameEvent?.Invoke(this, package);
+            }
 
             reader.Recycle();
         }
+
+        #region Server connection handling
 
         private void OnReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
         {
@@ -108,10 +124,20 @@ namespace Soulful.Core.Net
                 writer.Put(Pin);
                 writer.Put(UserName);
                 _serverPeer = _client.Connect(remoteEndPoint, writer);
-                ConnectedToServer?.Invoke(this, EventArgs.Empty);
                 Log.Information("Client attempting to connect to server at {endPoint}", remoteEndPoint);
             }
             reader.Recycle();
         }
+
+        private void OnPeerDisconnect(NetPeer peer, DisconnectInfo disconnectInfo)
+        {
+            if (peer.Id == _serverPeer.Id)
+            {
+                DisconnectedFromServer?.Invoke(this, EventArgs.Empty);
+                Stop();
+            }
+        }
+
+        #endregion
     }
 }

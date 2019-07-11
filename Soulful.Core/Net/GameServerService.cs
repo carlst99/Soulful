@@ -11,27 +11,50 @@ namespace Soulful.Core.Net
 {
     public sealed class GameServerService : IGameServerService
     {
+        public const DeliveryMethod DMethod = DeliveryMethod.ReliableOrdered;
+
+        #region Fields
+
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _server;
-        private readonly Dictionary<IPEndPoint, string> _temporaryConnections;
         private Task _pollTask;
         private CancellationTokenSource _cancelPollToken;
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the maximum number of players that the server supports. Change this value using <see cref="ChangeMaxPlayers(int, bool)"/>
+        /// </summary>
         public int MaxPlayers { get; private set; }
+
+        /// <summary>
+        /// Gets the pin used by the server to allow client connections. Change this using <see cref="ChangeConnectPin(string)"/>
+        /// </summary>
         public string Pin { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the server is running
+        /// </summary>
         public bool IsRunning => _server.IsRunning;
-        public ObservableCollection<NetPeer> Players { get; private set; }
+
+        /// <summary>
+        /// Gets a collection of players connected to the server
+        /// </summary>
+        public ObservableCollection<NetPeer> Players { get; }
+
+        #endregion
 
         public GameServerService()
         {
-            _temporaryConnections = new Dictionary<IPEndPoint, string>();
             Players = new ObservableCollection<NetPeer>();
 
             _listener = new EventBasedNetListener();
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;
-            _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
             _listener.PeerDisconnectedEvent += OnPeerDisconnected;
+            _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
 
             _server = new NetManager(_listener)
             {
@@ -58,7 +81,7 @@ namespace Soulful.Core.Net
                 }
             }, _cancelPollToken.Token);
 
-            Log.Information("Server started");
+            Log.Information("Server started with pin {pin} and max connections {max}", pin, maxPlayers);
         }
 
         public void Stop()
@@ -78,7 +101,7 @@ namespace Soulful.Core.Net
 
         public void RunGame()
         {
-            _server.SendToAll(NetConstants.GetKeyValue(GameKey.GameStart), DeliveryMethod.ReliableOrdered);
+            _server.SendToAll(NetConstants.GetKeyValue(GameKey.GameStart), DMethod);
             // TODO - run game
         }
 
@@ -101,17 +124,26 @@ namespace Soulful.Core.Net
             {
                 foreach (NetPeer peer in _server.ConnectedPeerList)
                     peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectLimitChanged));
-            } else
+            }
+            else
             {
                 while (_server.PeersCount > MaxPlayers)
                     _server.ConnectedPeerList[_server.PeersCount - 1].Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectLimitChanged));
             }
         }
 
-        /// <summary>
-        /// Invoked when a client requests to connect
-        /// </summary>
-        /// <param name="request"></param>
+        #region Peer connection handling
+
+        private void OnReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+        {
+            if (messageType == UnconnectedMessageType.DiscoveryRequest)
+            {
+                string pin = reader.GetString();
+                if (pin == Pin)
+                    _server.SendDiscoveryResponse(new byte[0], remoteEndPoint);
+            }
+        }
+
         private void OnConnectionRequested(ConnectionRequest request)
         {
             if (_server.PeersCount < MaxPlayers)
@@ -122,8 +154,8 @@ namespace Soulful.Core.Net
                     NetPeer peer = request.Accept();
                     string userName = request.Data.GetString();
                     peer.Tag = userName;
-                    //Players.Add(peer);
-                    _temporaryConnections.Add(request.RemoteEndPoint, userName);
+
+                    Players.Add(peer);
                     Log.Information("Connection request from {endPoint} with username {userName} accepted", request.RemoteEndPoint, userName);
                 }
                 else
@@ -141,18 +173,8 @@ namespace Soulful.Core.Net
 
         private void OnPeerConnected(NetPeer peer)
         {
-            if (_temporaryConnections.ContainsKey(peer.EndPoint))
-            {
-                peer.Tag = _temporaryConnections[peer.EndPoint];
-                _temporaryConnections.Remove(peer.EndPoint);
-
-                Players.Add(peer);
-                Log.Information("Peer completed connection from {endPoint}", peer.EndPoint);
-            } else
-            {
-                peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectUnknownError));
-                Log.Error("Peer connected with no request: {endPoint}", peer.EndPoint);
-            }
+            peer.Send(NetConstants.GetKeyValue(GameKey.JoinedGame), DMethod);
+            Log.Information("Alerting client that connection was successful");
         }
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
@@ -163,14 +185,6 @@ namespace Soulful.Core.Net
             Log.Information("Peer at {endPoint} disconnected", peer.EndPoint);
         }
 
-        private void OnReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
-        {
-            if (messageType == UnconnectedMessageType.DiscoveryRequest)
-            {
-                string pin = reader.GetString();
-                if (pin == Pin)
-                    _server.SendDiscoveryResponse(new byte[0], remoteEndPoint);
-            }
-        }
+        #endregion
     }
 }
