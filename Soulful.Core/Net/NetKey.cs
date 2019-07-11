@@ -33,6 +33,11 @@
         /// <summary>
         /// Disconnected due to a user action
         /// </summary>
-        DisconnectUserAction = 5
+        DisconnectUserAction = 5,
+
+        /// <summary>
+        /// Kicked by server
+        /// </summary>
+        Kicked = 6
     }
 }

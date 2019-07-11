@@ -66,13 +66,24 @@
                       Height="3" HorizontalAlignment="Stretch" Margin="32,0"
                       Background="{StaticResource PrimaryHueLightBrush}"/>
 
-        <ItemsControl Grid.Row="2"
-                      ItemsSource="{Binding Players}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Item2}"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Grid.Row="2" Grid.Column="1" Margin="0,8">
+            <ItemsControl ItemsSource="{Binding Players}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Item2}" FontSize="16" VerticalAlignment="Center"/>
+                            <Button Content="{md:PackIcon Kind=RemoveCircle}"
+                                    Command="{Binding KickPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding Item1}"
+                                    ToolTip="{Binding [ToolTip_KickPlayer], Mode=OneTime, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    Style="{StaticResource MaterialDesignToolButton}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                
+                <!-- Panel -->
+            </ItemsControl>
+        </ScrollViewer>
     </Grid>
 </views:MvxWpfView>

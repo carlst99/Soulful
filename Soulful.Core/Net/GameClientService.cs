@@ -38,7 +38,7 @@ namespace Soulful.Core.Net
         /// <summary>
         /// Invoked when the client is disconnected
         /// </summary>
-        public event EventHandler DisconnectedFromServer;
+        public event EventHandler<DisconnectReason> DisconnectedFromServer;
 
         /// <summary>
         /// Invoked when a game-related event occurs
@@ -89,7 +89,7 @@ namespace Soulful.Core.Net
             if (!_client.IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is not running");
 
-            _serverPeer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectUserAction));
+            //_serverPeer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectUserAction));
             _cancelPollToken.Cancel();
             _pollTask.Wait();
             _client.Stop(true);
@@ -133,7 +133,7 @@ namespace Soulful.Core.Net
         {
             if (peer.Id == _serverPeer.Id)
             {
-                DisconnectedFromServer?.Invoke(this, EventArgs.Empty);
+                DisconnectedFromServer?.Invoke(this, disconnectInfo.Reason);
                 Stop();
             }
         }

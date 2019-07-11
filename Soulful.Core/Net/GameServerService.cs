@@ -3,6 +3,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,6 +104,14 @@ namespace Soulful.Core.Net
         {
             _server.SendToAll(NetConstants.GetKeyValue(GameKey.GameStart), DMethod);
             // TODO - run game
+        }
+
+        public void Kick(int playerId)
+        {
+            NetPeer peer = Players.FirstOrDefault(p => p.Id == playerId);
+            peer.Disconnect(NetConstants.GetKeyValue(NetKey.Kicked));
+            Players.Remove(peer);
+            Log.Information("Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
         }
 
         /// <summary>

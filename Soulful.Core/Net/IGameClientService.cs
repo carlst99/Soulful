@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LiteNetLib;
+using System;
 
 namespace Soulful.Core.Net
 {
@@ -6,6 +7,7 @@ namespace Soulful.Core.Net
     {
         bool IsRunning { get; }
         event EventHandler ConnectedToServer;
+        event EventHandler<DisconnectReason> DisconnectedFromServer;
         event EventHandler<GameKeyPackage> GameEvent;
 
         void Start(string pin, string playerName);

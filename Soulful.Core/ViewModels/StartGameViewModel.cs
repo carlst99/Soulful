@@ -65,6 +65,7 @@ namespace Soulful.Core.ViewModels
         public IMvxCommand RefreshGamePinCommand => new MvxCommand(GenerateGamePin);
         public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
         public IMvxCommand StartGameCommand => new MvxCommand(StartGame);
+        public IMvxCommand KickPlayerCommand => new MvxCommand<int>((i) => _server.Kick(i));
 
         #endregion
 

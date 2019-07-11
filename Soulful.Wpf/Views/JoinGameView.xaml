@@ -38,7 +38,7 @@
 
             <Button Content="{Binding [Command_JoinGame], Mode=OneTime}" 
                     Margin="0,8,0,0"
-                    IsEnabled="{Binding CanJoinGame}"
+                    IsEnabled="{Binding CanJoinGame}" IsDefault="True"
                     Command="{Binding JoinGameCommand}"/>
 
             <TextBlock Text="{Binding [Label_ConnectedToServer], Mode=OneTime}"

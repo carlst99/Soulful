@@ -178,6 +178,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Kick.
+        /// </summary>
+        public static string ToolTip_KickPlayer {
+            get {
+                return ResourceManager.GetString("ToolTip_KickPlayer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Go Back.
         /// </summary>
         public static string ToolTip_NavigateBack {

@@ -13,5 +13,6 @@ namespace Soulful.Core.Net
         void ChangeConnectPin(string pin);
         void ChangeMaxPlayers(int maxPlayers, bool kickLast = true);
         void RunGame();
+        void Kick(int playerId);
     }
 }
