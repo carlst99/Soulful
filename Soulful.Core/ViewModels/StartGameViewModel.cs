@@ -1,8 +1,11 @@
-﻿using MvvmCross;
+﻿using LiteNetLib;
+using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Net;
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
@@ -18,10 +21,11 @@ namespace Soulful.Core.ViewModels
 
         #region Fields
 
-
+        private readonly IGameServerService _server;
         private int _gamePin;
         private int _maxPlayers;
         private string _playerName;
+        private ObservableCollection<Tuple<int, string>> _players;
 
         #endregion
 
@@ -38,14 +42,18 @@ namespace Soulful.Core.ViewModels
             set
             {
                 SetProperty(ref _maxPlayers, value);
-                Server.ChangeMaxPlayers(value);
+                _server.ChangeMaxPlayers(value);
             }
         }
 
-        public IGameServerService Server { get; }
+        public ObservableCollection<Tuple<int, string>> Players
+        {
+            get => _players;
+            set => SetProperty(ref _players, value);
+        }
 
 #if DEBUG
-        public bool CanStartGame => Server.Players.Count >= 1;
+        public bool CanStartGame => _server.Players.Count >= 1;
 #else
         public bool CanStartGame => Server.Players.Count >= MIN_PLAYERS - 1;
 #endif
@@ -63,12 +71,13 @@ namespace Soulful.Core.ViewModels
         public StartGameViewModel(IMvxNavigationService navigationService, IGameServerService server)
             : base(navigationService)
         {
-            Server = server;
-            _maxPlayers = 20;
+            _server = server;
+            MaxPlayers = 20;
+            Players = new ObservableCollection<Tuple<int, string>>();
 
             GenerateGamePin();
-            Server.Players.CollectionChanged += (s, e) => RaisePropertyChanged(nameof(CanStartGame));
-            Server.Start(MaxPlayers, GamePin);
+            _server.Players.CollectionChanged += OnPlayerCollectionChanged;
+            _server.Start(MaxPlayers, GamePin);
         }
 
         private async void StartGame()
@@ -89,8 +98,8 @@ namespace Soulful.Core.ViewModels
 
         private void NavigateBack()
         {
-            if (Server.IsRunning)
-                Server.Stop();
+            if (_server.IsRunning)
+                _server.Stop();
             NavigationService.Navigate<HomeViewModel>();
         }
 
@@ -99,7 +108,25 @@ namespace Soulful.Core.ViewModels
             Random r = new Random();
             _gamePin = r.Next(100000, 999999);
             RaisePropertyChanged(nameof(GamePin));
-            Server.ChangeConnectPin(GamePin);
+            _server.ChangeConnectPin(GamePin);
+        }
+
+        private async void OnPlayerCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            {
+                foreach (NetPeer element in e.NewItems)
+                {
+                    await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(element.Id, (string)element.Tag))).ConfigureAwait(false);
+                }
+            } else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+            {
+                foreach (NetPeer element in e.OldItems)
+                {
+                    await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == element.Id))).ConfigureAwait(false);
+                }
+            }
+            await RaisePropertyChanged(nameof(CanStartGame));
         }
 
         public override void Prepare(string parameter)

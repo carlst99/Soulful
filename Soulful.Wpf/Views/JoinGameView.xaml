@@ -33,7 +33,8 @@
                      HorizontalContentAlignment="Center"
                      md:HintAssist.Hint="{Binding [Hint_GamePin], Mode=OneTime}"
                      Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                     IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInversionConverter}}"/>
+                     IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInversionConverter}}"
+                     x:Name="TxtBxPin"/>
 
             <Button Content="{Binding [Command_JoinGame], Mode=OneTime}" 
                     Margin="0,8,0,0"

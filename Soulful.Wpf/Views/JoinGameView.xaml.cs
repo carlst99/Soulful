@@ -7,6 +7,7 @@ namespace Soulful.Wpf.Views
         public JoinGameView()
         {
             InitializeComponent();
+            TxtBxPin.Focus();
         }
     }
 }
