@@ -89,7 +89,6 @@ namespace Soulful.Core.Net
             if (!_client.IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is not running");
 
-            //_serverPeer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectUserAction));
             _cancelPollToken.Cancel();
             _pollTask.Wait();
             _client.Stop(true);
