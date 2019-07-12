@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace Soulful.Core.Net
 {
-    public interface IGameServerService
+    public interface INetServerService
     {
         bool IsRunning { get; }
         ObservableCollection<NetPeer> Players { get; }
