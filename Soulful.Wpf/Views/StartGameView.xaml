@@ -74,9 +74,9 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding Item2}" FontSize="16" VerticalAlignment="Center"/>
                             <Button Content="{md:PackIcon Kind=RemoveCircle}"
-                                    Command="{Binding KickPlayerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    Command="{Binding DataContext.KickPlayerCommand, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                     CommandParameter="{Binding Item1}"
-                                    ToolTip="{Binding [ToolTip_KickPlayer], Mode=OneTime, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    ToolTip="{Binding DataContext.[ToolTip_KickPlayer], Mode=OneTime, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                     Style="{StaticResource MaterialDesignToolButton}"/>
                         </StackPanel>
                     </DataTemplate>
