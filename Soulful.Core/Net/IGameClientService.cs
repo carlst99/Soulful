@@ -10,6 +10,7 @@ namespace Soulful.Core.Net
 
         event EventHandler ConnectedToServer;
         event EventHandler<DisconnectReason> DisconnectedFromServer;
+        event EventHandler ConnectionFailed;
         event EventHandler<GameKeyPackage> GameEvent;
 
         void Start(string pin, string playerName);

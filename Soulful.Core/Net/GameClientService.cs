@@ -59,6 +59,11 @@ namespace Soulful.Core.Net
         /// </summary>
         public event EventHandler<GameKeyPackage> GameEvent;
 
+        /// <summary>
+        /// Invoked when the server fails to connect to a server
+        /// </summary>
+        public event EventHandler ConnectionFailed;
+
         #endregion
 
         public GameClientService()
@@ -73,7 +78,7 @@ namespace Soulful.Core.Net
 
         public void Start(string pin, string userName)
         {
-            if (_client.IsRunning)
+            if (IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is already running");
 
             // Setup variables
@@ -83,14 +88,14 @@ namespace Soulful.Core.Net
 
             // Start
             _client.Start();
-            _pollTask = Task.Run(async () =>
+            _pollTask = Task.Run(() =>
             {
                 while (!_cancelPollToken.IsCancellationRequested)
                 {
                     _client.PollEvents();
-                    await Task.Delay(NetConstants.POLL_DELAY).ConfigureAwait(false);
+                    Task.Delay(NetConstants.POLL_DELAY).Wait();
                 }
-            }, _cancelPollToken.Token);
+            });
 
             // Request discovery
             NetDataWriter writer = new NetDataWriter();
@@ -102,7 +107,11 @@ namespace Soulful.Core.Net
             {
                 Task.Delay(DISCOVERY_TIMEOUT).Wait();
                 if (!IsConnected && IsRunning)
+                {
+                    Log.Information("Client failed to connect to server");
                     Stop();
+                    ConnectionFailed?.Invoke(this, EventArgs.Empty);
+                }
             });
 
             Log.Information("Client started");
@@ -111,7 +120,7 @@ namespace Soulful.Core.Net
 
         public void Stop()
         {
-            if (!_client.IsRunning)
+            if (!IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is not running");
 
             IsConnected = false;
@@ -159,9 +168,9 @@ namespace Soulful.Core.Net
         {
             if (peer.Id == _serverPeer.Id)
             {
-                IsConnected = false;
-                DisconnectedFromServer?.Invoke(this, disconnectInfo.Reason);
+                Log.Information("Client disconnected from server with reason {reason}", disconnectInfo.Reason);
                 Stop();
+                DisconnectedFromServer?.Invoke(this, disconnectInfo.Reason);
             }
         }
 
