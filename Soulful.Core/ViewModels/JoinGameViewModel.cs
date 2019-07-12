@@ -9,14 +9,13 @@ namespace Soulful.Core.ViewModels
     {
         #region Fields
 
-        private readonly IGameClientService _client;
+        private readonly INetClientService _client;
 
         private string _gamePin;
         private string _playerName;
         private bool _showConfirmationLabel;
 
         private bool _attemptingConnection;
-        private bool _attemptFinished;
 
         #endregion
 
@@ -59,18 +58,20 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public JoinGameViewModel(IMvxNavigationService navigationService, IGameClientService client)
+        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client)
             : base(navigationService)
         {
             _client = client;
-            _client.ConnectedToServer += OnConnectionSucceeded;
+            _client.ConnectedToServer += (s, e) => ShowConfirmationLabel = true;
+            _client.DisconnectedFromServer += OnDisconnected;
+            _client.ConnectionFailed += (s, e) => AttemptingConnection = false;
             _client.GameEvent += OnGameEvent;
         }
 
-        private void OnConnectionSucceeded(object sender, System.EventArgs e)
+        private void OnDisconnected(object sender, LiteNetLib.DisconnectReason e)
         {
-            _attemptFinished = true;
-            ShowConfirmationLabel = true;
+            AttemptingConnection = false;
+            ShowConfirmationLabel = false;
         }
 
         private void OnGameEvent(object sender, GameKeyPackage e)
@@ -83,18 +84,6 @@ namespace Soulful.Core.ViewModels
         {
             _client.Start(GamePin, _playerName);
             AttemptingConnection = true;
-            _attemptFinished = false;
-            // TODO - need awaiter? need to continue in same context?
-            Task.Run(async () =>
-            {
-                await Task.Delay(3000).ConfigureAwait(false);
-                if (!_attemptFinished)
-                {
-                    AttemptingConnection = false;
-                    _attemptFinished = true;
-                    _client.Stop();
-                }
-            }).ConfigureAwait(false);
         }
 
         private void NavigateBack()

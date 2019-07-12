@@ -53,7 +53,7 @@ namespace Soulful.Wpf
 
         protected override void OnExit(ExitEventArgs e)
         {
-            if (!_otherProcess.HasExited)
+            if (_otherProcess != null && !_otherProcess.HasExited)
                 _otherProcess.CloseMainWindow();
             base.OnExit(e);
         }

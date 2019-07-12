@@ -5,10 +5,10 @@ namespace Soulful.Core.ViewModels
 {
     public class GameViewModel : Base.ViewModelBase<string>
     {
-        private readonly IGameClientService _client;
+        private readonly INetClientService _client;
         private string _playerName;
 
-        public GameViewModel(IMvxNavigationService navigationService, IGameClientService client)
+        public GameViewModel(IMvxNavigationService navigationService, INetClientService client)
             : base(navigationService)
         {
             _client = client;

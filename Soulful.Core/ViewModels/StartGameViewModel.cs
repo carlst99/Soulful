@@ -21,7 +21,7 @@ namespace Soulful.Core.ViewModels
 
         #region Fields
 
-        private readonly IGameServerService _server;
+        private readonly INetServerService _server;
         private int _gamePin;
         private int _maxPlayers;
         private string _playerName;
@@ -69,7 +69,7 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public StartGameViewModel(IMvxNavigationService navigationService, IGameServerService server)
+        public StartGameViewModel(IMvxNavigationService navigationService, INetServerService server)
             : base(navigationService)
         {
             _server = server;
@@ -86,7 +86,7 @@ namespace Soulful.Core.ViewModels
             if (!CanStartGame)
                 return;
 
-            IGameClientService client = Mvx.IoCProvider.Resolve<IGameClientService>();
+            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>();
             client.Start(GamePin, _playerName);
             await Task.Run(async () =>
             {

@@ -5,6 +5,7 @@ using Plugin.DeviceInfo;
 using Plugin.DeviceInfo.Abstractions;
 using Serilog;
 using Serilog.Events;
+using Soulful.Core.Net;
 using Soulful.Core.ViewModels;
 using System;
 using System.IO;
