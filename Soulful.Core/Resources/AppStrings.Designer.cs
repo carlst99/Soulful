@@ -133,11 +133,74 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Game Pin.
+        /// </summary>
+        public static string Hint_GamePin {
+            get {
+                return ResourceManager.GetString("Hint_GamePin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player Name.
+        /// </summary>
+        public static string Hint_PlayerName {
+            get {
+                return ResourceManager.GetString("Hint_PlayerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re in! Wait for the host to start!.
+        /// </summary>
+        public static string Label_ConnectedToServer {
+            get {
+                return ResourceManager.GetString("Label_ConnectedToServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pin:.
+        /// </summary>
+        public static string Label_GamePin {
+            get {
+                return ResourceManager.GetString("Label_GamePin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Players.
+        /// </summary>
+        public static string Label_MaxPlayers {
+            get {
+                return ResourceManager.GetString("Label_MaxPlayers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kick.
+        /// </summary>
+        public static string ToolTip_KickPlayer {
+            get {
+                return ResourceManager.GetString("ToolTip_KickPlayer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Go Back.
         /// </summary>
         public static string ToolTip_NavigateBack {
             get {
                 return ResourceManager.GetString("ToolTip_NavigateBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Pin.
+        /// </summary>
+        public static string ToolTip_RefreshGamePin {
+            get {
+                return ResourceManager.GetString("ToolTip_RefreshGamePin", resourceCulture);
             }
         }
     }

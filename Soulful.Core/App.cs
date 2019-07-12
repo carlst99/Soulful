@@ -1,13 +1,15 @@
 ﻿using MvvmCross;
 using MvvmCross.IoC;
 using MvvmCross.ViewModels;
-using Soulful.Core.ViewModels;
 using Plugin.DeviceInfo;
 using Plugin.DeviceInfo.Abstractions;
 using Serilog;
 using Serilog.Events;
+using Soulful.Core.Net;
+using Soulful.Core.ViewModels;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("MvvmCrossCoreTestProject")]
@@ -112,7 +114,7 @@ namespace Soulful.Core
         /// </summary>
         /// <param name="fileName">The name of the file to resolve the path to</param>
         /// <returns></returns>
-        public static string GetAppdataFilePath(string fileName) => Path.Combine(GetPlatformAppdataPath(), fileName);
+        public static string GetAppdataFilePath(string fileName) => Path.Combine(GetPlatformAppdataPath(), Assembly.GetEntryAssembly().GetName().Name, fileName);
 
         #endregion
     }

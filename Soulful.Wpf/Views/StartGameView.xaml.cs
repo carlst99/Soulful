@@ -2,12 +2,11 @@
 
 namespace Soulful.Wpf.Views
 {
-    public partial class HomeView : MvxWpfView
+    public partial class StartGameView : MvxWpfView
     {
-        public HomeView()
+        public StartGameView()
         {
             InitializeComponent();
-            TxtBxName.Focus();
         }
     }
 }
