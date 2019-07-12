@@ -45,11 +45,11 @@ namespace Soulful.Core.Net
         public void Start(int maxPlayers, string pin)
         {
             Start();
+            RunNetworkerTask(() => _networker.Start(NetConstants.PORT));
 
             MaxPlayers = maxPlayers;
             Pin = pin;
 
-            RunNetworkerTask(() => _networker.Start(NetConstants.PORT));
             Log.Information("Server started with pin {pin} and max connections {max}", pin, maxPlayers);
         }
 

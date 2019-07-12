@@ -38,10 +38,25 @@ namespace Soulful.Core.Net
 
         #region Events
 
+        /// <summary>
+        /// Invoked when the client connects to a server
+        /// </summary>
         public event EventHandler ConnectedToServer;
+
+        /// <summary>
+        /// Invoked when the client is disconnected
+        /// </summary>
         public event EventHandler<DisconnectReason> DisconnectedFromServer;
-        public event EventHandler ConnectionFailed;
+
+        /// <summary>
+        /// Invoked when a game-related event occurs
+        /// </summary>
         public event EventHandler<GameKeyPackage> GameEvent;
+
+        /// <summary>
+        /// Invoked when the server fails to connect to a server
+        /// </summary>
+        public event EventHandler ConnectionFailed;
 
         #endregion
 
@@ -55,6 +70,7 @@ namespace Soulful.Core.Net
         public void Start(string pin, string playerName)
         {
             Start();
+            RunNetworkerTask(() => _networker.Start());
 
             Pin = pin;
             PlayerName = playerName;
