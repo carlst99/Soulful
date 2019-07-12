@@ -77,7 +77,7 @@ namespace Soulful.Core.Net
                 while (!_cancelPollToken.IsCancellationRequested)
                 {
                     _server.PollEvents();
-                    await Task.Delay(15).ConfigureAwait(false);
+                    await Task.Delay(NetConstants.POLL_DELAY).ConfigureAwait(false);
                 }
             }, _cancelPollToken.Token);
 

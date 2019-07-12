@@ -10,6 +10,11 @@ namespace Soulful.Core.Net
 {
     public sealed class GameClientService : IGameClientService
     {
+        /// <summary>
+        /// The time after which the client will stop trying to discover a server, after <see cref="Start(string, string)"/> is called
+        /// </summary>
+        public const int DISCOVERY_TIMEOUT = 3000;
+
         #region Fields
 
         private readonly EventBasedNetListener _listener;
@@ -22,9 +27,18 @@ namespace Soulful.Core.Net
 
         #region Properties
 
-        public bool IsRunning => _client.IsRunning;
         public string Pin { get; private set; }
         public string UserName { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the client is running
+        /// </summary>
+        public bool IsRunning => _client.IsRunning;
+
+        /// <summary>
+        /// Gets a value indicating whether or not the client is connected to the server
+        /// </summary>
+        public bool IsConnected { get; private set; }
 
         #endregion
 
@@ -62,23 +76,34 @@ namespace Soulful.Core.Net
             if (_client.IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is already running");
 
+            // Setup variables
             _cancelPollToken = new CancellationTokenSource();
             Pin = pin;
             UserName = userName;
 
+            // Start
             _client.Start();
             _pollTask = Task.Run(async () =>
             {
                 while (!_cancelPollToken.IsCancellationRequested)
                 {
                     _client.PollEvents();
-                    await Task.Delay(15).ConfigureAwait(false);
+                    await Task.Delay(NetConstants.POLL_DELAY).ConfigureAwait(false);
                 }
             }, _cancelPollToken.Token);
 
+            // Request discovery
             NetDataWriter writer = new NetDataWriter();
             writer.Put(pin);
             _client.SendDiscoveryRequest(writer, NetConstants.PORT);
+
+            // Stop on timeout
+            Task.Run(() =>
+            {
+                Task.Delay(DISCOVERY_TIMEOUT).Wait();
+                if (!IsConnected && IsRunning)
+                    Stop();
+            });
 
             Log.Information("Client started");
             Log.Information("Client attempting to discover server with pin {pin}", Pin);
@@ -89,6 +114,7 @@ namespace Soulful.Core.Net
             if (!_client.IsRunning)
                 throw App.CreateError<InvalidOperationException>("Client is not running");
 
+            IsConnected = false;
             _cancelPollToken.Cancel();
             _pollTask.Wait();
             _client.Stop(true);
@@ -101,6 +127,7 @@ namespace Soulful.Core.Net
             GameKey key = (GameKey)reader.GetByte();
             if (key == GameKey.JoinedGame)
             {
+                IsConnected = true;
                 ConnectedToServer?.Invoke(this, EventArgs.Empty);
                 Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
             }
@@ -132,6 +159,7 @@ namespace Soulful.Core.Net
         {
             if (peer.Id == _serverPeer.Id)
             {
+                IsConnected = false;
                 DisconnectedFromServer?.Invoke(this, disconnectInfo.Reason);
                 Stop();
             }

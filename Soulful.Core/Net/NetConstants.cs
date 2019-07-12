@@ -5,6 +5,7 @@ namespace Soulful.Core.Net
     public static class NetConstants
     {
         public const int PORT = 6259;
+        public const int POLL_DELAY = 15;
 
         public static byte[] GetKeyValue(NetKey value) => GetKeyValue((byte)value);
 

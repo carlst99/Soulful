@@ -6,6 +6,8 @@ namespace Soulful.Core.Net
     public interface IGameClientService
     {
         bool IsRunning { get; }
+        bool IsConnected { get; }
+
         event EventHandler ConnectedToServer;
         event EventHandler<DisconnectReason> DisconnectedFromServer;
         event EventHandler<GameKeyPackage> GameEvent;
