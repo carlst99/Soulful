@@ -30,8 +30,7 @@ namespace Soulful.Core
             RegisterAppStart<HomeViewModel>();
 
             Mvx.IoCProvider.RegisterSingleton(CrossDeviceInfo.Current);
-            Mvx.IoCProvider.RegisterSingleton<IGameClientService>(new NetClientService());
-            //Mvx.IoCProvider.RegisterSingleton<INetServerService>(new GameServerService());
+            Mvx.IoCProvider.RegisterSingleton<IGameClientService>(new GameClientService());
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
