@@ -117,6 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="App_CAHCredit" xml:space="preserve">
+    <value>Cards thanks to Cards Against Humanity</value>
+    <comment>This text credits Cards Against Humanity</comment>
+  </data>
+  <data name="App_CAHLicense" xml:space="preserve">
+    <value>Cards licensed under CC BY-NC-SA 2.0</value>
+    <comment>This text labels the license used by Cards Against Humanity</comment>
+  </data>
   <data name="App_Subtitle" xml:space="preserve">
     <value>You've been exposed</value>
     <comment>This is the subtitle of the app</comment>

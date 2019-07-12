@@ -61,6 +61,24 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cards thanks to Cards Against Humanity.
+        /// </summary>
+        public static string App_CAHCredit {
+            get {
+                return ResourceManager.GetString("App_CAHCredit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cards licensed under CC BY-NC-SA 2.0.
+        /// </summary>
+        public static string App_CAHLicense {
+            get {
+                return ResourceManager.GetString("App_CAHLicense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You&apos;ve been exposed.
         /// </summary>
         public static string App_Subtitle {

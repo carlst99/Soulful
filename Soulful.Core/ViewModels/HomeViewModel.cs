@@ -35,6 +35,8 @@ namespace Soulful.Core.ViewModels
 
         public IMvxCommand BrowseCardsCommand => new MvxCommand(() => NavigationService.Navigate<CardBrowserViewModel>());
 
+        public IMvxCommand LaunchHyperlinkCommand => new MvxCommand<string>((l) => System.Diagnostics.Process.Start(l));
+
         #endregion
 
         public HomeViewModel(IMvxNavigationService navigationService)
