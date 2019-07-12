@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Soulful.Core.Net
 {
-    public sealed class NetClientService : NetBase, IGameClientService
+    public sealed class NetClientService : NetBase, INetClientService
     {
         #region Constants
 

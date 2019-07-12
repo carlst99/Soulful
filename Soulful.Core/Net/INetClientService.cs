@@ -3,7 +3,7 @@ using System;
 
 namespace Soulful.Core.Net
 {
-    public interface IGameClientService
+    public interface INetClientService
     {
         bool IsRunning { get; }
         bool IsConnected { get; }

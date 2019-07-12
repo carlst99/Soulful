@@ -86,7 +86,7 @@ namespace Soulful.Core.ViewModels
             if (!CanStartGame)
                 return;
 
-            IGameClientService client = Mvx.IoCProvider.Resolve<IGameClientService>();
+            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>();
             client.Start(GamePin, _playerName);
             await Task.Run(async () =>
             {

@@ -9,7 +9,7 @@ namespace Soulful.Core.ViewModels
     {
         #region Fields
 
-        private readonly IGameClientService _client;
+        private readonly INetClientService _client;
 
         private string _gamePin;
         private string _playerName;
@@ -58,7 +58,7 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public JoinGameViewModel(IMvxNavigationService navigationService, IGameClientService client)
+        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client)
             : base(navigationService)
         {
             _client = client;
