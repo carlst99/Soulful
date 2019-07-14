@@ -9,8 +9,8 @@
                   mc:Ignorable="d" 
                   d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock Text="Welcome to MvvmCross WPF!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+        <ItemsControl HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      ItemsSource="{Binding WhiteCards}"/>
     </Grid>
 </views:MvxWpfView>

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Soulful.Core.Services
+﻿namespace Soulful.Core.Services
 {
     public interface IGameService
     {
+        bool IsRunning { get; }
+
         void Start();
+        void Stop();
     }
 }

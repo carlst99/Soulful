@@ -7,6 +7,8 @@ namespace Soulful.Core.Net
 {
     public abstract class NetBase : INetBase
     {
+        public const int PORT = 6259;
+
         #region Fields
 
         protected readonly EventBasedNetListener _listener;
@@ -91,7 +93,7 @@ namespace Soulful.Core.Net
             while (!_cancelPollToken.IsCancellationRequested)
             {
                 RunNetworkerTask(() => _networker?.PollEvents());
-                _cancelPollToken.Token.WaitHandle.WaitOne(NetConstants.POLL_DELAY);
+                _cancelPollToken.Token.WaitHandle.WaitOne(NetHelpers.POLL_DELAY);
             }
         }
     }

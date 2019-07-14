@@ -18,6 +18,16 @@
         /// <summary>
         /// The server has stopped the game
         /// </summary>
-        GameStop = 2
+        GameStop = 2,
+
+        /// <summary>
+        /// The server is sending white card numbers
+        /// </summary>
+        SendWhiteCards = 3,
+
+        /// <summary>
+        /// The server is sending a black card
+        /// </summary>
+        SendBlackCard = 4
     }
 }

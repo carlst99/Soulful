@@ -51,7 +51,7 @@ namespace Soulful.Core.Net
         public void Start(int maxPlayers, string pin)
         {
             Start();
-            RunNetworkerTask(() => _networker.Start(NetConstants.PORT));
+            RunNetworkerTask(() => _networker.Start(PORT));
 
             MaxPlayers = maxPlayers;
             Pin = pin;
@@ -67,7 +67,7 @@ namespace Soulful.Core.Net
 
             AcceptingPlayers = false;
             foreach (NetPeer peer in RunNetworkerTask(() => _networker.ConnectedPeerList))
-                peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectServerClosed));
+                peer.Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectServerClosed));
             Players.Clear();
 
             base.Stop();
@@ -87,7 +87,7 @@ namespace Soulful.Core.Net
         public void Kick(int playerId)
         {
             NetPeer peer = Players.FirstOrDefault(p => p.Id == playerId);
-            RunNetworkerTask(() => peer.Disconnect(NetConstants.GetKeyValue(NetKey.Kicked)));
+            RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked)));
             Players.Remove(peer);
             Log.Information("Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
         }
@@ -110,7 +110,7 @@ namespace Soulful.Core.Net
             if (disconnectAll)
             {
                 foreach (NetPeer peer in _networker.ConnectedPeerList)
-                    RunNetworkerTask(() => peer.Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectLimitChanged)));
+                    RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectLimitChanged)));
             }
             else
             {
@@ -118,7 +118,7 @@ namespace Soulful.Core.Net
                 {
                     while (_networker.PeersCount > MaxPlayers)
                     {
-                        RunNetworkerTask(() => _networker.ConnectedPeerList[_networker.PeersCount - 1].Disconnect(NetConstants.GetKeyValue(NetKey.DisconnectLimitChanged)));
+                        RunNetworkerTask(() => _networker.ConnectedPeerList[_networker.PeersCount - 1].Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectLimitChanged)));
                     }
                 });
             }
@@ -152,20 +152,20 @@ namespace Soulful.Core.Net
                 }
                 else
                 {
-                    RunNetworkerTask(() => request.Reject(NetConstants.GetKeyValue(NetKey.DisconnectInvalidPin)));
+                    RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.DisconnectInvalidPin)));
                     Log.Information("Connection request from {endPoint} rejected due to invalid key", request.RemoteEndPoint);
                 }
             }
             else
             {
-                RunNetworkerTask(() => request.Reject(NetConstants.GetKeyValue(NetKey.DisconnectServerFull)));
+                RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.DisconnectServerFull)));
                 Log.Information("Connection request from {endPoint} rejected as server full", request.RemoteEndPoint);
             }
         }
 
         private void OnPeerConnected(NetPeer peer)
         {
-            RunNetworkerTask(() => peer.Send(NetConstants.GetKeyValue(GameKey.JoinedGame), D_METHOD));
+            RunNetworkerTask(() => peer.Send(NetHelpers.GetKeyValue(GameKey.JoinedGame), D_METHOD));
             Log.Information("Alerting client that connection was successful");
         }
 

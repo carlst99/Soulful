@@ -49,11 +49,6 @@ namespace Soulful.Core.Net
         public event EventHandler<DisconnectReason> DisconnectedFromServer;
 
         /// <summary>
-        /// Invoked when a game-related event occurs
-        /// </summary>
-        public event EventHandler<GameKeyPackage> GameEvent;
-
-        /// <summary>
         /// Invoked when the server fails to connect to a server
         /// </summary>
         public event EventHandler ConnectionFailed;
@@ -63,7 +58,7 @@ namespace Soulful.Core.Net
         public NetClientService()
         {
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
-            _listener.NetworkReceiveEvent += OnReceive;
+            //_listener.NetworkReceiveEvent += OnReceive;
             _listener.PeerDisconnectedEvent += OnPeerDisconnect;
         }
 
@@ -78,7 +73,7 @@ namespace Soulful.Core.Net
             // Request discovery
             NetDataWriter writer = new NetDataWriter();
             writer.Put(pin);
-            RunNetworkerTask(() => _networker.SendDiscoveryRequest(writer, NetConstants.PORT));
+            RunNetworkerTask(() => _networker.SendDiscoveryRequest(writer, PORT));
 
             // Stop on timeout
             Task.Run(() =>
@@ -113,6 +108,7 @@ namespace Soulful.Core.Net
             {
                 IsConnected = true;
                 ConnectedToServer?.Invoke(this, EventArgs.Empty);
+                reader.Recycle();
                 Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
             }
             else
