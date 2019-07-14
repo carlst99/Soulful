@@ -13,6 +13,11 @@
         /// <summary>
         /// The client has successfully joined the game server
         /// </summary>
-        JoinedGame = 1
+        JoinedGame = 1,
+
+        /// <summary>
+        /// The server has stopped the game
+        /// </summary>
+        GameStop = 2
     }
 }
