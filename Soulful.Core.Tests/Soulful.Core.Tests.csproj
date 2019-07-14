@@ -6,6 +6,8 @@
     <IsPackable>false</IsPackable>
 
     <Description>Provides the structure for the testing of an MvvmCross Core project</Description>
+
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>

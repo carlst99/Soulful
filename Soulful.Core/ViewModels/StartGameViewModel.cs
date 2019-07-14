@@ -3,6 +3,7 @@ using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Net;
+using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -90,9 +91,10 @@ namespace Soulful.Core.ViewModels
             client.Start(GamePin, _playerName);
             await Task.Run(async () =>
             {
-                while (!client.IsRunning)
+                while (!client.IsConnected)
                     await Task.Delay(15).ConfigureAwait(false);
             }).ConfigureAwait(false);
+            Mvx.IoCProvider.Resolve<IGameService>().Start();
 
             await NavigationService.Navigate<GameViewModel, string>(_playerName).ConfigureAwait(false);
         }

@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 
 namespace Soulful.Core.Net
 {
-    public abstract class NetBase
+    public abstract class NetBase : INetBase
     {
+        #region Fields
+
         protected readonly EventBasedNetListener _listener;
         protected readonly NetManager _networker;
 
@@ -20,13 +22,18 @@ namespace Soulful.Core.Net
         /// </summary>
         protected readonly object _networkerLock;
 
+        #endregion
+
         public bool IsRunning => _networker.IsRunning;
+
+        public event EventHandler<GameKeyPackage> GameEvent;
 
         protected NetBase()
         {
             _networkerLock = new object();
 
             _listener = new EventBasedNetListener();
+            _listener.NetworkReceiveEvent += OnReceive;
             _networker = new NetManager(_listener);
         }
 
@@ -66,6 +73,25 @@ namespace Soulful.Core.Net
         }
 
         #endregion
+
+        protected virtual void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
+        {
+            // PeekByte in NetClientService when overriding
+            GameKey key = (GameKey)reader.GetByte();
+            if (key == GameKey.JoinedGame)
+            {
+                IsConnected = true;
+                ConnectedToServer?.Invoke(this, EventArgs.Empty);
+                Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
+            }
+            else
+            {
+                GameKeyPackage package = new GameKeyPackage(key, reader, peer);
+                GameEvent?.Invoke(this, package);
+            }
+
+            reader.Recycle();
+        }
 
         /// <summary>
         /// Polls events on the networker
