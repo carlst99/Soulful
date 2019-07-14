@@ -106,9 +106,9 @@ namespace Soulful.Core.Net
             Log.Information("Client stopped");
         }
 
-        private void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
+        protected override void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
-            GameKey key = (GameKey)reader.GetByte();
+            GameKey key = (GameKey)reader.PeekByte();
             if (key == GameKey.JoinedGame)
             {
                 IsConnected = true;
@@ -117,11 +117,8 @@ namespace Soulful.Core.Net
             }
             else
             {
-                GameKeyPackage package = new GameKeyPackage(key, reader, peer);
-                GameEvent?.Invoke(this, package);
+                base.OnReceive(peer, reader, deliveryMethod);
             }
-
-            reader.Recycle();
         }
 
         #region Server connection handling

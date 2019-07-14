@@ -76,19 +76,9 @@ namespace Soulful.Core.Net
 
         protected virtual void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
-            // PeekByte in NetClientService when overriding
             GameKey key = (GameKey)reader.GetByte();
-            if (key == GameKey.JoinedGame)
-            {
-                IsConnected = true;
-                ConnectedToServer?.Invoke(this, EventArgs.Empty);
-                Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
-            }
-            else
-            {
-                GameKeyPackage package = new GameKeyPackage(key, reader, peer);
-                GameEvent?.Invoke(this, package);
-            }
+            GameKeyPackage package = new GameKeyPackage(key, reader, peer);
+            GameEvent?.Invoke(this, package);
 
             reader.Recycle();
         }
