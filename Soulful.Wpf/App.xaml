@@ -2,6 +2,7 @@
                       x:Class="Soulful.Wpf.App"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
                       StartupUri="MainWindow.xaml">
     
     <views:MvxApplication.Resources>
@@ -15,6 +16,37 @@
                 <!-- Custom themes -->
                 <ResourceDictionary Source="pack://application:,,,/Soulful.Wpf;component/UIEnhancements/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate x:Key="WhiteCardTemplate">
+                <md:Card Background="White" Foreground="Black"
+                         Width="150" Height="200" UniformCornerRadius="4"
+                         Padding="8" Margin="8">
+                    <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="16"
+                               Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                </md:Card>
+            </DataTemplate>
+
+            <DataTemplate x:Key="BlackCardTemplate">
+                <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
+                         Width="150" Height="200" UniformCornerRadius="4"
+                         Padding="8" Margin="8">
+                    <Grid>
+                        <TextBlock Text="{Binding Item1}" TextWrapping="Wrap" FontSize="16"
+                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                        <Border Background="White" CornerRadius="100"
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                Margin="4" Height="20" Width="20">
+                            <TextBlock Text="{Binding Item2}" Foreground="Black"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </md:Card>
+            </DataTemplate>
+
+            <ItemsPanelTemplate x:Key="ItemsControlWrapPanelTemplate">
+                <WrapPanel />
+            </ItemsPanelTemplate>
         </ResourceDictionary>
     </views:MvxApplication.Resources>
 </views:MvxApplication>

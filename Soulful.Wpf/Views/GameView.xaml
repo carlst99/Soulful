@@ -15,14 +15,10 @@
     </views:MvxWpfView.Resources>
     
     <Grid>
-        <ItemsControl HorizontalAlignment="Center"
+        <ItemsControl HorizontalAlignment="Stretch"
                       VerticalAlignment="Center"
-                      ItemsSource="{Binding WhiteCards}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Converter={StaticResource IntToCardConverter}}"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                      ItemsSource="{Binding WhiteCards}"
+                      ItemTemplate="{StaticResource WhiteCardTemplate}"
+                      ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"/>
     </Grid>
 </views:MvxWpfView>
