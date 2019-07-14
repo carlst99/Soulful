@@ -98,8 +98,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="UIEnhancements\BoolInversionConverter.cs" />
     <Compile Include="UIEnhancements\BoolToVisibilityConverter.cs" />
+    <Compile Include="UIEnhancements\NativeConverters.cs" />
     <Compile Include="UIEnhancements\TabControlAssist.cs" />
     <Compile Include="Views\CardBrowserView.xaml.cs">
       <DependentUpon>CardBrowserView.xaml</DependentUpon>

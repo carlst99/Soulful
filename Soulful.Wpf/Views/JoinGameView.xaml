@@ -11,7 +11,7 @@
                   d:DesignHeight="450" d:DesignWidth="800">
 
     <views:MvxWpfView.Resources>
-        <converters:BoolInversionConverter x:Key="BoolInversionConverter"/>
+        <converters:BoolInverterNativeConverter x:Key="BoolInverterConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </views:MvxWpfView.Resources>
     
@@ -33,7 +33,7 @@
                      HorizontalContentAlignment="Center"
                      md:HintAssist.Hint="{Binding [Hint_GamePin], Mode=OneTime}"
                      Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                     IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInversionConverter}}"
+                     IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInverterConverter}}"
                      x:Name="TxtBxPin"/>
 
             <Button Content="{Binding [Command_JoinGame], Mode=OneTime}" 
