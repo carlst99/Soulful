@@ -28,6 +28,21 @@
         /// <summary>
         /// The server is sending a black card
         /// </summary>
-        SendBlackCard = 4
+        SendBlackCard = 4,
+
+        /// <summary>
+        /// Inidicates that this client should switch to czar mode
+        /// </summary>
+        InitiateCzar = 5,
+
+        /// <summary>
+        /// The server is sending white cards to add to the czar pick list
+        /// </summary>
+        SendCzarWhiteCards = 6,
+
+        /// <summary>
+        /// Inidicates the czar client should reply with their pick, and may then leave czar mode
+        /// </summary>
+        CzarChooseNow = 7
     }
 }

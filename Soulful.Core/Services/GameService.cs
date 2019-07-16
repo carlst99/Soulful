@@ -21,6 +21,8 @@ namespace Soulful.Core.Services
         private Queue<int> _blackCards;
         private int _currentBlackCard;
 
+        private int _czarPosition;
+
         public bool IsRunning { get; private set; }
 
         public GameService(INetServerService server, ICardLoaderService loader)
@@ -40,6 +42,7 @@ namespace Soulful.Core.Services
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
             SendWhiteCards(MAX_WHITE_CARDS);
             SendBlackCard();
+            SendNextCzar();
 
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
 
@@ -121,6 +124,15 @@ namespace Soulful.Core.Services
                 _server.Send(player, writer);
                 writer.Reset();
             }
+        }
+
+        private void SendNextCzar()
+        {
+            if (_czarPosition == _server.Players.Count - 1)
+                _czarPosition = 0;
+
+            _server.Send(_server.Players[_czarPosition], NetHelpers.GetKeyValue(GameKey.InitiateCzar));
+            _czarPosition++;
         }
 
         private string GetNextPackKey() => "Base";

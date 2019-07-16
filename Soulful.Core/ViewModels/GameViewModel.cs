@@ -57,6 +57,9 @@ namespace Soulful.Core.ViewModels
                 case GameKey.SendBlackCard:
                     EOMT(() => BlackCard = e.Data.GetInt());
                     break;
+                case GameKey.InitiateCzar:
+                    _whiteCards.Clear();
+                    break;
             }
         }
 
