@@ -7,21 +7,22 @@ using MvvmCross.Core;
 using MvvmCross.Navigation;
 using MvvmCross.Platforms.Wpf.Core;
 using MvvmCross.Platforms.Wpf.Views;
+using Soulful.Core.Net;
 using Soulful.Core.ViewModels;
 
 namespace Soulful.Wpf
 {
     public partial class App : MvxApplication
     {
-        private StartupEventArgs _startArgs;
-        private Process _otherProcess;
-
         protected override void RegisterSetup()
         {
             this.RegisterSetupType<MvxWpfSetup<Core.App>>();
         }
 
 #if DEBUG
+        private StartupEventArgs _startArgs;
+        private Process _otherProcess;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             _startArgs = e;
@@ -53,9 +54,28 @@ namespace Soulful.Wpf
 
         protected override void OnExit(ExitEventArgs e)
         {
-            if (_otherProcess != null && !_otherProcess.HasExited)
+            if (_otherProcess?.HasExited == false)
                 _otherProcess.CloseMainWindow();
             base.OnExit(e);
+
+            INetServerService server = Mvx.IoCProvider.Resolve<INetServerService>();
+            if (server.IsRunning)
+                server.Stop();
+
+            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>();
+            if (client.IsRunning)
+                client.Stop();
+        }
+#else
+        protected override void OnExit(ExitEventArgs e)
+        {
+            INetServerService server = Mvx.IoCProvider.Resolve<INetServerService>().;
+            if (server.IsRunning)
+                server.Stop();
+
+            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>().;
+            if (client.IsRunning)
+                client.Stop();
         }
 #endif
     }

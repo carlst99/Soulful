@@ -66,9 +66,9 @@ namespace Soulful.Core.Net
                 throw App.CreateError<InvalidOperationException>("Server is not running");
 
             AcceptingPlayers = false;
-            foreach (NetPeer peer in RunNetworkerTask(() => _networker.ConnectedPeerList))
-                peer.Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectServerClosed));
             Players.Clear();
+            foreach (NetPeer peer in RunNetworkerTask(() => _networker.ConnectedPeerList))
+                RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectServerClosed)));
 
             base.Stop();
             Log.Information("Server stopped");

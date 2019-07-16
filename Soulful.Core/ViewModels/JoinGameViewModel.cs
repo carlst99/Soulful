@@ -1,7 +1,6 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Net;
-using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {

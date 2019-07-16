@@ -1,4 +1,5 @@
-﻿using LiteNetLib.Utils;
+﻿using MvvmCross;
+using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Net;
 using System;
@@ -34,6 +35,12 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
+        #region Commands
+
+        public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
+
+        #endregion
+
         public GameViewModel(IMvxNavigationService navigationService, INetClientService client)
             : base(navigationService)
         {
@@ -66,6 +73,23 @@ namespace Soulful.Core.ViewModels
         public override void Prepare(string parameter)
         {
             _playerName = parameter;
+        }
+
+        private async void NavigateBack()
+        {
+            _client.Stop();
+
+            INetServerService server = Mvx.IoCProvider.Resolve<INetServerService>();
+            if (server.IsRunning)
+            {
+                while (_client.IsRunning)
+                {
+                    await System.Threading.Tasks.Task.Delay(NetHelpers.POLL_DELAY).ConfigureAwait(false);
+                }
+                server.Stop();
+            }
+
+            await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
         }
 
         /// <summary>
