@@ -13,11 +13,33 @@
     <views:MvxWpfView.Resources>
         <converters:IntToCardNativeConverter x:Key="IntToCardConverter"/>
     </views:MvxWpfView.Resources>
-    
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
         <ItemsControl HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
                       ItemsSource="{Binding WhiteCards}"
                       ItemTemplate="{StaticResource WhiteCardTemplate}"
                       ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"/>
+
+        <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
+                 Width="150" Height="200" UniformCornerRadius="4"
+                 Padding="8" Margin="8">
+            <Grid>
+                <TextBlock Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
+                           TextWrapping="Wrap" FontSize="16"
+                           Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                <Border Background="White" CornerRadius="100"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                        Margin="4" Height="20" Width="20">
+                    <TextBlock Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"
+                               Foreground="Black" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </md:Card>
     </Grid>
 </views:MvxWpfView>

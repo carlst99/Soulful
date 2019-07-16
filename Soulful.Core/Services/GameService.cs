@@ -38,6 +38,7 @@ namespace Soulful.Core.Services
             _server.AcceptingPlayers = false;
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
             SendWhiteCards(MAX_WHITE_CARDS);
+            SendBlackCard();
 
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
 
@@ -90,7 +91,7 @@ namespace Soulful.Core.Services
             }
         }
 
-        private void SendBlackCard(NetPeer player)
+        private void SendBlackCard()
         {
             // Generate a new set of white cards if needed
             if (_blackCards.Count <= 0)
@@ -107,10 +108,16 @@ namespace Soulful.Core.Services
                     _blackCards.Enqueue(element);
             }
 
+            // Send black card to all peers
             NetDataWriter writer = new NetDataWriter();
-            writer.Put((byte)GameKey.SendBlackCard);
-            writer.Put(_blackCards.Dequeue());
-            _server.Send(player, writer);
+            foreach (NetPeer player in _server.Players)
+            {
+                writer.Put((byte)GameKey.SendBlackCard);
+                writer.Put(_blackCards.Dequeue());
+
+                _server.Send(player, writer);
+                writer.Reset();
+            }
         }
 
         private string GetNextPackKey() => "Base";

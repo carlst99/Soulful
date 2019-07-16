@@ -29,7 +29,7 @@ namespace Soulful.Core.Services
         public async Task<Tuple<string, int>> GetBlackCardAsync(int index)
         {
             if (_blackCards == null)
-                await LoadWhiteCards().ConfigureAwait(false);
+                await LoadBlackCards().ConfigureAwait(false);
 
             return _blackCards[index];
         }

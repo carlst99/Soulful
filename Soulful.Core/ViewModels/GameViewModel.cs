@@ -1,6 +1,7 @@
 ﻿using LiteNetLib.Utils;
 using MvvmCross.Navigation;
 using Soulful.Core.Net;
+using System;
 using System.Collections.ObjectModel;
 
 namespace Soulful.Core.ViewModels
@@ -51,7 +52,10 @@ namespace Soulful.Core.ViewModels
             {
                 case GameKey.SendWhiteCards:
                     while (!e.Data.EndOfData)
-                        AsyncDispatcher.ExecuteOnMainThreadAsync(() => WhiteCards.Add(e.Data.GetInt()));
+                        EOMT(() => WhiteCards.Add(e.Data.GetInt()));
+                    break;
+                case GameKey.SendBlackCard:
+                    EOMT(() => BlackCard = e.Data.GetInt());
                     break;
             }
         }
@@ -60,5 +64,11 @@ namespace Soulful.Core.ViewModels
         {
             _playerName = parameter;
         }
+
+        /// <summary>
+        /// Provides a syntatic shortcut <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
+        /// </summary>
+        /// <param name="action">The action to execute</param>
+        private void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
     }
 }
