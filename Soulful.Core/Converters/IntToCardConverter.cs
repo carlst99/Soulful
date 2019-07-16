@@ -6,11 +6,16 @@ using System.Globalization;
 
 namespace Soulful.Core.Converters
 {
-    public class IntToCardConverter : MvxValueConverter<int, string>
+    public class IntToCardConverter : MvxValueConverter
     {
-        protected override string Convert(int value, Type targetType, object parameter, CultureInfo culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Mvx.IoCProvider.Resolve<ICardLoaderService>().GetWhiteCardAsync(value).Result;
+            if (value is int iValue)
+                return Mvx.IoCProvider.Resolve<ICardLoaderService>().GetWhiteCardAsync(iValue).Result;
+            else if (value is string sValue)
+                return sValue;
+            else
+                throw new ArgumentException("Value is of incorrect type");
         }
     }
 }
