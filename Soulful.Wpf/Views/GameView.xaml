@@ -27,7 +27,7 @@
 
         <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
                  Width="150" Height="200" UniformCornerRadius="4"
-                 Padding="8" Margin="8">
+                 Padding="8" Grid.Row="1">
             <Grid>
                 <TextBlock Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
                            TextWrapping="Wrap" FontSize="16"

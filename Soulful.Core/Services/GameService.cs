@@ -19,6 +19,7 @@ namespace Soulful.Core.Services
 
         private Queue<int> _whiteCards;
         private Queue<int> _blackCards;
+        private int _currentBlackCard;
 
         public bool IsRunning { get; private set; }
 
@@ -108,12 +109,14 @@ namespace Soulful.Core.Services
                     _blackCards.Enqueue(element);
             }
 
+            _currentBlackCard = _blackCards.Dequeue();
+
             // Send black card to all peers
             NetDataWriter writer = new NetDataWriter();
             foreach (NetPeer player in _server.Players)
             {
                 writer.Put((byte)GameKey.SendBlackCard);
-                writer.Put(_blackCards.Dequeue());
+                writer.Put(_currentBlackCard);
 
                 _server.Send(player, writer);
                 writer.Reset();
