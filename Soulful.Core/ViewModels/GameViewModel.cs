@@ -46,6 +46,7 @@ namespace Soulful.Core.ViewModels
         {
             _client = client;
             _client.GameEvent += OnGameEvent;
+            _client.DisconnectedFromServer += (_, __) => NavigationService.Navigate<HomeViewModel>();
 
             _whiteCards = new ObservableCollection<int>();
 
