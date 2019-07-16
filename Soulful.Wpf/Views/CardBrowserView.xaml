@@ -15,10 +15,6 @@
         <DataTemplate x:Key="TabItemHeaderTemplate">
             <TextBlock Text="{Binding}" FontSize="15"/>
         </DataTemplate>
-
-        <ItemsPanelTemplate x:Key="ItemsControlPanelTemplate">
-            <WrapPanel />
-        </ItemsPanelTemplate>
     </views:MvxWpfView.Resources>
     
     <Grid>
@@ -65,18 +61,8 @@
                 <ScrollViewer>
                     <ItemsControl ItemsSource="{Binding WhiteCards}"
                                   HorizontalAlignment="Center" Margin="0,16,0,0"
-                                  ItemsPanel="{StaticResource ItemsControlPanelTemplate}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <md:Card Background="White" Foreground="Black"
-                                         Width="150" Height="200" UniformCornerRadius="4"
-                                         Padding="8" Margin="8">
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="16"
-                                               Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
-                                </md:Card>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                  ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
+                                  ItemTemplate="{StaticResource WhiteCardTemplate}"/>
                 </ScrollViewer>
             </TabItem>
             <!-- Black cards -->
@@ -85,27 +71,8 @@
                 <ScrollViewer Background="White">
                     <ItemsControl ItemsSource="{Binding BlackCards}"
                                   HorizontalAlignment="Center" Margin="0,16,0,0"
-                                  ItemsPanel="{StaticResource ItemsControlPanelTemplate}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
-                                         Width="150" Height="200" UniformCornerRadius="4"
-                                         Padding="8" Margin="8">
-                                    <Grid>
-                                        <TextBlock Text="{Binding Item1}" TextWrapping="Wrap" FontSize="16"
-                                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
-                                        <Border Background="White" CornerRadius="100"
-                                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                                Margin="4" Height="20" Width="20">
-                                            <TextBlock Text="{Binding Item2}" Foreground="Black"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                       FontWeight="Bold"/>
-                                        </Border>
-                                    </Grid>
-                                </md:Card>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                  ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
+                                  ItemTemplate="{StaticResource BlackCardTemplate}"/>
                 </ScrollViewer>
             </TabItem>
         </TabControl>

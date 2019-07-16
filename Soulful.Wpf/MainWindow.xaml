@@ -12,7 +12,7 @@
                  Background="{DynamicResource MaterialDesignPaper}"
                  FontFamily="{DynamicResource MaterialDesignFont}"
                  mc:Ignorable="d"
-                 Title="Soulful" Height="500" Width="800">
+                 Title="Soulful" Height="550" Width="900">
     <Grid>
     </Grid>
 </views:MvxWindow>

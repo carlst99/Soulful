@@ -24,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -98,8 +98,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="UIEnhancements\BoolInversionConverter.cs" />
     <Compile Include="UIEnhancements\BoolToVisibilityConverter.cs" />
+    <Compile Include="UIEnhancements\NativeConverters.cs" />
     <Compile Include="UIEnhancements\TabControlAssist.cs" />
     <Compile Include="Views\CardBrowserView.xaml.cs">
       <DependentUpon>CardBrowserView.xaml</DependentUpon>
