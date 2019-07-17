@@ -1,6 +1,7 @@
 ﻿using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Soulful.Core.Model;
 using Soulful.Core.Net;
 using System;
 using System.Collections.ObjectModel;

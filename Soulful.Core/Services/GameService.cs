@@ -1,5 +1,6 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
+using Soulful.Core.Model;
 using Soulful.Core.Net;
 using System;
 using System.Collections.Generic;

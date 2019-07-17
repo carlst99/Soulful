@@ -1,5 +1,6 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
+using Soulful.Core.Model;
 
 namespace Soulful.Core.Net
 {

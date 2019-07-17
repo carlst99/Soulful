@@ -1,6 +1,7 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
+using Soulful.Core.Model;
 using System;
 using System.Net;
 using System.Threading.Tasks;

@@ -1,4 +1,5 @@
-﻿using MvvmCross;
+﻿using IntraMessaging;
+using MvvmCross;
 using MvvmCross.IoC;
 using MvvmCross.ViewModels;
 using Plugin.DeviceInfo;
@@ -30,6 +31,7 @@ namespace Soulful.Core
             RegisterAppStart<HomeViewModel>();
 
             Mvx.IoCProvider.RegisterSingleton(CrossDeviceInfo.Current);
+            Mvx.IoCProvider.RegisterSingleton<IIntraMessenger>(IntraMessenger.Instance);
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
