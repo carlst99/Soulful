@@ -1,7 +1,9 @@
-﻿using LiteNetLib;
+﻿using IntraMessaging;
+using LiteNetLib;
 using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Soulful.Core.Model;
 using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
@@ -23,6 +25,8 @@ namespace Soulful.Core.ViewModels
         #region Fields
 
         private readonly INetServerService _server;
+        private readonly IIntraMessenger _messenger;
+
         private int _gamePin;
         private int _maxPlayers;
         private string _playerName;
@@ -70,10 +74,12 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public StartGameViewModel(IMvxNavigationService navigationService, INetServerService server)
+        public StartGameViewModel(IMvxNavigationService navigationService, INetServerService server, IIntraMessenger messenger)
             : base(navigationService)
         {
             _server = server;
+            _messenger = messenger;
+
             MaxPlayers = 20;
             Players = new ObservableCollection<Tuple<int, string>>();
 
@@ -100,6 +106,30 @@ namespace Soulful.Core.ViewModels
         }
 
         private void NavigateBack()
+        {
+            if (_server.Players.Count > 0)
+            {
+                void callback(DialogMessage.Button button)
+                {
+                    if (button == DialogMessage.Button.Yes)
+                        UnsafeNavigateBack();
+                }
+
+                _messenger.Send(new DialogMessage
+                {
+                    Title = "Oh, come on...",
+                    Content = "People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?",
+                    Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                    Callback = callback
+                });
+            }
+            else
+            {
+                UnsafeNavigateBack();
+            }
+        }
+
+        private void UnsafeNavigateBack()
         {
             if (_server.IsRunning)
                 _server.Stop();

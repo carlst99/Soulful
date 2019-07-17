@@ -51,7 +51,7 @@ namespace Soulful.Core.ViewModels
             _client = client;
             _messenger = messenger;
 
-            _client.GameEvent += (s, e) => EOMT(() => OnGameEvent(s, e));
+            _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
             _client.DisconnectedFromServer += OnDisconnected;
 
             _whiteCards = new ObservableCollection<int>();
@@ -65,7 +65,7 @@ namespace Soulful.Core.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnGameEvent(object sender, GameKeyPackage e)
+        private void OnGameEvent(GameKeyPackage e)
         {
             switch (e.Key)
             {
