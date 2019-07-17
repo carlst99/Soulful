@@ -40,13 +40,13 @@ namespace Soulful.Wpf
                 AmRoMessageBoxButton buttons = AmRoMessageBoxButton.Ok;
                 if ((dMessage.Buttons & DialogMessage.Button.Ok) != 0)
                 {
-                    if ((dMessage.Buttons & DialogMessage.Button.Yes) != 0)
+                    if ((dMessage.Buttons & DialogMessage.Button.Cancel) != 0)
                         buttons = AmRoMessageBoxButton.OkCancel;
                     else
                         buttons = AmRoMessageBoxButton.Ok;
                 } else if ((dMessage.Buttons & DialogMessage.Button.Yes) != 0)
                 {
-                    if ((dMessage.Buttons & DialogMessage.Button.Yes) != 0)
+                    if ((dMessage.Buttons & DialogMessage.Button.Cancel) != 0)
                         buttons = AmRoMessageBoxButton.YesNoCancel;
                     else
                         buttons = AmRoMessageBoxButton.YesNo;

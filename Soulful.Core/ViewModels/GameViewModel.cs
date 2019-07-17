@@ -1,4 +1,5 @@
-﻿using MvvmCross;
+﻿using IntraMessaging;
+using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
@@ -13,6 +14,7 @@ namespace Soulful.Core.ViewModels
         #region Fields
 
         private readonly INetClientService _client;
+        private readonly IIntraMessenger _messenger;
         private string _playerName;
 
         private ObservableCollection<int> _whiteCards;
@@ -42,10 +44,12 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public GameViewModel(IMvxNavigationService navigationService, INetClientService client)
+        public GameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger)
             : base(navigationService)
         {
             _client = client;
+            _messenger = messenger;
+
             _client.GameEvent += OnGameEvent;
             _client.DisconnectedFromServer += (_, __) => NavigationService.Navigate<HomeViewModel>();
 
@@ -77,7 +81,24 @@ namespace Soulful.Core.ViewModels
             _playerName = parameter;
         }
 
-        private async void NavigateBack()
+        private void NavigateBack()
+        {
+            void callback(DialogMessage.Button b)
+            {
+                if (b == DialogMessage.Button.Yes)
+                    UnsafeNavigateBack();
+            }
+
+            _messenger.Send(new DialogMessage
+            {
+                Title = "Sore loser",
+                Content = "Are you sure you want to quit?",
+                Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                Callback = callback
+            });
+        }
+
+        private async void UnsafeNavigateBack()
         {
             _client.Stop();
 
