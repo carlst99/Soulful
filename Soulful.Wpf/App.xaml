@@ -24,8 +24,12 @@
                 <md:Card Background="White" Foreground="Black"
                          Width="150" Height="200" UniformCornerRadius="4"
                          Padding="8" Margin="8">
-                    <TextBlock Text="{Binding Converter={StaticResource IntToCardConverter}}" TextWrapping="Wrap" FontSize="16"
-                               Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                    <Viewbox VerticalAlignment="Top">
+                        <TextBlock Text="{Binding Converter={StaticResource IntToCardConverter}}"
+                                   TextWrapping="Wrap" FontSize="16"
+                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                   Width="134"/>
+                    </Viewbox>
                 </md:Card>
             </DataTemplate>
 
@@ -34,8 +38,12 @@
                          Width="150" Height="200" UniformCornerRadius="4"
                          Padding="8" Margin="8">
                     <Grid>
-                        <TextBlock Text="{Binding Item1, Converter={StaticResource IntToCardConverter}}" TextWrapping="Wrap" FontSize="16"
-                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                        <Viewbox VerticalAlignment="Top">
+                            <TextBlock Text="{Binding Item1, Converter={StaticResource IntToCardConverter}}"
+                                       TextWrapping="Wrap" FontSize="16"
+                                       Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                       Width="134"/>
+                        </Viewbox>
                         <Border Background="White" CornerRadius="100"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
                                 Margin="4" Height="20" Width="20">
