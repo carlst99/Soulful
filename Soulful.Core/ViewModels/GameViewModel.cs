@@ -15,6 +15,7 @@ namespace Soulful.Core.ViewModels
 
         private readonly INetClientService _client;
         private readonly IIntraMessenger _messenger;
+
         private string _playerName;
 
         private ObservableCollection<int> _whiteCards;
@@ -51,7 +52,7 @@ namespace Soulful.Core.ViewModels
             _messenger = messenger;
 
             _client.GameEvent += OnGameEvent;
-            _client.DisconnectedFromServer += (_, __) => NavigationService.Navigate<HomeViewModel>();
+            _client.DisconnectedFromServer += OnDisconnected;
 
             _whiteCards = new ObservableCollection<int>();
 
@@ -113,6 +114,36 @@ namespace Soulful.Core.ViewModels
             }
 
             await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
+        }
+
+        private void OnDisconnected(object sender, LiteNetLib.DisconnectReason e)
+        {
+            string message;
+            string title;
+            if (e == LiteNetLib.DisconnectReason.DisconnectPeerCalled)
+            {
+                title = "What've you done!?!";
+                message = "Congratulations! It looks like you've been kicked.";
+            }
+            else if (e == LiteNetLib.DisconnectReason.RemoteConnectionClose)
+            {
+                title = "It was him!";
+                message = "Looks like the host quit the game.";
+            }
+            else
+            {
+                title = "That... might've been us?";
+                message = "Looks like you've been disconnected from the server, and we don't know why.";
+            }
+
+            _messenger.Send(new DialogMessage
+            {
+                Title = title,
+                Content = message,
+                Buttons = DialogMessage.Button.Ok
+            });
+
+            NavigationService.Navigate<HomeViewModel>();
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
-﻿using MvvmCross.Commands;
+﻿using IntraMessaging;
+using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
+using System;
 
 namespace Soulful.Core.ViewModels
 {
@@ -10,6 +12,7 @@ namespace Soulful.Core.ViewModels
         #region Fields
 
         private readonly INetClientService _client;
+        private readonly IIntraMessenger _messenger;
 
         private string _gamePin;
         private string _playerName;
@@ -58,10 +61,11 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client)
+        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger)
             : base(navigationService)
         {
             _client = client;
+            _messenger = messenger;
             _client.ConnectedToServer += (s, e) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer += OnDisconnected;
             _client.ConnectionFailed += (s, e) => AttemptingConnection = false;
@@ -72,6 +76,31 @@ namespace Soulful.Core.ViewModels
         {
             AttemptingConnection = false;
             ShowConfirmationLabel = false;
+
+            string message;
+            string title;
+            if (e == LiteNetLib.DisconnectReason.DisconnectPeerCalled)
+            {
+                title = "What've you done!?!";
+                message = "Congratulations! It looks like you've been kicked.";
+            }
+            else if (e == LiteNetLib.DisconnectReason.RemoteConnectionClose)
+            {
+                title = "It was him!";
+                message = "Looks like the host quit the game.";
+            }
+            else
+            {
+                title = "That... might've been us?";
+                message = "Looks like you've been disconnected from the server, and we don't know why.";
+            }
+
+            _messenger.Send(new DialogMessage
+            {
+                Title = title,
+                Content = message,
+                Buttons = DialogMessage.Button.Ok
+            });
         }
 
         private void OnGameEvent(object sender, GameKeyPackage e)
@@ -87,6 +116,30 @@ namespace Soulful.Core.ViewModels
         }
 
         private void NavigateBack()
+        {
+            if (_client.IsConnected)
+            {
+                void callback(DialogMessage.Button b)
+                {
+                    if (b == DialogMessage.Button.Yes)
+                        UnsafeNavigateBack();
+                }
+
+                _messenger.Send(new DialogMessage
+                {
+                    Title = "WTF?!?",
+                    Content = "The game hasn't even started yet! Are you sure you want to quit?",
+                    Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                    Callback = callback
+                });
+            }
+            else
+            {
+                UnsafeNavigateBack();
+            }
+        }
+
+        private void UnsafeNavigateBack()
         {
             if (_client.IsRunning)
                 _client.Stop();

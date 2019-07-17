@@ -55,16 +55,16 @@ namespace Soulful.Wpf
                 switch (_messageBox.Show(dMessage.Content, dMessage.Title, buttons))
                 {
                     case AmRoMessageBoxResult.Cancel:
-                        dMessage.Callback.Invoke(DialogMessage.Button.Cancel);
+                        dMessage.Callback?.Invoke(DialogMessage.Button.Cancel);
                         break;
                     case AmRoMessageBoxResult.No:
-                        dMessage.Callback.Invoke(DialogMessage.Button.No);
+                        dMessage.Callback?.Invoke(DialogMessage.Button.No);
                         break;
                     case AmRoMessageBoxResult.Ok:
-                        dMessage.Callback.Invoke(DialogMessage.Button.Ok);
+                        dMessage.Callback?.Invoke(DialogMessage.Button.Ok);
                         break;
                     case AmRoMessageBoxResult.Yes:
-                        dMessage.Callback.Invoke(DialogMessage.Button.Yes);
+                        dMessage.Callback?.Invoke(DialogMessage.Button.Yes);
                         break;
                 }
             }
