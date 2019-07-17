@@ -51,7 +51,7 @@ namespace Soulful.Core.ViewModels
             _client = client;
             _messenger = messenger;
 
-            _client.GameEvent += OnGameEvent;
+            _client.GameEvent += (s, e) => EOMT(() => OnGameEvent(s, e));
             _client.DisconnectedFromServer += OnDisconnected;
 
             _whiteCards = new ObservableCollection<int>();
@@ -60,16 +60,21 @@ namespace Soulful.Core.ViewModels
                 NavigationService.Navigate<HomeViewModel>();
         }
 
+        /// <summary>
+        /// Note that this method is called on the main thread from the event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnGameEvent(object sender, GameKeyPackage e)
         {
             switch (e.Key)
             {
                 case GameKey.SendWhiteCards:
                     while (!e.Data.EndOfData)
-                        EOMT(() => WhiteCards.Add(e.Data.GetInt()));
+                        WhiteCards.Add(e.Data.GetInt());
                     break;
                 case GameKey.SendBlackCard:
-                    EOMT(() => BlackCard = e.Data.GetInt());
+                    BlackCard = e.Data.GetInt();
                     break;
                 case GameKey.InitiateCzar:
                     _whiteCards.Clear();
@@ -116,24 +121,24 @@ namespace Soulful.Core.ViewModels
             await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
         }
 
-        private void OnDisconnected(object sender, LiteNetLib.DisconnectReason e)
+        private void OnDisconnected(object sender, NetKey e)
         {
             string message;
             string title;
-            if (e == LiteNetLib.DisconnectReason.DisconnectPeerCalled)
+            switch (e)
             {
-                title = "What've you done!?!";
-                message = "Congratulations! It looks like you've been kicked.";
-            }
-            else if (e == LiteNetLib.DisconnectReason.RemoteConnectionClose)
-            {
-                title = "It was him!";
-                message = "Looks like the host quit the game.";
-            }
-            else
-            {
-                title = "That... might've been us?";
-                message = "Looks like you've been disconnected from the server, and we don't know why.";
+                case NetKey.Kicked:
+                    title = "What've you done!?!";
+                    message = "Congratulations! It looks like you've been kicked.";
+                    break;
+                case NetKey.ServerClosed:
+                    title = "It was him!";
+                    message = "Looks like the host quit the game.";
+                    break;
+                default:
+                    title = "That... might've been us?";
+                    message = "Looks like you've been disconnected from the server, and we don't know why.";
+                    break;
             }
 
             _messenger.Send(new DialogMessage
@@ -147,7 +152,7 @@ namespace Soulful.Core.ViewModels
         }
 
         /// <summary>
-        /// Provides a syntatic shortcut <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
+        /// Provides a syntatic shortcut to <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
         /// </summary>
         /// <param name="action">The action to execute</param>
         private void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);

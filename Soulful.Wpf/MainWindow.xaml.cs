@@ -52,7 +52,9 @@ namespace Soulful.Wpf
                         buttons = AmRoMessageBoxButton.YesNo;
                 }
 
-                switch (_messageBox.Show(dMessage.Content, dMessage.Title, buttons))
+                AmRoMessageBoxResult result = Dispatcher.Invoke(() => _messageBox.Show(dMessage.Content, dMessage.Title, buttons));
+
+                switch (result)
                 {
                     case AmRoMessageBoxResult.Cancel:
                         dMessage.Callback?.Invoke(DialogMessage.Button.Cancel);

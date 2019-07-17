@@ -72,27 +72,39 @@ namespace Soulful.Core.ViewModels
             _client.GameEvent += OnGameEvent;
         }
 
-        private void OnDisconnected(object sender, LiteNetLib.DisconnectReason e)
+        private void OnDisconnected(object sender, NetKey e)
         {
             AttemptingConnection = false;
             ShowConfirmationLabel = false;
 
             string message;
             string title;
-            if (e == LiteNetLib.DisconnectReason.DisconnectPeerCalled)
+            switch (e)
             {
-                title = "What've you done!?!";
-                message = "Congratulations! It looks like you've been kicked.";
-            }
-            else if (e == LiteNetLib.DisconnectReason.RemoteConnectionClose)
-            {
-                title = "It was him!";
-                message = "Looks like the host quit the game.";
-            }
-            else
-            {
-                title = "That... might've been us?";
-                message = "Looks like you've been disconnected from the server, and we don't know why.";
+                case NetKey.Kicked:
+                    title = "What've you done!?!";
+                    message = "Congratulations! It looks like you've been kicked.";
+                    break;
+                case NetKey.ServerClosed:
+                    title = "It was him!";
+                    message = "Looks like the host quit the game.";
+                    break;
+                case NetKey.InvalidPin:
+                    title = "Hacker alert";
+                    message = "We don't know how you've done it... but you've connected to the server with the wrong pin. Sorry bud, try again!";
+                    break;
+                case NetKey.ServerFull:
+                    title = "Server full";
+                    message = "Sorry bud, but this server's full. Try asking the host to increase the number of max players.";
+                    break;
+                case NetKey.ServerLimitChanged:
+                    title = "Unlucky!";
+                    message = "The server host changed the number of maximum players, and you didn't make the cut. If you've got a problem, now would be a good time to take it up with the host.";
+                    break;
+                default:
+                    title = "That... might've been us?";
+                    message = "Looks like you've been disconnected from the server, and we don't know why.";
+                    break;
             }
 
             _messenger.Send(new DialogMessage
