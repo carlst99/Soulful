@@ -8,7 +8,7 @@ namespace Soulful.Core.Net
         bool IsConnected { get; }
 
         event EventHandler ConnectedToServer;
-        event EventHandler<DisconnectReason> DisconnectedFromServer;
+        event EventHandler<NetKey> DisconnectedFromServer;
         event EventHandler ConnectionFailed;
 
         void Start(string pin, string playerName);

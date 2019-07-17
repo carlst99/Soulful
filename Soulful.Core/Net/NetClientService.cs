@@ -1,6 +1,7 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
+using Soulful.Core.Model;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ namespace Soulful.Core.Net
         /// <summary>
         /// Invoked when the client is disconnected
         /// </summary>
-        public event EventHandler<DisconnectReason> DisconnectedFromServer;
+        public event EventHandler<NetKey> DisconnectedFromServer;
 
         /// <summary>
         /// Invoked when the server fails to connect to a server
@@ -136,9 +137,16 @@ namespace Soulful.Core.Net
         {
             if (peer.Id == _serverPeer.Id)
             {
-                Log.Information("Client disconnected from server with reason {reason}", disconnectInfo.Reason);
                 Stop();
-                DisconnectedFromServer?.Invoke(this, disconnectInfo.Reason);
+
+                NetKey key;
+                if (disconnectInfo.AdditionalData.AvailableBytes > 0)
+                    key = (NetKey)disconnectInfo.AdditionalData.GetByte();
+                else
+                    key = NetKey.DisconnectUnknownError;
+
+                Log.Information("Client disconnected from server with reason {key}", key);
+                DisconnectedFromServer?.Invoke(this, key);
             }
         }
 

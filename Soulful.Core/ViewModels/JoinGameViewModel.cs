@@ -1,6 +1,9 @@
-﻿using MvvmCross.Commands;
+﻿using IntraMessaging;
+using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Soulful.Core.Model;
 using Soulful.Core.Net;
+using System;
 
 namespace Soulful.Core.ViewModels
 {
@@ -9,6 +12,7 @@ namespace Soulful.Core.ViewModels
         #region Fields
 
         private readonly INetClientService _client;
+        private readonly IIntraMessenger _messenger;
 
         private string _gamePin;
         private string _playerName;
@@ -57,20 +61,58 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client)
+        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger)
             : base(navigationService)
         {
             _client = client;
+            _messenger = messenger;
             _client.ConnectedToServer += (s, e) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer += OnDisconnected;
             _client.ConnectionFailed += (s, e) => AttemptingConnection = false;
             _client.GameEvent += OnGameEvent;
         }
 
-        private void OnDisconnected(object sender, LiteNetLib.DisconnectReason e)
+        private void OnDisconnected(object sender, NetKey e)
         {
             AttemptingConnection = false;
             ShowConfirmationLabel = false;
+
+            string message;
+            string title;
+            switch (e)
+            {
+                case NetKey.Kicked:
+                    title = "What've you done!?!";
+                    message = "Congratulations! It looks like you've been kicked.";
+                    break;
+                case NetKey.ServerClosed:
+                    title = "It was him!";
+                    message = "Looks like the host quit the game.";
+                    break;
+                case NetKey.InvalidPin:
+                    title = "Hacker alert";
+                    message = "We don't know how you've done it... but you've connected to the server with the wrong pin. Sorry bud, try again!";
+                    break;
+                case NetKey.ServerFull:
+                    title = "Server full";
+                    message = "Sorry bud, but this server's full. Try asking the host to increase the number of max players.";
+                    break;
+                case NetKey.ServerLimitChanged:
+                    title = "Unlucky!";
+                    message = "The server host changed the number of maximum players, and you didn't make the cut. If you've got a problem, now would be a good time to take it up with the host.";
+                    break;
+                default:
+                    title = "That... might've been us?";
+                    message = "Looks like you've been disconnected from the server, and we don't know why.";
+                    break;
+            }
+
+            _messenger.Send(new DialogMessage
+            {
+                Title = title,
+                Content = message,
+                Buttons = DialogMessage.Button.Ok
+            });
         }
 
         private void OnGameEvent(object sender, GameKeyPackage e)
@@ -86,6 +128,30 @@ namespace Soulful.Core.ViewModels
         }
 
         private void NavigateBack()
+        {
+            if (_client.IsConnected)
+            {
+                void callback(DialogMessage.Button b)
+                {
+                    if (b == DialogMessage.Button.Yes)
+                        UnsafeNavigateBack();
+                }
+
+                _messenger.Send(new DialogMessage
+                {
+                    Title = "WTF?!?",
+                    Content = "The game hasn't even started yet! Are you sure you want to quit?",
+                    Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                    Callback = callback
+                });
+            }
+            else
+            {
+                UnsafeNavigateBack();
+            }
+        }
+
+        private void UnsafeNavigateBack()
         {
             if (_client.IsRunning)
                 _client.Stop();

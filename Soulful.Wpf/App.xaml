@@ -9,11 +9,16 @@
     <views:MvxApplication.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- Material Design -->
+                <!-- Material Design < 2.6.0 (should work for time being) -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Lime.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.LightBlue.xaml" />
+                
+                <!-- Material Design (throws compiler warning -->
+                <!--<md:BundledTheme BaseTheme="Dark" PrimaryColor="Lime" SecondaryColor="LightBlue"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />-->
+                
                 <!-- Custom themes -->
                 <ResourceDictionary Source="pack://application:,,,/Soulful.Wpf;component/UIEnhancements/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -24,8 +29,12 @@
                 <md:Card Background="White" Foreground="Black"
                          Width="150" Height="200" UniformCornerRadius="4"
                          Padding="8" Margin="8">
-                    <TextBlock Text="{Binding Converter={StaticResource IntToCardConverter}}" TextWrapping="Wrap" FontSize="16"
-                               Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                    <Viewbox VerticalAlignment="Top">
+                        <TextBlock Text="{Binding Converter={StaticResource IntToCardConverter}}"
+                                   TextWrapping="Wrap" FontSize="16"
+                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                   Width="134"/>
+                    </Viewbox>
                 </md:Card>
             </DataTemplate>
 
@@ -34,8 +43,12 @@
                          Width="150" Height="200" UniformCornerRadius="4"
                          Padding="8" Margin="8">
                     <Grid>
-                        <TextBlock Text="{Binding Item1, Converter={StaticResource IntToCardConverter}}" TextWrapping="Wrap" FontSize="16"
-                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                        <Viewbox VerticalAlignment="Top">
+                            <TextBlock Text="{Binding Item1, Converter={StaticResource IntToCardConverter}}"
+                                       TextWrapping="Wrap" FontSize="16"
+                                       Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                       Width="134"/>
+                        </Viewbox>
                         <Border Background="White" CornerRadius="100"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
                                 Margin="4" Height="20" Width="20">

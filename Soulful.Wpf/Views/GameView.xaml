@@ -20,6 +20,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Back button -->
         <Button Content="{md:PackIcon Kind=ArrowBack}"
                 ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"
                 Command="{Binding NavigateBackCommand}"
@@ -47,18 +48,23 @@
             </Button.Triggers>
         </Button>
 
+        <!-- Player White cards -->
         <ItemsControl HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
                       ItemsSource="{Binding WhiteCards}"
                       ItemTemplate="{StaticResource WhiteCardTemplate}"
                       ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"/>
 
+        <!-- Black card -->
         <md:Card Background="{StaticResource MaterialDesignPaper}" Foreground="White"
                  Width="150" Height="200" UniformCornerRadius="4"
                  Padding="8" Grid.Row="1">
             <Grid>
-                <TextBlock Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
-                           TextWrapping="Wrap" FontSize="16"
-                           Style="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+                <Viewbox VerticalAlignment="Top">
+                    <TextBlock Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
+                               TextWrapping="Wrap" FontSize="16"
+                               Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                               Width="134"/>
+                </Viewbox>
                 <Border Background="White" CornerRadius="100"
                         HorizontalAlignment="Right" VerticalAlignment="Bottom"
                         Margin="4" Height="20" Width="20">

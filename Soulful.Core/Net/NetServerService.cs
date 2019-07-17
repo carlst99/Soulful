@@ -1,6 +1,7 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
+using Soulful.Core.Model;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -68,7 +69,7 @@ namespace Soulful.Core.Net
             AcceptingPlayers = false;
             Players.Clear();
             foreach (NetPeer peer in RunNetworkerTask(() => _networker.ConnectedPeerList))
-                RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectServerClosed)));
+                RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerClosed)));
 
             base.Stop();
             Log.Information("Server stopped");
@@ -110,7 +111,7 @@ namespace Soulful.Core.Net
             if (disconnectAll)
             {
                 foreach (NetPeer peer in _networker.ConnectedPeerList)
-                    RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectLimitChanged)));
+                    RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
             }
             else
             {
@@ -118,7 +119,7 @@ namespace Soulful.Core.Net
                 {
                     while (_networker.PeersCount > MaxPlayers)
                     {
-                        RunNetworkerTask(() => _networker.ConnectedPeerList[_networker.PeersCount - 1].Disconnect(NetHelpers.GetKeyValue(NetKey.DisconnectLimitChanged)));
+                        RunNetworkerTask(() => _networker.ConnectedPeerList[_networker.PeersCount - 1].Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
                     }
                 });
             }
@@ -152,13 +153,13 @@ namespace Soulful.Core.Net
                 }
                 else
                 {
-                    RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.DisconnectInvalidPin)));
+                    RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.InvalidPin)));
                     Log.Information("Connection request from {endPoint} rejected due to invalid key", request.RemoteEndPoint);
                 }
             }
             else
             {
-                RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.DisconnectServerFull)));
+                RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.ServerFull)));
                 Log.Information("Connection request from {endPoint} rejected as server full", request.RemoteEndPoint);
             }
         }

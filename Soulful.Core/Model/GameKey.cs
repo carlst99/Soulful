@@ -1,4 +1,4 @@
-﻿namespace Soulful.Core.Net
+﻿namespace Soulful.Core.Model
 {
     /// <summary>
     /// Contains gameplay-related keys
