@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Soulful.Core.Model;
+using System;
 
 namespace Soulful.Core.Net
 {

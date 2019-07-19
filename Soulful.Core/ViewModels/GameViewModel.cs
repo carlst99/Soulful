@@ -4,16 +4,18 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
+using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
 
 namespace Soulful.Core.ViewModels
 {
-    public class GameViewModel : Base.ViewModelBase<string>
+    public class GameViewModel : Base.ViewModelBase<bool>
     {
         #region Fields
 
         private readonly INetClientService _client;
+        private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
 
         private string _playerName;
@@ -45,19 +47,19 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public GameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger)
+        public GameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger, IGameService gameService)
             : base(navigationService)
         {
             _client = client;
+            _gameService = gameService;
             _messenger = messenger;
-
-            _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
-            _client.DisconnectedFromServer += OnDisconnected;
-
             _whiteCards = new ObservableCollection<int>();
 
-            if (!_client.IsRunning)
-                NavigationService.Navigate<HomeViewModel>();
+            if (_client.IsRunning)
+            {
+                _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
+                _client.DisconnectedFromServer += OnDisconnected;
+            }
         }
 
         /// <summary>
@@ -82,9 +84,17 @@ namespace Soulful.Core.ViewModels
             }
         }
 
-        public override void Prepare(string parameter)
+        public override void Prepare(bool parameter)
         {
-            _playerName = parameter;
+            if (parameter)
+            {
+                _gameService.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
+                _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
+                _gameService.Start();
+            } else if (!_client.IsRunning)
+            {
+                NavigationService.Navigate<HomeViewModel>();
+            }
         }
 
         private void NavigateBack()
@@ -106,23 +116,20 @@ namespace Soulful.Core.ViewModels
 
         private async void UnsafeNavigateBack()
         {
-            _client.Stop();
+            UnregisterEvents();
 
-            INetServerService server = Mvx.IoCProvider.Resolve<INetServerService>();
-            if (server.IsRunning)
-            {
-                while (_client.IsRunning)
-                {
-                    await System.Threading.Tasks.Task.Delay(NetHelpers.POLL_DELAY).ConfigureAwait(false);
-                }
-                server.Stop();
-            }
+            if (_client.IsRunning)
+                _client.Stop();
+
+            if (_gameService.IsRunning)
+                _gameService.Stop();
 
             await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
         }
 
         private void OnDisconnected(object sender, NetKey e)
         {
+            UnregisterEvents();
             string message;
             string title;
             switch (e)
@@ -156,5 +163,18 @@ namespace Soulful.Core.ViewModels
         /// </summary>
         /// <param name="action">The action to execute</param>
         private void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
+
+        private void UnregisterEvents()
+        {
+            if (_gameService.IsRunning)
+            {
+                _gameService.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
+                _gameService.GameStopped -= (_, __) => UnsafeNavigateBack();
+            } else
+            {
+                _client.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
+                _client.DisconnectedFromServer -= OnDisconnected;
+            }
+        }
     }
 }

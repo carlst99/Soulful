@@ -74,6 +74,7 @@ namespace Soulful.Core.ViewModels
 
         private void OnDisconnected(object sender, NetKey e)
         {
+            UnregisterEvents();
             AttemptingConnection = false;
             ShowConfirmationLabel = false;
 
@@ -118,7 +119,10 @@ namespace Soulful.Core.ViewModels
         private void OnGameEvent(object sender, GameKeyPackage e)
         {
             if (e.Key == GameKey.GameStart)
-                NavigationService.Navigate<GameViewModel, string>(_playerName);
+            {
+                UnregisterEvents();
+                NavigationService.Navigate<GameViewModel, bool>(false);
+            }
         }
 
         private void JoinGame()
@@ -155,7 +159,17 @@ namespace Soulful.Core.ViewModels
         {
             if (_client.IsRunning)
                 _client.Stop();
+
+            UnregisterEvents();
             NavigationService.Navigate<HomeViewModel>();
+        }
+
+        private void UnregisterEvents()
+        {
+            _client.ConnectedToServer -= (s, a) => ShowConfirmationLabel = true;
+            _client.DisconnectedFromServer -= OnDisconnected;
+            _client.ConnectionFailed -= (s, a) => AttemptingConnection = false;
+            _client.GameEvent -= OnGameEvent;
         }
 
         public override void Prepare(string parameter)

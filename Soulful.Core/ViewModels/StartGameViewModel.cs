@@ -9,7 +9,6 @@ using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
@@ -17,7 +16,11 @@ namespace Soulful.Core.ViewModels
     {
         #region Constants
 
+#if DEBUG
+        public const double MIN_PLAYERS = 2;
+#else
         public const double MIN_PLAYERS = 3;
+#endif
         public const double MAX_PLAYERS = 100;
 
         #endregion
@@ -57,11 +60,7 @@ namespace Soulful.Core.ViewModels
             set => SetProperty(ref _players, value);
         }
 
-#if DEBUG
-        public bool CanStartGame => _server.Players.Count >= 1;
-#else
-        public bool CanStartGame => Server.Players.Count >= MIN_PLAYERS - 1;
-#endif
+        public bool CanStartGame => _server.Players.Count >= MIN_PLAYERS - 1;
 
         #endregion
 
@@ -93,16 +92,8 @@ namespace Soulful.Core.ViewModels
             if (!CanStartGame)
                 return;
 
-            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>();
-            client.Start(GamePin, _playerName);
-            await Task.Run(async () =>
-            {
-                while (!client.IsConnected)
-                    await Task.Delay(15).ConfigureAwait(false);
-            }).ConfigureAwait(false);
-            Mvx.IoCProvider.Resolve<IGameService>().Start();
-
-            await NavigationService.Navigate<GameViewModel, string>(_playerName).ConfigureAwait(false);
+            _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
+            await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
         }
 
         private void NavigateBack()
@@ -133,6 +124,8 @@ namespace Soulful.Core.ViewModels
         {
             if (_server.IsRunning)
                 _server.Stop();
+
+            _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
             NavigationService.Navigate<HomeViewModel>();
         }
 
@@ -159,7 +152,7 @@ namespace Soulful.Core.ViewModels
                     await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == element.Id))).ConfigureAwait(false);
                 }
             }
-            await RaisePropertyChanged(nameof(CanStartGame));
+            await RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
         }
 
         public override void Prepare(string parameter)
