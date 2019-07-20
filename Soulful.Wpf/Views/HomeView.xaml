@@ -18,7 +18,14 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
+        <Button Content="{md:PackIcon Kind=HelpCircle}"
+                Command="{Binding LaunchHyperlinkCommand}"
+                Style="{StaticResource MaterialDesignFlatButton}"
+                CommandParameter="Resources\CAH_Rules.pdf"
+                ToolTip="{Binding [ToolTip_CAHHelp]}"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" Grid.Column="2"/>
+
         <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center"
                     Grid.Column="1">
             <TextBlock Text="{Binding [App_Title], Mode=OneTime}"

@@ -177,6 +177,10 @@
     <value>Max Players</value>
     <comment>This label appears beside the maximum number of players allowed into the game</comment>
   </data>
+  <data name="ToolTip_CAHHelp" xml:space="preserve">
+    <value>View the rules/how-to-play</value>
+    <comment>This tooltip appears on a control which opens the CAH game rules</comment>
+  </data>
   <data name="ToolTip_KickPlayer" xml:space="preserve">
     <value>Kick</value>
     <comment>This tooltip appears on a control allowing the server owner to kick a player</comment>

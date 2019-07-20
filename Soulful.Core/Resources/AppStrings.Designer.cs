@@ -196,6 +196,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to View the rules/how-to-play.
+        /// </summary>
+        public static string ToolTip_CAHHelp {
+            get {
+                return ResourceManager.GetString("ToolTip_CAHHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Kick.
         /// </summary>
         public static string ToolTip_KickPlayer {
