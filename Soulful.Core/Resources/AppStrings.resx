@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="App_CAHCredit" xml:space="preserve">
-    <value>Cards thanks to Cards Against Humanity</value>
+    <value>Cards and official game rules thanks to Cards Against Humanity</value>
     <comment>This text credits Cards Against Humanity</comment>
   </data>
   <data name="App_CAHLicense" xml:space="preserve">

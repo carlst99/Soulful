@@ -61,7 +61,7 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cards thanks to Cards Against Humanity.
+        ///   Looks up a localized string similar to Cards and official game rules thanks to Cards Against Humanity.
         /// </summary>
         public static string App_CAHCredit {
             get {
