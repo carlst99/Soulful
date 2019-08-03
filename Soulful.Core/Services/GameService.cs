@@ -89,6 +89,8 @@ namespace Soulful.Core.Services
                 _packKeys = _loader.Packs.Select(p => p.Key).ToList();
 
             _server.AcceptingPlayers = false;
+            _players.AddRange(from NetPeer player in _server.Players
+                              select new Player(player, (string)player.Tag));
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
             SendWhiteCards(MAX_WHITE_CARDS);
             SendBlackCard();
@@ -122,6 +124,7 @@ namespace Soulful.Core.Services
             _stopToken.Cancel();
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
             _server.Stop();
+            _players.Clear();
             GameStopped?.Invoke(this, EventArgs.Empty);
         }
 
