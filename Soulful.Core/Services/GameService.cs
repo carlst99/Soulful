@@ -26,6 +26,8 @@ namespace Soulful.Core.Services
 
         #region Game Fields
 
+        private readonly List<Player> _players;
+
         private Queue<int> _whiteCards;
         private Queue<int> _blackCards;
         private int _currentBlackCard;
@@ -65,6 +67,9 @@ namespace Soulful.Core.Services
             _server = server;
             _loader = loader;
             rng = new Random();
+            _players = new List<Player>();
+
+            _server.PlayerDisconnected += (_, e) => _players.RemoveAt(_players.FindIndex(p => p.Id == e.Id));
         }
 
         #region Start/Stop

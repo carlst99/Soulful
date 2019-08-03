@@ -1,5 +1,6 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
+using System;
 using System.Collections.ObjectModel;
 
 namespace Soulful.Core.Net
@@ -8,6 +9,7 @@ namespace Soulful.Core.Net
     {
         bool AcceptingPlayers { get; set; }
         ObservableCollection<NetPeer> Players { get; }
+        event EventHandler<NetPeer> PlayerDisconnected;
 
         void Start(int maxPlayers, string pin);
         void ChangeConnectPin(string pin);
