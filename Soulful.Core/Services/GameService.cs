@@ -26,12 +26,15 @@ namespace Soulful.Core.Services
 
         #region Game Fields
 
+        private readonly List<Player> _players;
+
         private Queue<int> _whiteCards;
         private Queue<int> _blackCards;
         private int _currentBlackCard;
 
         private int _czarPosition;
-        //private int _packPosition;
+        private int _whitePackPosition;
+        private int _blackPackPosition;
         private List<string> _packKeys;
 
         #endregion
@@ -65,6 +68,9 @@ namespace Soulful.Core.Services
             _server = server;
             _loader = loader;
             rng = new Random();
+            _players = new List<Player>();
+
+            _server.PlayerDisconnected += (_, e) => _players.RemoveAt(_players.FindIndex(p => p.Id == e.Id));
         }
 
         #region Start/Stop
@@ -82,8 +88,13 @@ namespace Soulful.Core.Services
             _stopToken = new CancellationTokenSource();
             if (_packKeys == null)
                 _packKeys = _loader.Packs.Select(p => p.Key).ToList();
+            int randPackPosition = rng.Next(_loader.Packs.Count);
+            _whitePackPosition = randPackPosition;
+            _blackPackPosition = randPackPosition;
 
             _server.AcceptingPlayers = false;
+            _players.AddRange(from NetPeer player in _server.Players
+                              select new Player(player, (string)player.Tag));
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
             SendWhiteCards(MAX_WHITE_CARDS);
             SendBlackCard();
@@ -117,6 +128,7 @@ namespace Soulful.Core.Services
             _stopToken.Cancel();
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
             _server.Stop();
+            _players.Clear();
             GameStopped?.Invoke(this, EventArgs.Empty);
         }
 
@@ -132,14 +144,23 @@ namespace Soulful.Core.Services
 
         private void SendWhiteCards(int count)
         {
-            // Generate a new set of white cards if needed
-            if (_whiteCards.Count <= 0)
+            void EnqueueWhiteCards()
             {
                 // Initialise the list
-                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey());
+                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey(true));
                 List<int> whiteCards = new List<int>();
                 for (int i = pack.WhiteStartRange; i < pack.WhiteStartRange + pack.WhiteCount; i++)
                     whiteCards.Add(i);
+
+                // Remove cards that have already been distributed
+                IEnumerable<int> existingCards = from player in _players
+                                        from int value in player.WhiteCards
+                                        select value;
+                foreach (int element in existingCards)
+                {
+                    if (whiteCards.Contains(element))
+                        whiteCards.Remove(element);
+                }
 
                 // Shuffle and enqueue the list
                 Shuffle(whiteCards);
@@ -147,20 +168,29 @@ namespace Soulful.Core.Services
                     _whiteCards.Enqueue(element);
             }
 
+            // Generate a new set of white cards if needed
+            // While loop used because some packs contain only black or only white cards
+            while (_whiteCards.Count == 0)
+                EnqueueWhiteCards();
+
             Send(GameKey.SendWhiteCards, (w) =>
             {
                 for (int i = 0; i < count; i++)
+                {
+                    if (_whiteCards.Count == 0)
+                        EnqueueWhiteCards();
                     w.Put(_whiteCards.Dequeue());
+                }
             });
         }
 
         private void SendBlackCard()
         {
-            // Generate a new set of white cards if needed
-            if (_blackCards.Count <= 0)
+            // Generate a new set of black cards if needed
+            while (_blackCards.Count == 0)
             {
                 // Initialise the list
-                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey());
+                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey(false));
                 List<int> blackCards = new List<int>();
                 for (int i = pack.BlackStartRange; i < pack.BlackStartRange + pack.BlackCount; i++)
                     blackCards.Add(i);
@@ -193,15 +223,14 @@ namespace Soulful.Core.Services
         /// Gets the next pack to use
         /// </summary>
         /// <returns>A pack key</returns>
-        private string GetNextPackKey()
+        private string GetNextPackKey(bool whitePack)
         {
-            //if (_packPosition == _loader.Packs.Count - 1)
-            //    _packPosition = 0;
+            if (_whitePackPosition == _loader.Packs.Count - 1)
+                _whitePackPosition = 0;
+            if (_blackPackPosition == _loader.Packs.Count - 1)
+                _blackPackPosition = 0;
 
-            //string key = _packKeys[_packPosition];
-            //_packPosition++;
-            //return key;
-            return "Base";
+            return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
         }
 
         #region Data distribution helper methods

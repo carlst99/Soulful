@@ -37,6 +37,8 @@ namespace Soulful.Core.Net
 
         #endregion
 
+        public event EventHandler<NetPeer> PlayerDisconnected;
+
         public NetServerService()
         {
             Players = new ObservableCollection<NetPeer>();
@@ -173,7 +175,10 @@ namespace Soulful.Core.Net
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             if (Players.Contains(peer))
+            {
                 Players.Remove(peer);
+                PlayerDisconnected?.Invoke(this, peer);
+            }
 
             Log.Information("Peer at {endPoint} disconnected", peer.EndPoint);
         }
