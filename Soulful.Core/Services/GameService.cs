@@ -1,4 +1,5 @@
-﻿using LiteNetLib;
+﻿using IntraMessaging;
+using LiteNetLib;
 using LiteNetLib.Utils;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
@@ -19,6 +20,7 @@ namespace Soulful.Core.Services
         private readonly INetServerService _server;
         private readonly ICardLoaderService _loader;
         private readonly Random rng;
+        private readonly IIntraMessenger _messenger;
 
         private CancellationTokenSource _stopToken;
 
@@ -63,14 +65,13 @@ namespace Soulful.Core.Services
 
         #endregion
 
-        public GameService(INetServerService server, ICardLoaderService loader)
+        public GameService(INetServerService server, ICardLoaderService loader, IIntraMessenger messenger)
         {
             _server = server;
             _loader = loader;
+            _messenger = messenger;
             rng = new Random();
             _players = new List<Player>();
-
-            _server.PlayerDisconnected += (_, e) => _players.RemoveAt(_players.FindIndex(p => p.Id == e.Id));
         }
 
         #region Start/Stop
@@ -82,6 +83,7 @@ namespace Soulful.Core.Services
 
             // Give clients time to navigate
             await Task.Delay(100).ConfigureAwait(false);
+            _server.PlayerDisconnected += (_, e) => OnPlayerDisconnected(e);
 
             _whiteCards = new Queue<int>();
             _blackCards = new Queue<int>();
@@ -124,6 +126,7 @@ namespace Soulful.Core.Services
             if (!IsRunning)
                 throw new InvalidOperationException("The game service is already stopped");
 
+            _server.PlayerDisconnected -= (_, e) => OnPlayerDisconnected(e);
             IsRunning = false;
             _stopToken.Cancel();
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
@@ -302,6 +305,26 @@ namespace Soulful.Core.Services
                 T value = list[k];
                 list[k] = list[n];
                 list[n] = value;
+            }
+        }
+
+        private void OnPlayerDisconnected(NetPeer player)
+        {
+            if (_players[_czarPosition - 1].Id == player.Id)
+            {
+                // TODO cancel round, send next czar
+            }
+            _players.RemoveAt(_players.FindIndex(p => p.Id == player.Id));
+
+            if (_players.Count <= 1)
+            {
+                Stop();
+                _messenger.Send(new DialogMessage
+                {
+                    Title = "All players quit",
+                    Content = "Guess nobody wants to play with you, huh?",
+                    Buttons = DialogMessage.Button.No
+                });
             }
         }
     }
