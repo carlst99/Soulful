@@ -1,7 +1,7 @@
 ﻿using System.Windows.Media;
 using System.Windows;
 
-namespace Soulful.Wpf.UIEnhancements
+namespace Soulful.Wpf.UI
 {
     /// <summary>
     /// Contains attached properties for <code>TabControl</code>.

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Soulful.Wpf.UIEnhancements
+namespace Soulful.Wpf.UI
 {
     public class BoolToVisibilityConverter : IValueConverter
     {

@@ -104,9 +104,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="UIEnhancements\BoolToVisibilityConverter.cs" />
-    <Compile Include="UIEnhancements\NativeConverters.cs" />
-    <Compile Include="UIEnhancements\TabControlAssist.cs" />
+    <Compile Include="UI\BoolToVisibilityConverter.cs" />
+    <Compile Include="UI\NativeConverters.cs" />
+    <Compile Include="UI\TabControlAssist.cs" />
     <Compile Include="Views\CardBrowserView.xaml.cs">
       <DependentUpon>CardBrowserView.xaml</DependentUpon>
     </Compile>
@@ -134,7 +134,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="UIEnhancements\Styles.xaml">
+    <Page Include="UI\Styles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
