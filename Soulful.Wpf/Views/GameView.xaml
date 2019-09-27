@@ -21,10 +21,6 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
 
         <!-- Back button -->
         <Button x:Name="BtnNavigateBack"
@@ -66,29 +62,9 @@
         <ListView Margin="0,20,0,0"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Top"
-                  dd:DragDrop.IsDragSource="True"
-                  dd:DragDrop.IsDropTarget="True"
                   ItemTemplate="{StaticResource WhiteCardTemplate}"
                   ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
                   ItemsSource="{Binding WhiteCards}"/>
-
-        <!-- Selected white cards -->
-        <StackPanel Grid.Column="1"
-                    Margin="10,20,10,10">
-            <TextBlock Margin="0,0,0,10"
-                       Style="{StaticResource MaterialDesignSubheadingTextBlock}"
-                       Text="Selected Cards"/>
-            <ListView Width="100"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      dd:DragDrop.IsDragSource="True"
-                      dd:DragDrop.IsDropTarget="True"
-                      ItemTemplate="{StaticResource WhiteCardTemplate}">
-                <ListViewItem>
-                    <TextBlock Text="Ter"/>
-                </ListViewItem>
-            </ListView>
-        </StackPanel>
 
         <!-- Black card -->
         <md:Card Grid.Row="1"
