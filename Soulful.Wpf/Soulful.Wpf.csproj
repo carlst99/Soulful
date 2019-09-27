@@ -107,6 +107,9 @@
     <Compile Include="UI\BoolToVisibilityConverter.cs" />
     <Compile Include="UI\NativeConverters.cs" />
     <Compile Include="UI\TabControlAssist.cs" />
+    <Compile Include="UI\WhiteCardControl.xaml.cs">
+      <DependentUpon>WhiteCardControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CardBrowserView.xaml.cs">
       <DependentUpon>CardBrowserView.xaml</DependentUpon>
     </Compile>
@@ -135,6 +138,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="UI\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\WhiteCardControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
