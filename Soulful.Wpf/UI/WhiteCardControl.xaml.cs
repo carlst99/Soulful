@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using MvvmCross.Commands;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,6 +11,8 @@ namespace Soulful.Wpf.UI
     /// </summary>
     public partial class WhiteCardControl : UserControl
     {
+        #region Dependency Properties
+
         private static readonly DependencyPropertyKey SelectedCardsProperty =
             DependencyProperty.RegisterReadOnly(
                 "SelectedCards",
@@ -42,6 +46,10 @@ namespace Soulful.Wpf.UI
                 });
 
         public static readonly DependencyProperty MaxSelectionProperty = DependencyProperty.Register("MaxSelection", typeof(int), typeof(WhiteCardControl));
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the list of white cards to display
@@ -78,9 +86,36 @@ namespace Soulful.Wpf.UI
             set => SetValue(MaxSelectionProperty, value);
         }
 
+        #endregion
+
+        #region Commands
+
+        public IMvxCommand<int> OnCheckedCommand => new MvxCommand<int>(OnChecked);
+        public IMvxCommand<int> OnUncheckedCommand => new MvxCommand<int>(OnUnchecked);
+
+        #endregion
+
         public WhiteCardControl()
         {
             InitializeComponent();
+        }
+
+        private void OnChecked(int card)
+        {
+            if (SelectionEnabled && Cards.Contains(card))
+                SelectedCards.Add(card);
+
+            if (SelectedCards.Count == MaxSelection)
+                SelectionEnabled = false;
+        }
+
+        private void OnUnchecked(int card)
+        {
+            if (SelectedCards.Contains(card))
+                SelectedCards.Remove(card);
+
+            if (!SelectionEnabled)
+                SelectionEnabled = true;
         }
     }
 }

@@ -104,6 +104,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UI\BoolOrToVisibilityConverter.cs" />
     <Compile Include="UI\BoolToVisibilityConverter.cs" />
     <Compile Include="UI\NativeConverters.cs" />
     <Compile Include="UI\TabControlAssist.cs" />

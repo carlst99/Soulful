@@ -56,13 +56,19 @@
             </Button.Triggers>
         </Button>
 
+        <ui:WhiteCardControl Margin="0,20,0,0"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Top"
+                             Cards="{Binding WhiteCards}"
+                             MaxSelection="2"
+                             SelectionEnabled="True"/>
         <!-- Player White cards -->
-        <ListView Margin="0,20,0,0"
+        <!--<ListView Margin="0,20,0,0"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Top"
                   ItemTemplate="{StaticResource WhiteCardTemplate}"
                   ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                  ItemsSource="{Binding WhiteCards}"/>
+                  ItemsSource="{Binding WhiteCards}"/>-->
 
         <!-- Black card -->
         <md:Card Grid.Row="1"

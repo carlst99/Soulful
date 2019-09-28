@@ -1,5 +1,4 @@
 ﻿using IntraMessaging;
-using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
