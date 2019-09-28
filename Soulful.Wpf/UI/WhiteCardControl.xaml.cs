@@ -1,4 +1,5 @@
 ﻿using MvvmCross.Commands;
+using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,8 +13,8 @@ namespace Soulful.Wpf.UI
     {
         #region Dependency Properties
 
-        private static readonly DependencyPropertyKey SelectedCardsProperty =
-            DependencyProperty.RegisterReadOnly(
+        public static readonly DependencyProperty SelectedCardsProperty =
+            DependencyProperty.Register(
                 "SelectedCards",
                 typeof(ObservableCollection<int>),
                 typeof(WhiteCardControl),
@@ -64,7 +65,8 @@ namespace Soulful.Wpf.UI
         /// </summary>
         public ObservableCollection<int> SelectedCards
         {
-            get => (ObservableCollection<int>)GetValue(SelectedCardsProperty.DependencyProperty);
+            get => (ObservableCollection<int>)GetValue(SelectedCardsProperty);
+            set => throw new InvalidOperationException("Cannot modify a read-only dependency property");
         }
 
         /// <summary>

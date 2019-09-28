@@ -20,6 +20,7 @@ namespace Soulful.Core.ViewModels
         private string _playerName;
 
         private ObservableCollection<int> _whiteCards;
+        private ObservableCollection<int> _selectedWhiteCards;
         private int _blackCard;
 
         #endregion
@@ -30,6 +31,12 @@ namespace Soulful.Core.ViewModels
         {
             get => _whiteCards;
             set => SetProperty(ref _whiteCards, value);
+        }
+
+        public ObservableCollection<int> SelectedWhiteCards
+        {
+            get => _selectedWhiteCards;
+            set => SetProperty(ref _selectedWhiteCards, value);
         }
 
         public int BlackCard
