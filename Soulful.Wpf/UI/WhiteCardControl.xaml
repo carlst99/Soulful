@@ -23,7 +23,7 @@
                       HorizontalAlignment="Center"
                       VerticalAlignment="Top"
                       ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                      ItemsSource="{Binding Cards}">
+                      ItemsSource="{Binding ItemsSource}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>

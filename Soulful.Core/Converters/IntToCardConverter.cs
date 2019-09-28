@@ -38,7 +38,7 @@ namespace Soulful.Core.Converters
             }
             else
             {
-                throw new ArgumentException("Value is of incorrect must either be string or int");
+                throw new ArgumentException("Value is of incorrect type - must either be string or int");
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using MvvmCross.Commands;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -23,9 +22,9 @@ namespace Soulful.Wpf.UI
                     DefaultValue = new ObservableCollection<int>()
                 });
 
-        public static readonly DependencyProperty CardsProperty =
+        public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(
-                "Cards",
+                "ItemsSource",
                 typeof(ObservableCollection<int>),
                 typeof(WhiteCardControl),
                 new FrameworkPropertyMetadata
@@ -54,10 +53,10 @@ namespace Soulful.Wpf.UI
         /// <summary>
         /// Gets or sets the list of white cards to display
         /// </summary>
-        public ObservableCollection<int> Cards
+        public ObservableCollection<int> ItemsSource
         {
-            get => (ObservableCollection<int>)GetValue(CardsProperty);
-            set => SetValue(CardsProperty, value);
+            get => (ObservableCollection<int>)GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         /// <summary>
@@ -102,7 +101,7 @@ namespace Soulful.Wpf.UI
 
         private void OnChecked(int card)
         {
-            if (SelectionEnabled && Cards.Contains(card))
+            if (SelectionEnabled && ItemsSource.Contains(card))
                 SelectedCards.Add(card);
 
             if (SelectedCards.Count == MaxSelection)

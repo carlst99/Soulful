@@ -59,7 +59,7 @@
         <ui:WhiteCardControl Margin="0,20,0,0"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top"
-                             Cards="{Binding WhiteCards}"
+                             ItemsSource="{Binding WhiteCards}"
                              MaxSelection="2"
                              SelectionEnabled="True"/>
         <!-- Player White cards -->
