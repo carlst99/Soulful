@@ -102,6 +102,11 @@ namespace Soulful.Core.Net
             Log.Information("Client stopped");
         }
 
+        public void Send(NetDataWriter data)
+        {
+            RunNetworkerTask(() => _serverPeer.Send(data, D_METHOD));
+        }
+
         protected override void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
             GameKey key = (GameKey)reader.PeekByte();

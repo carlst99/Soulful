@@ -41,8 +41,13 @@
         SendCzarWhiteCards = 6,
 
         /// <summary>
-        /// Inidicates the czar client should reply with their pick, and may then leave czar mode
+        /// The client is sending their favourite pick and exiting czar mode
         /// </summary>
-        CzarChooseNow = 7
+        CzarPick = 7,
+
+        /// <summary>
+        /// The client is sending their selected white cards
+        /// </summary>
+        ClientSendWhiteCards = 8
     }
 }

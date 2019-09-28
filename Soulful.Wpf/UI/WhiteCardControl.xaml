@@ -19,10 +19,7 @@
           DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:WhiteCardControl}}">
 
         <!-- Player White cards -->
-        <ItemsControl Margin="0,20,0,0"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Top"
-                      ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
+        <ItemsControl ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
                       ItemsSource="{Binding ItemsSource}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -47,6 +44,7 @@
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Bottom"
                                       IsChecked="False"
+                                      IsEnabled="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=local:WhiteCardControl}}"
                                       Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}">
                             <md:PackIcon Kind="Tick"/>
 

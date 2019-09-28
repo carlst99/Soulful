@@ -10,11 +10,6 @@
                   d:DesignWidth="800"
                   mc:Ignorable="d">
 
-    <views:MvxWpfView.Resources>
-        <ui:BoolInverterNativeConverter x:Key="BoolInverterConverter"/>
-        <ui:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </views:MvxWpfView.Resources>
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.5*"/>
@@ -52,12 +47,12 @@
                        FontSize="20"
                        Foreground="{StaticResource PrimaryHueMidBrush}"
                        Text="{Binding [Label_ConnectedToServer], Mode=OneTime}"
-                       Visibility="{Binding ShowConfirmationLabel, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       Visibility="{Binding ShowConfirmationLabel, Converter={StaticResource VisibilityConverter}}"/>
 
             <ProgressBar Margin="0,8,0,0"
                          IsIndeterminate="True"
                          Style="{StaticResource MaterialDesignCircularProgressBar}"
-                         Visibility="{Binding AttemptingConnection, Converter={StaticResource BoolToVisibilityConverter}}"
+                         Visibility="{Binding AttemptingConnection, Converter={StaticResource VisibilityConverter}}"
                          Value="35"/>
         </StackPanel>
     </Grid>

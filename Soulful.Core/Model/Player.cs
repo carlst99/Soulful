@@ -8,6 +8,7 @@ namespace Soulful.Core.Model
         public NetPeer Peer { get; set; }
         public int Id => Peer.Id;
         public List<int> WhiteCards { get; set; }
+        public List<int> SelectedWhiteCards { get; set; }
         public int TotalScore { get; set; }
         public string Name { get; set; }
 
@@ -16,6 +17,7 @@ namespace Soulful.Core.Model
             Peer = peer;
             Name = name;
             WhiteCards = new List<int>();
+            SelectedWhiteCards = new List<int>();
             TotalScore = 0;
         }
     }

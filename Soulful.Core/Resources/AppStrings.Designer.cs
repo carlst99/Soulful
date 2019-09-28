@@ -106,11 +106,29 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Select favourite answer.
+        /// </summary>
+        public static string Command_CzarPickCards {
+            get {
+                return ResourceManager.GetString("Command_CzarPickCards", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Join Game.
         /// </summary>
         public static string Command_JoinGame {
             get {
                 return ResourceManager.GetString("Command_JoinGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Play Selected Cards.
+        /// </summary>
+        public static string Command_PlayerPickCards {
+            get {
+                return ResourceManager.GetString("Command_PlayerPickCards", resourceCulture);
             }
         }
         

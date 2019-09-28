@@ -123,7 +123,9 @@ namespace Soulful.Core.ViewModels
         private void UnsafeNavigateBack()
         {
             if (_server.IsRunning)
+            {
                 _server.Stop();
+            }
 
             _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
             NavigationService.Navigate<HomeViewModel>();

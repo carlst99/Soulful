@@ -23,7 +23,10 @@
                 <ResourceDictionary Source="pack://application:,,,/Soulful.Wpf;component/UI/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <ui:IntToCardNativeConverter x:Key="IntToCardConverter"/>
+            <ui:NativeIntToCardConverter x:Key="IntToCardConverter"/>
+            <ui:NativeBoolInverterConverter x:Key="BoolInverterConverter"/>
+            <ui:NativeMvxVisibilityValueConverter x:Key="VisibilityConverter"/>
+            <ui:NativeMvxInvertedVisibilityValueConverter x:Key="InvertedVisibilityConverter"/>
 
             <DataTemplate x:Key="WhiteCardTemplate">
                 <md:Card Width="150"

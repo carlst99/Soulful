@@ -5,6 +5,7 @@ using Soulful.Core.Model;
 using Soulful.Core.Net;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -83,27 +84,38 @@ namespace Soulful.Core.Services
 
             // Give clients time to navigate
             await Task.Delay(100).ConfigureAwait(false);
-            _server.PlayerDisconnected += (_, e) => OnPlayerDisconnected(e);
 
+            // Hook up events
+            _server.PlayerDisconnected += (_, e) => OnPlayerDisconnected(e);
+            _server.GameEvent += OnGameEvent;
+
+            // Initialise variables
             _whiteCards = new Queue<int>();
             _blackCards = new Queue<int>();
             _stopToken = new CancellationTokenSource();
+
+            // Get pack keys if necessary
             if (_packKeys == null)
                 _packKeys = _loader.Packs.Select(p => p.Key).ToList();
+
+            // Set pack positions
             int randPackPosition = rng.Next(_loader.Packs.Count);
             _whitePackPosition = randPackPosition;
             _blackPackPosition = randPackPosition;
 
+            // Prevent players from joining and add them to the local Player list
             _server.AcceptingPlayers = false;
             _players.AddRange(from NetPeer player in _server.Players
                               select new Player(player, (string)player.Tag));
+
+            // Alert clients the game has started and send cards + czar
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
             SendWhiteCards(MAX_WHITE_CARDS);
             SendBlackCard();
             SendNextCzar();
 
+            // Run the game
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
-
             IsRunning = true;
         }
 
@@ -126,7 +138,10 @@ namespace Soulful.Core.Services
             if (!IsRunning)
                 throw new InvalidOperationException("The game service is already stopped");
 
+            // Unregister events
             _server.PlayerDisconnected -= (_, e) => OnPlayerDisconnected(e);
+            _server.GameEvent -= GameEvent;
+
             IsRunning = false;
             _stopToken.Cancel();
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
@@ -136,6 +151,24 @@ namespace Soulful.Core.Services
         }
 
         #endregion
+
+        private void OnGameEvent(object sender, GameKeyPackage e)
+        {
+            switch (e.Key)
+            {
+                case GameKey.ClientSendWhiteCards:
+                    // Make sure that this player is in our list
+                    if (!_players.Any(p => p.Id == e.Player.Id))
+                        break;
+
+                    // Add the white cards to the player's selected cards list
+                    Player p = _players.First(p => p.Id == e.Player.Id);
+                    while (!e.Data.EndOfData)
+                        p.SelectedWhiteCards.Add(e.Data.GetInt());
+                    Debug.WriteLine("White cards received");
+                    break;
+            }
+        }
 
         private void RunGame()
         {
@@ -277,15 +310,14 @@ namespace Soulful.Core.Services
             dataFiller.Invoke(writer);
             GameKeyPackage package = new GameKeyPackage(key, new NetDataReader(writer.CopyData()), null);
             GameEvent?.Invoke(this, package);
+
             writer.Reset();
+            writer.Put((byte)key);
+            dataFiller.Invoke(writer);
 
             foreach (NetPeer player in _server.Players)
-            {
-                writer.Put((byte)key);
-                dataFiller.Invoke(writer);
                 _server.Send(player, writer);
-                writer.Reset();
-            }
+            writer.Reset();
         }
 
         #endregion

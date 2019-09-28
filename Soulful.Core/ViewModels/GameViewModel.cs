@@ -1,4 +1,5 @@
 ﻿using IntraMessaging;
+using LiteNetLib.Utils;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
@@ -22,34 +23,71 @@ namespace Soulful.Core.ViewModels
         private ObservableCollection<int> _whiteCards;
         private ObservableCollection<int> _selectedWhiteCards;
         private int _blackCard;
+        private bool _czarMode;
+        private string _sendButtonText;
 
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the current white cards
+        /// </summary>
         public ObservableCollection<int> WhiteCards
         {
             get => _whiteCards;
             set => SetProperty(ref _whiteCards, value);
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected white cards
+        /// </summary>
         public ObservableCollection<int> SelectedWhiteCards
         {
             get => _selectedWhiteCards;
             set => SetProperty(ref _selectedWhiteCards, value);
         }
 
+        /// <summary>
+        /// Gets or sets the current black card
+        /// </summary>
         public int BlackCard
         {
             get => _blackCard;
             set => SetProperty(ref _blackCard, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the client is acting as czar
+        /// </summary>
+        public bool CzarMode
+        {
+            get => _czarMode;
+            set => SetProperty(ref _czarMode, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text shown in the card send button
+        /// </summary>
+        public string SendButtonText
+        {
+            get => _sendButtonText;
+            set => SetProperty(ref _sendButtonText, value);
+        }
+
         #endregion
 
         #region Commands
 
+        /// <summary>
+        /// Invoked when the client wishes to leave the game
+        /// </summary>
         public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
+
+        /// <summary>
+        /// Invoked when the client wishes to send card selections to the server
+        /// </summary>
+        public IMvxCommand PickCardsCommand => new MvxCommand(PickCards);
 
         #endregion
 
@@ -59,7 +97,9 @@ namespace Soulful.Core.ViewModels
             _client = client;
             _gameService = gameService;
             _messenger = messenger;
-            _whiteCards = new ObservableCollection<int>();
+
+            WhiteCards = new ObservableCollection<int>();
+            SendButtonText = this["Command_PlayerPickCards"];
 
             if (_client.IsRunning)
             {
@@ -85,7 +125,8 @@ namespace Soulful.Core.ViewModels
                     BlackCard = e.Data.GetInt();
                     break;
                 case GameKey.InitiateCzar:
-                    _whiteCards.Clear();
+                    CzarMode = true;
+                    SendButtonText = this["Command_CzarPickCards"];
                     break;
             }
         }
@@ -133,6 +174,22 @@ namespace Soulful.Core.ViewModels
             await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
         }
 
+        private void PickCards()
+        {
+            if (CzarMode)
+            {
+
+            } else
+            {
+                NetDataWriter writer = new NetDataWriter();
+                writer.Put((int)GameKey.ClientSendWhiteCards);
+                foreach (int card in SelectedWhiteCards)
+                    writer.Put(card);
+                _client.Send(writer);
+                writer.Reset();
+            }
+        }
+
         private void OnDisconnected(object sender, NetKey e)
         {
             UnregisterEvents();
@@ -145,11 +202,11 @@ namespace Soulful.Core.ViewModels
                     message = "Congratulations! It looks like you've been kicked.";
                     break;
                 case NetKey.ServerClosed:
-                    title = "It was him!";
+                    title = "It wasn't me!";
                     message = "Looks like the host quit the game.";
                     break;
                 default:
-                    title = "That... might've been us?";
+                    title = "That... might've been me?";
                     message = "Looks like you've been disconnected from the server, and we don't know why.";
                     break;
             }

@@ -11,8 +11,6 @@ namespace Soulful.Core.Net
 {
     public sealed class NetServerService : NetBase, INetServerService
     {
-        public const DeliveryMethod D_METHOD = DeliveryMethod.ReliableOrdered;
-
         #region Properties
 
         /// <summary>

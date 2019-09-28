@@ -9,6 +9,7 @@ namespace Soulful.Core.Net
     public abstract class NetBase : INetBase
     {
         public const int PORT = 6259;
+        public const DeliveryMethod D_METHOD = DeliveryMethod.ReliableOrdered;
 
         #region Fields
 

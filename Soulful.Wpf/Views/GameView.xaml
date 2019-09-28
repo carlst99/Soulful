@@ -10,22 +10,21 @@
                   d:DesignWidth="800"
                   mc:Ignorable="d">
 
-    <views:MvxWpfView.Resources>
-        <ui:IntToCardNativeConverter x:Key="IntToCardConverter"/>
-    </views:MvxWpfView.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
         <!-- Back button -->
         <Button x:Name="BtnNavigateBack"
                 Margin="8"
                 HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Panel.ZIndex="999"
                 Command="{Binding NavigateBackCommand}"
                 Content="{md:PackIcon Kind=ArrowBack}"
                 Opacity="0.5"
@@ -56,26 +55,35 @@
             </Button.Triggers>
         </Button>
 
-        <ui:WhiteCardControl Margin="0,20,0,0"
+        <Button Grid.Column="1"
+                Margin="8"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Command="{Binding PickCardsCommand}"
+                Content="{Binding SendButtonText, Mode=OneWay}"
+                IsEnabled="{Binding ElementName=WCC, Path=SelectionEnabled, Converter={StaticResource BoolInverterConverter}}"/>
+
+        <ui:WhiteCardControl x:Name="WCC"
+                             Grid.Row="1"
+                             Grid.ColumnSpan="2"
+                             Margin="0,0,0,0"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top"
+                             IsEnabled="True"
                              ItemsSource="{Binding WhiteCards}"
                              MaxSelection="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"
                              SelectedCards="{Binding SelectedWhiteCards, Mode=OneWayToSource}"
-                             SelectionEnabled="True"/>
-        <!-- Player White cards -->
-        <!--<ListView Margin="0,20,0,0"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Top"
-                  ItemTemplate="{StaticResource WhiteCardTemplate}"
-                  ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                  ItemsSource="{Binding WhiteCards}"/>-->
+                             SelectionEnabled="True"
+                             Visibility="{Binding CzarMode, Converter={StaticResource InvertedVisibilityConverter}}"/>
 
         <!-- Black card -->
-        <md:Card Grid.Row="1"
+        <md:Card Grid.Row="2"
+                 Grid.Column="2"
                  Width="150"
                  Height="200"
+                 Margin="8"
                  Padding="8"
+                 HorizontalAlignment="Center"
                  Background="{StaticResource MaterialDesignPaper}"
                  Foreground="White"
                  UniformCornerRadius="4">
