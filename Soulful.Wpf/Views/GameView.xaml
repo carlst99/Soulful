@@ -60,7 +60,7 @@
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top"
                              ItemsSource="{Binding WhiteCards}"
-                             MaxSelection="2"
+                             MaxSelection="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"
                              SelectionEnabled="True"/>
         <!-- Player White cards -->
         <!--<ListView Margin="0,20,0,0"
