@@ -49,6 +49,11 @@ namespace Soulful.Core.Services
         /// </summary>
         public bool IsRunning { get; private set; }
 
+        /// <summary>
+        /// Gets the full value of the current black card
+        /// </summary>
+        public Tuple<string, int> CurrentBlackCard => _loader.GetBlackCardAsync(_currentBlackCard).Result;
+
         #endregion
 
         #region Events
@@ -155,7 +160,24 @@ namespace Soulful.Core.Services
             {
                 case GameKey.ClientSendWhiteCards:
                     while (!e.Data.EndOfData)
-                        p.SelectedWhiteCards.Add(e.Data.GetInt());
+                    {
+                        int card = e.Data.GetInt();
+                        int unknownCount = 0;
+
+                        // Add card, checking for invalid cards that have been sent
+                        if (p.WhiteCards.Contains(card))
+                            p.SelectedWhiteCards.Add(card);
+                        else
+                            p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
+
+                        // Limit cards to required amount
+                        int cardCount = CurrentBlackCard.Item2;
+                        while (p.SelectedWhiteCards.Count < cardCount)
+                            p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
+                        while (p.SelectedWhiteCards.Count > cardCount)
+                            p.SelectedWhiteCards.RemoveAt(p.SelectedWhiteCards.Count - 1);
+                    }
+
                     Debug.WriteLine("White cards received");
                     break;
                 case GameKey.ClientReady:
@@ -198,10 +220,30 @@ namespace Soulful.Core.Services
                         }
                         break;
                     case GameStage.SendingRoundData:
-                        SendWhiteCards(MAX_WHITE_CARDS);
+                        // Clear selected cards
+                        foreach (Player p in _players)
+                            p.SelectedWhiteCards.Clear();
+
+                        // Send new cards
+                        SendWhiteCards(MAX_WHITE_CARDS - _players[0].WhiteCards.Count);
                         SendBlackCard();
                         SendNextCzar();
                         currentStage = GameStage.AwaitingCardSelections;
+                        break;
+                    case GameStage.AwaitingCardSelections:
+                        currentStage = GameStage.AwaitingCzarPick;
+                        foreach (Player p in _players)
+                        {
+                            if (p.SelectedWhiteCards.Count == 0)
+                            {
+                                currentStage = GameStage.AwaitingCardSelections;
+                                break;
+                            }
+                        }
+                        break;
+                    case GameStage.AwaitingCzarPick:
+                        Player czar = _players[_czarPosition];
+                        // Todo send card selections to czar
                         break;
                 }
 
