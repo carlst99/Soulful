@@ -220,6 +220,13 @@ namespace Soulful.Core.Services
                         }
                         break;
                     case GameStage.SendingRoundData:
+                        // Remove used white cards
+                        foreach (Player p in _players)
+                        {
+                            foreach (int card in p.SelectedWhiteCards)
+                                p.WhiteCards.Remove(card);
+                        }
+
                         // Clear selected cards
                         foreach (Player p in _players)
                             p.SelectedWhiteCards.Clear();
@@ -228,6 +235,7 @@ namespace Soulful.Core.Services
                         SendWhiteCards(MAX_WHITE_CARDS - _players[0].WhiteCards.Count);
                         SendBlackCard();
                         SendNextCzar();
+
                         currentStage = GameStage.AwaitingCardSelections;
                         break;
                     case GameStage.AwaitingCardSelections:
@@ -244,6 +252,7 @@ namespace Soulful.Core.Services
                     case GameStage.AwaitingCzarPick:
                         Player czar = _players[_czarPosition];
                         // Todo send card selections to czar
+                        Debug.WriteLine("Sending card selections to czar");
                         break;
                 }
 
@@ -282,15 +291,29 @@ namespace Soulful.Core.Services
             while (_whiteCards.Count == 0)
                 EnqueueWhiteCards();
 
-            Send(GameKey.SendWhiteCards, (w) =>
+            foreach (Player p in _players)
             {
+                NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.SendWhiteCards);
                 for (int i = 0; i < count; i++)
                 {
                     if (_whiteCards.Count == 0)
                         EnqueueWhiteCards();
-                    w.Put(_whiteCards.Dequeue());
+                    int card = _whiteCards.Dequeue();
+                    p.WhiteCards.Add(card);
+                    writer.Put(card);
                 }
-            });
+                SendToPlayer(p.Peer, writer);
+            }
+
+            //Send(GameKey.SendWhiteCards, (w) =>
+            //{
+            //    for (int i = 0; i < count; i++)
+            //    {
+            //        if (_whiteCards.Count == 0)
+            //            EnqueueWhiteCards();
+            //        w.Put(_whiteCards.Dequeue());
+            //    }
+            //});
         }
 
         private void SendBlackCard()
