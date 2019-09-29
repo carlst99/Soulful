@@ -7,6 +7,7 @@ using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
@@ -100,12 +101,18 @@ namespace Soulful.Core.ViewModels
 
             WhiteCards = new ObservableCollection<int>();
             SendButtonText = this["Command_PlayerPickCards"];
+        }
 
+        public override Task Initialize()
+        {
             if (_client.IsRunning)
             {
                 _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
                 _client.DisconnectedFromServer += OnDisconnected;
+                _client.Send(NetHelpers.GetKeyValue(GameKey.ClientReady));
             }
+
+            return base.Initialize();
         }
 
         /// <summary>
@@ -181,8 +188,7 @@ namespace Soulful.Core.ViewModels
 
             } else
             {
-                NetDataWriter writer = new NetDataWriter();
-                writer.Put((int)GameKey.ClientSendWhiteCards);
+                NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.ClientSendWhiteCards);
                 foreach (int card in SelectedWhiteCards)
                     writer.Put(card);
                 _client.Send(writer);

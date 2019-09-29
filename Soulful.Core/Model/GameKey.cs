@@ -11,7 +11,7 @@
         GameStart = 0,
 
         /// <summary>
-        /// The client has successfully joined the game server
+        /// Indicates to the client that they have successfully joined the game server
         /// </summary>
         JoinedGame = 1,
 
@@ -48,6 +48,11 @@
         /// <summary>
         /// The client is sending their selected white cards
         /// </summary>
-        ClientSendWhiteCards = 8
+        ClientSendWhiteCards = 8,
+
+        /// <summary>
+        /// Indicates to the server that the client is ready to start
+        /// </summary>
+        ClientReady = 9
     }
 }

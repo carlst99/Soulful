@@ -77,13 +77,10 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public async void Start()
+        public void Start()
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
-
-            // Give clients time to navigate
-            await Task.Delay(100).ConfigureAwait(false);
 
             // Hook up events
             _server.PlayerDisconnected += (_, e) => OnPlayerDisconnected(e);
@@ -108,11 +105,8 @@ namespace Soulful.Core.Services
             _players.AddRange(from NetPeer player in _server.Players
                               select new Player(player, (string)player.Tag));
 
-            // Alert clients the game has started and send cards + czar
+            // Alert clients the game has started
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
-            SendWhiteCards(MAX_WHITE_CARDS);
-            SendBlackCard();
-            SendNextCzar();
 
             // Run the game
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
@@ -154,26 +148,63 @@ namespace Soulful.Core.Services
 
         private void OnGameEvent(object sender, GameKeyPackage e)
         {
+            if (!TryGetPlayer(e.Peer, out Player p))
+                return;
+
             switch (e.Key)
             {
                 case GameKey.ClientSendWhiteCards:
-                    // Make sure that this player is in our list
-                    if (!_players.Any(p => p.Id == e.Player.Id))
-                        break;
-
-                    // Add the white cards to the player's selected cards list
-                    Player p = _players.First(p => p.Id == e.Player.Id);
                     while (!e.Data.EndOfData)
                         p.SelectedWhiteCards.Add(e.Data.GetInt());
                     Debug.WriteLine("White cards received");
                     break;
+                case GameKey.ClientReady:
+                    p.IsReady = true;
+                    break;
             }
+        }
+
+        private bool TryGetPlayer(NetPeer peer, out Player player)
+        {
+            // Make sure that this player is in our list
+            if (!_players.Any(p => p.Id == peer.Id))
+            {
+                player = null;
+                return false;
+            }
+
+            // Add the white cards to the player's selected cards list
+            player = _players.First(p => p.Id == peer.Id);
+            return true;
         }
 
         private void RunGame()
         {
+            GameStage currentStage = GameStage.AwaitingPlayerReady;
+
             while (!_stopToken.IsCancellationRequested)
             {
+                switch (currentStage)
+                {
+                    case GameStage.AwaitingPlayerReady:
+                        currentStage = GameStage.SendingRoundData;
+                        foreach (Player p in _players)
+                        {
+                            if (!p.IsReady)
+                            {
+                                currentStage = GameStage.AwaitingPlayerReady;
+                                break;
+                            }
+                        }
+                        break;
+                    case GameStage.SendingRoundData:
+                        SendWhiteCards(MAX_WHITE_CARDS);
+                        SendBlackCard();
+                        SendNextCzar();
+                        currentStage = GameStage.AwaitingCardSelections;
+                        break;
+                }
+
                 _stopToken.Token.WaitHandle.WaitOne(NetHelpers.POLL_DELAY);
             }
         }
@@ -310,14 +341,15 @@ namespace Soulful.Core.Services
             dataFiller.Invoke(writer);
             GameKeyPackage package = new GameKeyPackage(key, new NetDataReader(writer.CopyData()), null);
             GameEvent?.Invoke(this, package);
-
             writer.Reset();
-            writer.Put((byte)key);
-            dataFiller.Invoke(writer);
 
             foreach (NetPeer player in _server.Players)
+            {
+                writer.Put((byte)key);
+                dataFiller.Invoke(writer);
                 _server.Send(player, writer);
-            writer.Reset();
+                writer.Reset();
+            }
         }
 
         #endregion
@@ -342,7 +374,7 @@ namespace Soulful.Core.Services
 
         private void OnPlayerDisconnected(NetPeer player)
         {
-            if (_players[_czarPosition - 1].Id == player.Id)
+            if (_players[_czarPosition].Id == player.Id)
             {
                 // TODO cancel round, send next czar
             }
