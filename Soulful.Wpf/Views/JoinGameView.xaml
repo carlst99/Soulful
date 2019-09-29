@@ -1,20 +1,15 @@
 ﻿<views:MvxWpfView x:Class="Soulful.Wpf.Views.JoinGameView"
                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-                  xmlns:local="clr-namespace:Soulful.Wpf.Views"
-                  xmlns:converters="clr-namespace:Soulful.Wpf.UIEnhancements"
-                  xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-                  mc:Ignorable="d" 
-                  d:DesignHeight="450" d:DesignWidth="800">
+                  xmlns:ui="clr-namespace:Soulful.Wpf.UI"
+                  xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
+                  d:DesignHeight="450"
+                  d:DesignWidth="800"
+                  mc:Ignorable="d">
 
-    <views:MvxWpfView.Resources>
-        <converters:BoolInverterNativeConverter x:Key="BoolInverterConverter"/>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </views:MvxWpfView.Resources>
-    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.5*"/>
@@ -22,34 +17,42 @@
             <ColumnDefinition Width="0.5*"/>
         </Grid.ColumnDefinitions>
 
-        <Button Content="{md:PackIcon Kind=ArrowBack}"
-                ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"
+        <Button Margin="8"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
                 Command="{Binding NavigateBackCommand}"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"/>
+                Content="{md:PackIcon Kind=ArrowBack}"
+                ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"/>
 
-        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1">
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center">
             <!-- Game pin -->
-            <TextBox Text="{Binding GamePin, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" FontSize="22"
+            <TextBox x:Name="TxtBxPin"
                      HorizontalContentAlignment="Center"
                      md:HintAssist.Hint="{Binding [Hint_GamePin], Mode=OneTime}"
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     FontSize="22"
                      IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInverterConverter}}"
-                     x:Name="TxtBxPin"/>
+                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     Text="{Binding GamePin, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <Button Content="{Binding [Command_JoinGame], Mode=OneTime}" 
-                    Margin="0,8,0,0"
-                    IsEnabled="{Binding CanJoinGame}" IsDefault="True"
-                    Command="{Binding JoinGameCommand}"/>
+            <Button Margin="0,8,0,0"
+                    Command="{Binding JoinGameCommand}"
+                    Content="{Binding [Command_JoinGame], Mode=OneTime}"
+                    IsDefault="True"
+                    IsEnabled="{Binding CanJoinGame}"/>
 
-            <TextBlock Text="{Binding [Label_ConnectedToServer], Mode=OneTime}"
-                       FontSize="20" HorizontalAlignment="Center" Margin="0,8,0,0"
+            <TextBlock Margin="0,8,0,0"
+                       HorizontalAlignment="Center"
+                       FontSize="20"
                        Foreground="{StaticResource PrimaryHueMidBrush}"
-                       Visibility="{Binding ShowConfirmationLabel, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       Text="{Binding [Label_ConnectedToServer], Mode=OneTime}"
+                       Visibility="{Binding ShowConfirmationLabel, Converter={StaticResource VisibilityConverter}}"/>
 
-            <ProgressBar IsIndeterminate="True"
-                         Visibility="{Binding AttemptingConnection, Converter={StaticResource BoolToVisibilityConverter}}"
-                         Margin="0,8,0,0"
+            <ProgressBar Margin="0,8,0,0"
+                         IsIndeterminate="True"
                          Style="{StaticResource MaterialDesignCircularProgressBar}"
+                         Visibility="{Binding AttemptingConnection, Converter={StaticResource VisibilityConverter}}"
                          Value="35"/>
         </StackPanel>
     </Grid>

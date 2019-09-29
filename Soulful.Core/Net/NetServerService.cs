@@ -11,8 +11,6 @@ namespace Soulful.Core.Net
 {
     public sealed class NetServerService : NetBase, INetServerService
     {
-        public const DeliveryMethod D_METHOD = DeliveryMethod.ReliableOrdered;
-
         #region Properties
 
         /// <summary>
@@ -168,7 +166,7 @@ namespace Soulful.Core.Net
 
         private void OnPeerConnected(NetPeer peer)
         {
-            RunNetworkerTask(() => peer.Send(NetHelpers.GetKeyValue(GameKey.JoinedGame), D_METHOD));
+            Send(peer, NetHelpers.GetKeyValue(GameKey.JoinedGame));
             Log.Information("Alerting client that connection was successful");
         }
 

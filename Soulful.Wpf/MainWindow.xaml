@@ -4,15 +4,16 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-                 TextElement.FontWeight="Regular"
-                 TextElement.FontSize="13"
-                 TextOptions.TextFormattingMode="Ideal" 
-                 TextOptions.TextRenderingMode="Auto"        
+                 Title="Soulful"
+                 Width="900"
+                 Height="550"
+                 MinWidth="900"
+                 MinHeight="550"
                  Background="{DynamicResource MaterialDesignPaper}"
                  FontFamily="{DynamicResource MaterialDesignFont}"
-                 mc:Ignorable="d"
-                 Title="Soulful" Height="550" Width="900">
-    <Grid>
-    </Grid>
-</views:MvxWindow>
+                 TextElement.FontSize="13"
+                 TextElement.FontWeight="Regular"
+                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 TextOptions.TextFormattingMode="Ideal"
+                 TextOptions.TextRenderingMode="Auto"
+                 mc:Ignorable="d"/>

@@ -5,6 +5,7 @@ using Soulful.Core.Model;
 using Soulful.Core.Net;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +49,11 @@ namespace Soulful.Core.Services
         /// </summary>
         public bool IsRunning { get; private set; }
 
+        /// <summary>
+        /// Gets the full value of the current black card
+        /// </summary>
+        public Tuple<string, int> CurrentBlackCard => _loader.GetBlackCardAsync(_currentBlackCard).Result;
+
         #endregion
 
         #region Events
@@ -76,34 +82,39 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public async void Start()
+        public void Start()
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
 
-            // Give clients time to navigate
-            await Task.Delay(100).ConfigureAwait(false);
+            // Hook up events
             _server.PlayerDisconnected += (_, e) => OnPlayerDisconnected(e);
+            _server.GameEvent += OnGameEvent;
 
+            // Initialise variables
             _whiteCards = new Queue<int>();
             _blackCards = new Queue<int>();
             _stopToken = new CancellationTokenSource();
+
+            // Get pack keys if necessary
             if (_packKeys == null)
                 _packKeys = _loader.Packs.Select(p => p.Key).ToList();
+
+            // Set pack positions
             int randPackPosition = rng.Next(_loader.Packs.Count);
             _whitePackPosition = randPackPosition;
             _blackPackPosition = randPackPosition;
 
+            // Prevent players from joining and add them to the local Player list
             _server.AcceptingPlayers = false;
             _players.AddRange(from NetPeer player in _server.Players
                               select new Player(player, (string)player.Tag));
+
+            // Alert clients the game has started
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
-            SendWhiteCards(MAX_WHITE_CARDS);
-            SendBlackCard();
-            SendNextCzar();
 
+            // Run the game
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
-
             IsRunning = true;
         }
 
@@ -126,7 +137,10 @@ namespace Soulful.Core.Services
             if (!IsRunning)
                 throw new InvalidOperationException("The game service is already stopped");
 
+            // Unregister events
             _server.PlayerDisconnected -= (_, e) => OnPlayerDisconnected(e);
+            _server.GameEvent -= GameEvent;
+
             IsRunning = false;
             _stopToken.Cancel();
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
@@ -137,10 +151,111 @@ namespace Soulful.Core.Services
 
         #endregion
 
+        private void OnGameEvent(object sender, GameKeyPackage e)
+        {
+            if (!TryGetPlayer(e.Peer, out Player p))
+                return;
+
+            switch (e.Key)
+            {
+                case GameKey.ClientSendWhiteCards:
+                    while (!e.Data.EndOfData)
+                    {
+                        int card = e.Data.GetInt();
+                        int unknownCount = 0;
+
+                        // Add card, checking for invalid cards that have been sent
+                        if (p.WhiteCards.Contains(card))
+                            p.SelectedWhiteCards.Add(card);
+                        else
+                            p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
+
+                        // Limit cards to required amount
+                        int cardCount = CurrentBlackCard.Item2;
+                        while (p.SelectedWhiteCards.Count < cardCount)
+                            p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
+                        while (p.SelectedWhiteCards.Count > cardCount)
+                            p.SelectedWhiteCards.RemoveAt(p.SelectedWhiteCards.Count - 1);
+                    }
+
+                    Debug.WriteLine("White cards received");
+                    break;
+                case GameKey.ClientReady:
+                    p.IsReady = true;
+                    break;
+            }
+        }
+
+        private bool TryGetPlayer(NetPeer peer, out Player player)
+        {
+            // Make sure that this player is in our list
+            if (!_players.Any(p => p.Id == peer.Id))
+            {
+                player = null;
+                return false;
+            }
+
+            // Add the white cards to the player's selected cards list
+            player = _players.First(p => p.Id == peer.Id);
+            return true;
+        }
+
         private void RunGame()
         {
+            GameStage currentStage = GameStage.AwaitingPlayerReady;
+
             while (!_stopToken.IsCancellationRequested)
             {
+                switch (currentStage)
+                {
+                    case GameStage.AwaitingPlayerReady:
+                        currentStage = GameStage.SendingRoundData;
+                        foreach (Player p in _players)
+                        {
+                            if (!p.IsReady)
+                            {
+                                currentStage = GameStage.AwaitingPlayerReady;
+                                break;
+                            }
+                        }
+                        break;
+                    case GameStage.SendingRoundData:
+                        // Remove used white cards
+                        foreach (Player p in _players)
+                        {
+                            foreach (int card in p.SelectedWhiteCards)
+                                p.WhiteCards.Remove(card);
+                        }
+
+                        // Clear selected cards
+                        foreach (Player p in _players)
+                            p.SelectedWhiteCards.Clear();
+
+                        // Send new cards
+                        SendWhiteCards(MAX_WHITE_CARDS - _players[0].WhiteCards.Count);
+                        SendBlackCard();
+                        SendNextCzar();
+
+                        currentStage = GameStage.AwaitingCardSelections;
+                        break;
+                    case GameStage.AwaitingCardSelections:
+                        currentStage = GameStage.AwaitingCzarPick;
+                        foreach (Player p in _players)
+                        {
+                            if (p.SelectedWhiteCards.Count == 0)
+                            {
+                                currentStage = GameStage.AwaitingCardSelections;
+                                break;
+                            }
+                        }
+                        break;
+                    case GameStage.AwaitingCzarPick:
+                        Player czar = _players[_czarPosition];
+                        // Todo send card selections to czar
+                        Debug.WriteLine("Sending card selections to czar");
+                        break;
+                }
+
                 _stopToken.Token.WaitHandle.WaitOne(NetHelpers.POLL_DELAY);
             }
         }
@@ -176,15 +291,29 @@ namespace Soulful.Core.Services
             while (_whiteCards.Count == 0)
                 EnqueueWhiteCards();
 
-            Send(GameKey.SendWhiteCards, (w) =>
+            foreach (Player p in _players)
             {
+                NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.SendWhiteCards);
                 for (int i = 0; i < count; i++)
                 {
                     if (_whiteCards.Count == 0)
                         EnqueueWhiteCards();
-                    w.Put(_whiteCards.Dequeue());
+                    int card = _whiteCards.Dequeue();
+                    p.WhiteCards.Add(card);
+                    writer.Put(card);
                 }
-            });
+                SendToPlayer(p.Peer, writer);
+            }
+
+            //Send(GameKey.SendWhiteCards, (w) =>
+            //{
+            //    for (int i = 0; i < count; i++)
+            //    {
+            //        if (_whiteCards.Count == 0)
+            //            EnqueueWhiteCards();
+            //        w.Put(_whiteCards.Dequeue());
+            //    }
+            //});
         }
 
         private void SendBlackCard()
@@ -310,7 +439,7 @@ namespace Soulful.Core.Services
 
         private void OnPlayerDisconnected(NetPeer player)
         {
-            if (_players[_czarPosition - 1].Id == player.Id)
+            if (_players[_czarPosition].Id == player.Id)
             {
                 // TODO cancel round, send next czar
             }

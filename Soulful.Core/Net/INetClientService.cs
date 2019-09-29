@@ -1,4 +1,4 @@
-﻿using LiteNetLib;
+﻿using LiteNetLib.Utils;
 using System;
 
 namespace Soulful.Core.Net
@@ -12,5 +12,6 @@ namespace Soulful.Core.Net
         event EventHandler ConnectionFailed;
 
         void Start(string pin, string playerName);
+        void Send(NetDataWriter data);
     }
 }

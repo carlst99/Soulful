@@ -137,9 +137,17 @@
     <value>Browse Cards</value>
     <comment>This label appears on a control which allows the user to browse all the cards</comment>
   </data>
+  <data name="Command_CzarPickCards" xml:space="preserve">
+    <value>Select favourite answer</value>
+    <comment>This label appears on a control allowing the czar to pick their favourite answer</comment>
+  </data>
   <data name="Command_JoinGame" xml:space="preserve">
     <value>Join Game</value>
     <comment>This label appears on a control which joins a game</comment>
+  </data>
+  <data name="Command_PlayerPickCards" xml:space="preserve">
+    <value>Play Selected Cards</value>
+    <comment>This label appears on a control which allows a player to send their white cards to the czar</comment>
   </data>
   <data name="Command_StartGame" xml:space="preserve">
     <value>Start Game</value>

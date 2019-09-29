@@ -7,13 +7,13 @@ namespace Soulful.Core.Model
     {
         public GameKey Key { get; }
         public NetDataReader Data { get; }
-        public NetPeer Player { get; }
+        public NetPeer Peer { get; }
 
         internal GameKeyPackage(GameKey key, NetDataReader reader, NetPeer player)
         {
             Key = key;
             Data = reader;
-            Player = player;
+            Peer = player;
         }
     }
 }
