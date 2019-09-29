@@ -60,8 +60,18 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Command="{Binding PickCardsCommand}"
-                Content="{Binding SendButtonText, Mode=OneWay}"
-                IsEnabled="{Binding ElementName=WCC, Path=SelectionEnabled, Converter={StaticResource BoolInverterConverter}}"/>
+                Content="{Binding SendButtonText, Mode=OneWay}">
+            <Button.IsEnabled>
+                <MultiBinding Converter="{StaticResource BoolAndConverter}">
+                    <Binding Converter="{StaticResource BoolInverterConverter}"
+                             ElementName="WCC"
+                             Mode="OneWay"
+                             Path="SelectionEnabled"/>
+                    <Binding Mode="OneWay"
+                             Path="CanSendCards"/>
+                </MultiBinding>
+            </Button.IsEnabled>
+        </Button>
 
         <ui:WhiteCardControl x:Name="WCC"
                              Grid.Row="1"
@@ -69,7 +79,7 @@
                              Margin="0,0,0,0"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top"
-                             IsEnabled="True"
+                             IsEnabled="{Binding CanSendCards, Mode=OneWay}"
                              ItemsSource="{Binding WhiteCards}"
                              MaxSelection="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"
                              SelectedCards="{Binding SelectedWhiteCards, Mode=OneWayToSource}"

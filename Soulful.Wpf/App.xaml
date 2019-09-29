@@ -27,6 +27,9 @@
             <ui:NativeBoolInverterConverter x:Key="BoolInverterConverter"/>
             <ui:NativeMvxVisibilityValueConverter x:Key="VisibilityConverter"/>
             <ui:NativeMvxInvertedVisibilityValueConverter x:Key="InvertedVisibilityConverter"/>
+            <ui:BoolOrToVisibilityConverter x:Key="BoolOrToVisibilityConverter"/>
+            <ui:BoolAndToVisibilityConverter x:Key="BoolAndToVisibilityConverter"/>
+            <ui:BoolAndConverter x:Key="BoolAndConverter"/>
 
             <DataTemplate x:Key="WhiteCardTemplate">
                 <md:Card Width="150"

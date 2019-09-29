@@ -129,7 +129,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="UI\BoolOrToVisibilityConverter.cs" />
+    <Compile Include="UI\BoolLogicConverters.cs" />
+    <Compile Include="UI\BoolLogicToVisibilityConverters.cs" />
     <Compile Include="UI\NativeConverters.cs" />
     <Compile Include="UI\TabControlAssist.cs" />
     <Compile Include="UI\WhiteCardControl.xaml.cs">

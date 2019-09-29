@@ -10,10 +10,6 @@
              d:DesignWidth="800"
              mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <local:BoolOrToVisibilityConverter x:Key="BoolOrToVisibilityConverter"/>
-    </UserControl.Resources>
-
     <Grid d:DataContext="{d:DesignInstance Type=local:WhiteCardControl,
                                            IsDesignTimeCreatable=True}"
           DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:WhiteCardControl}}">
@@ -43,10 +39,9 @@
                         <ToggleButton Margin="10"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Bottom"
-                                      IsChecked="False"
+                                      Content="{md:PackIcon Kind=Tick}"
                                       IsEnabled="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=local:WhiteCardControl}}"
                                       Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}">
-                            <md:PackIcon Kind="Tick"/>
 
                             <ToggleButton.Visibility>
                                 <MultiBinding Converter="{StaticResource BoolOrToVisibilityConverter}">

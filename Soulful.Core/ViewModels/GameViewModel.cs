@@ -26,6 +26,7 @@ namespace Soulful.Core.ViewModels
         private int _blackCard;
         private bool _czarMode;
         private string _sendButtonText;
+        private bool _canSendCards;
 
         #endregion
 
@@ -76,6 +77,15 @@ namespace Soulful.Core.ViewModels
             set => SetProperty(ref _sendButtonText, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the client can send white cards
+        /// </summary>
+        public bool CanSendCards
+        {
+            get => _canSendCards;
+            set => SetProperty(ref _canSendCards, value);
+        }
+
         #endregion
 
         #region Commands
@@ -101,6 +111,7 @@ namespace Soulful.Core.ViewModels
 
             WhiteCards = new ObservableCollection<int>();
             SendButtonText = this["Command_PlayerPickCards"];
+            CanSendCards = true;
         }
 
         public override Task Initialize()
@@ -194,6 +205,8 @@ namespace Soulful.Core.ViewModels
                 _client.Send(writer);
                 writer.Reset();
             }
+
+            CanSendCards = false;
         }
 
         private void OnDisconnected(object sender, NetKey e)
