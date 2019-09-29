@@ -104,6 +104,11 @@ namespace Soulful.Core.Net
 
         public void Send(NetDataWriter data)
         {
+            if (!IsRunning)
+                throw new InvalidOperationException("Client is not running");
+            if (!IsConnected)
+                throw new InvalidOperationException("Client is not connected");
+
             RunNetworkerTask(() => _serverPeer.Send(data, D_METHOD));
         }
 
