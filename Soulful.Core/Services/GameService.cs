@@ -377,7 +377,7 @@ namespace Soulful.Core.Services
             foreach (Player p in _players)
                 action.Invoke(p);
 
-            action.Invoke(_selfPlayer);
+            //action.Invoke(_selfPlayer);
         }
 
         #region Data distribution helper methods
@@ -394,7 +394,7 @@ namespace Soulful.Core.Services
                 NetDataReader reader = new NetDataReader(writer.CopyData());
                 GameKey key = (GameKey)reader.GetByte();
                 GameKeyPackage package = new GameKeyPackage(key, reader, null);
-                GameEvent?.Invoke(this, package);
+                //GameEvent?.Invoke(this, package);
             } else
             {
                 _server.Send(player.Peer, writer);
@@ -413,7 +413,7 @@ namespace Soulful.Core.Services
             NetDataWriter writer = new NetDataWriter();
 
             dataFiller.Invoke(writer);
-            SendToPlayer(_selfPlayer, writer);
+            //SendToPlayer(_selfPlayer, writer);
 
             foreach (Player p in _players)
             {
