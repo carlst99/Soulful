@@ -155,7 +155,7 @@ namespace Soulful.Core.ViewModels
             {
                 _gameService.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
                 _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
-                _gameService.Start();
+                _gameService.Start(_playerName);
             } else if (!_client.IsRunning)
             {
                 NavigationService.Navigate<HomeViewModel>();
