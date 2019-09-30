@@ -18,8 +18,13 @@
         AwaitingCardSelections = 2,
 
         /// <summary>
+        /// The server is sending client card selections to the czar
+        /// </summary>
+        SendingCardsToCzar = 3,
+
+        /// <summary>
         /// The server is waiting for the czar to make their pick
         /// </summary>
-        AwaitingCzarPick = 3
+        AwaitingCzarPick = 4
     }
 }

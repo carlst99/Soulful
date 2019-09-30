@@ -116,12 +116,9 @@ namespace Soulful.Core.ViewModels
 
         public override Task Initialize()
         {
-            if (_client.IsRunning)
-            {
-                _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
-                _client.DisconnectedFromServer += OnDisconnected;
-                _client.Send(NetHelpers.GetKeyValue(GameKey.ClientReady));
-            }
+            _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
+            _client.DisconnectedFromServer += OnDisconnected;
+            _client.Send(NetHelpers.GetKeyValue(GameKey.ClientReady));
 
             return base.Initialize();
         }
@@ -149,16 +146,19 @@ namespace Soulful.Core.ViewModels
             }
         }
 
+        /// <summary>
+        /// Prepares the <see cref="GameViewModel"/>
+        /// </summary>
+        /// <param name="parameter">Indicates whether the game service should be started</param>
         public override void Prepare(bool parameter)
         {
+            if (!_client.IsRunning)
+                NavigationService.Navigate<HomeViewModel>();
+
             if (parameter)
             {
-                _gameService.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
-                _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
                 _gameService.Start(_playerName);
-            } else if (!_client.IsRunning)
-            {
-                NavigationService.Navigate<HomeViewModel>();
+                _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
             }
         }
 
@@ -249,10 +249,9 @@ namespace Soulful.Core.ViewModels
         private void UnregisterEvents()
         {
             if (_gameService.IsRunning)
-            {
-                _gameService.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
                 _gameService.GameStopped -= (_, __) => UnsafeNavigateBack();
-            } else
+
+            if (_client.IsRunning)
             {
                 _client.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
                 _client.DisconnectedFromServer -= OnDisconnected;
