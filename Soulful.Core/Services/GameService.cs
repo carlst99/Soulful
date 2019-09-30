@@ -5,7 +5,6 @@ using Soulful.Core.Model;
 using Soulful.Core.Net;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +29,6 @@ namespace Soulful.Core.Services
         #region Game Fields
 
         private readonly List<Player> _players;
-        private Player _selfPlayer;
 
         private Queue<int> _whiteCards;
         private Queue<int> _blackCards;
@@ -110,7 +108,6 @@ namespace Soulful.Core.Services
             _server.AcceptingPlayers = false;
             _players.AddRange(from NetPeer player in _server.Players
                               select new Player(player, (string)player.Tag));
-            _selfPlayer = new Player(null, playerName);
 
             // Alert clients the game has started
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
@@ -148,7 +145,6 @@ namespace Soulful.Core.Services
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
             _server.Stop();
             _players.Clear();
-            _selfPlayer = null;
             GameStopped?.Invoke(this, EventArgs.Empty);
         }
 
@@ -180,8 +176,6 @@ namespace Soulful.Core.Services
                         while (p.SelectedWhiteCards.Count > cardCount)
                             p.SelectedWhiteCards.RemoveAt(p.SelectedWhiteCards.Count - 1);
                     }
-
-                    Debug.WriteLine("White cards received");
                     break;
                 case GameKey.ClientReady:
                     p.IsReady = true;
@@ -243,7 +237,7 @@ namespace Soulful.Core.Services
                             p.SelectedWhiteCards.Clear();
 
                         // Send new cards
-                        SendWhiteCards(MAX_WHITE_CARDS - _players[0].WhiteCards.Count);
+                        SendWhiteCards();
                         SendBlackCard();
                         SendNextCzar();
 
@@ -251,21 +245,25 @@ namespace Soulful.Core.Services
                         break;
                     // Waiting for clients to send their card selections to the server
                     case GameStage.AwaitingCardSelections:
-                        currentStage = GameStage.AwaitingCzarPick;
+                        currentStage = GameStage.SendingCardsToCzar;
                         foreach (Player p in _players)
                         {
-                            if (p.SelectedWhiteCards.Count == 0)
+                            if (p.SelectedWhiteCards.Count == 0 && !p.IsCzar)
                             {
                                 currentStage = GameStage.AwaitingCardSelections;
                                 break;
                             }
                         }
                         break;
-                    // Sending selections to czar and awaiting their pick
-                    case GameStage.AwaitingCzarPick:
+                    // Sending selections to czar
+                    case GameStage.SendingCardsToCzar:
                         Player czar = _players[_czarPosition];
+                        czar.IsCzar = false;
                         // Todo send card selections to czar
-                        Debug.WriteLine("Sending card selections to czar");
+                        currentStage = GameStage.AwaitingCzarPick;
+                        break;
+                    case GameStage.AwaitingCzarPick:
+
                         break;
                 }
 
@@ -273,7 +271,7 @@ namespace Soulful.Core.Services
             }
         }
 
-        private void SendWhiteCards(int count)
+        private void SendWhiteCards()
         {
             void EnqueueWhiteCards()
             {
@@ -304,18 +302,17 @@ namespace Soulful.Core.Services
             while (_whiteCards.Count == 0)
                 EnqueueWhiteCards();
 
-            DoForEachPlayer((p) =>
+            SendToAll(GameKey.SendWhiteCards, (w, p) =>
             {
-                NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.SendWhiteCards);
-                for (int i = 0; i < count; i++)
+                int cardCount = p.WhiteCards.Count;
+                for (int i = 0; i < MAX_WHITE_CARDS - cardCount; i++)
                 {
                     if (_whiteCards.Count == 0)
                         EnqueueWhiteCards();
                     int card = _whiteCards.Dequeue();
                     p.WhiteCards.Add(card);
-                    writer.Put(card);
+                    w.Put(card);
                 }
-                SendToPlayer(p, writer);
             });
         }
 
@@ -339,19 +336,14 @@ namespace Soulful.Core.Services
             _currentBlackCard = _blackCards.Dequeue();
             NetDataWriter writer = new NetDataWriter();
             writer.Put(_currentBlackCard);
-            SendToAll((w) =>
-            {
-                w.Put((byte)GameKey.SendBlackCard);
-                w.Put(_currentBlackCard);
-            });
+            SendToAll(GameKey.SendBlackCard, (w, _) => w.Put(_currentBlackCard));
         }
 
         private void SendNextCzar()
         {
-            if (_czarPosition == _server.Players.Count)
-                SendToPlayer(_selfPlayer, NetHelpers.GetKeyValue(GameKey.InitiateCzar));
-            else
-                SendToPlayer(_players[_czarPosition], NetHelpers.GetKeyValue(GameKey.InitiateCzar));
+            Player p = _players[_czarPosition];
+            p.IsCzar = true;
+            SendToPlayer(p, NetHelpers.GetKeyValue(GameKey.InitiateCzar));
 
             _czarPosition++;
             if (_czarPosition == _server.Players.Count)
@@ -372,14 +364,6 @@ namespace Soulful.Core.Services
             return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
         }
 
-        private void DoForEachPlayer(Action<Player> action)
-        {
-            foreach (Player p in _players)
-                action.Invoke(p);
-
-            action.Invoke(_selfPlayer);
-        }
-
         #region Data distribution helper methods
 
         /// <summary>
@@ -389,37 +373,24 @@ namespace Soulful.Core.Services
         /// <param name="writer"></param>
         private void SendToPlayer(Player player, NetDataWriter writer)
         {
-            if (player == _selfPlayer)
-            {
-                NetDataReader reader = new NetDataReader(writer.CopyData());
-                GameKey key = (GameKey)reader.GetByte();
-                GameKeyPackage package = new GameKeyPackage(key, reader, null);
-                GameEvent?.Invoke(this, package);
-            } else
-            {
-                _server.Send(player.Peer, writer);
-            }
-
+            _server.Send(player.Peer, writer);
             writer.Reset();
         }
 
         /// <summary>
         /// Sends data to both the server client and player clients
         /// </summary>
-        /// <param name="key">The gamekey to send</param>
         /// <param name="dataFiller">An action to fill a <see cref="NetDataWriter"/> with data to send</param>
-        private void SendToAll(Action<NetDataWriter> dataFiller)
+        private void SendToAll(GameKey key, Action<NetDataWriter, Player> dataFiller)
         {
-            NetDataWriter writer = new NetDataWriter();
-
-            dataFiller.Invoke(writer);
-            SendToPlayer(_selfPlayer, writer);
-
+            NetDataWriter writer = null;
             foreach (Player p in _players)
             {
-                dataFiller.Invoke(writer);
+                writer = NetHelpers.GetKeyValue(key);
+                dataFiller.Invoke(writer, p);
                 SendToPlayer(p, writer);
             }
+            writer?.Reset();
         }
 
         #endregion

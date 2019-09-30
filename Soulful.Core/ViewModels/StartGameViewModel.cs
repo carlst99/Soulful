@@ -28,6 +28,7 @@ namespace Soulful.Core.ViewModels
         #region Fields
 
         private readonly INetServerService _server;
+        private readonly INetClientService _client;
         private readonly IIntraMessenger _messenger;
 
         private int _gamePin;
@@ -39,11 +40,17 @@ namespace Soulful.Core.ViewModels
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the pin used by peers to connect to the server
+        /// </summary>
         public string GamePin
         {
             get => _gamePin.ToString("000000");
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of players allowed in the server
+        /// </summary>
         public int MaxPlayers
         {
             get => _maxPlayers;
@@ -54,29 +61,54 @@ namespace Soulful.Core.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the list of connected players
+        /// </summary>
         public ObservableCollection<Tuple<int, string>> Players
         {
             get => _players;
             set => SetProperty(ref _players, value);
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the game can be started
+        /// </summary>
         public bool CanStartGame => _server.Players.Count >= MIN_PLAYERS - 1;
 
         #endregion
 
         #region Commands
 
+        /// <summary>
+        /// Generates a new game pin
+        /// </summary>
         public IMvxCommand RefreshGamePinCommand => new MvxCommand(GenerateGamePin);
+
+        /// <summary>
+        /// Asks the user if they really wish to navigate back, and performs the action if so
+        /// </summary>
         public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
+
+        /// <summary>
+        /// Starts the game
+        /// </summary>
         public IMvxCommand StartGameCommand => new MvxCommand(StartGame);
+
+        /// <summary>
+        /// Kicks a connected player
+        /// </summary>
         public IMvxCommand KickPlayerCommand => new MvxCommand<int>((i) => _server.Kick(i));
 
         #endregion
 
-        public StartGameViewModel(IMvxNavigationService navigationService, INetServerService server, IIntraMessenger messenger)
+        public StartGameViewModel(IMvxNavigationService navigationService,
+            INetServerService server,
+            INetClientService client,
+            IIntraMessenger messenger)
             : base(navigationService)
         {
             _server = server;
+            _client = client;
             _messenger = messenger;
 
             MaxPlayers = 20;
@@ -93,6 +125,7 @@ namespace Soulful.Core.ViewModels
                 return;
 
             _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
+            _client.ConnectLocal(GamePin, _playerName);
             await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
         }
 

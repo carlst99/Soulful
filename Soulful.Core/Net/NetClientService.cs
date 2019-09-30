@@ -106,10 +106,25 @@ namespace Soulful.Core.Net
         {
             if (!IsRunning)
                 throw new InvalidOperationException("Client is not running");
-            if (!IsConnected)
-                throw new InvalidOperationException("Client is not connected");
 
             RunNetworkerTask(() => _serverPeer.Send(data, D_METHOD));
+        }
+
+        public void ConnectLocal(string pin, string playerName)
+        {
+            Start();
+            RunNetworkerTask(() => _networker.Start());
+            Pin = pin;
+            PlayerName = playerName;
+
+            NetDataWriter writer = new NetDataWriter();
+            writer.Put(Pin);
+            writer.Put(PlayerName);
+
+            _serverPeer = RunNetworkerTask(() => _networker.Connect("localhost", PORT, writer));
+            writer.Reset();
+            IsConnected = true;
+            Log.Information("Client connected to local server");
         }
 
         protected override void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)

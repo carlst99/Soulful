@@ -40,6 +40,11 @@ namespace Soulful.Core.Model
         /// </summary>
         public bool IsReady { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether or not this player is the czar
+        /// </summary>
+        public bool IsCzar { get; set; }
+
         public Player(NetPeer peer, string name)
         {
             Peer = peer;
@@ -48,6 +53,7 @@ namespace Soulful.Core.Model
             SelectedWhiteCards = new List<int>();
             TotalScore = 0;
             IsReady = false;
+            IsCzar = false;
         }
     }
 }

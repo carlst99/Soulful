@@ -13,5 +13,6 @@ namespace Soulful.Core.Net
 
         void Start(string pin, string playerName);
         void Send(NetDataWriter data);
+        void ConnectLocal(string pin, string playerName);
     }
 }
