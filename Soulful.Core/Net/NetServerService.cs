@@ -77,11 +77,17 @@ namespace Soulful.Core.Net
 
         public void Send(NetPeer peer, NetDataWriter data)
         {
+            if (!IsRunning)
+                throw new InvalidOperationException("Server is not running");
+
             RunNetworkerTask(() => peer.Send(data, D_METHOD));
         }
 
         public void SendToAll(NetDataWriter data)
         {
+            if (!IsRunning)
+                throw new InvalidOperationException("Server is not running");
+
             RunNetworkerTask(() => _networker.SendToAll(data, D_METHOD));
         }
 
