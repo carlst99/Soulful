@@ -6,6 +6,7 @@ using Soulful.Core.Model;
 using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace Soulful.Core.ViewModels
         private readonly IIntraMessenger _messenger;
 
         private string _playerName;
+        private ObservableCollection<Tuple<string, int>> _leaderboard;
 
         private ObservableCollection<int> _whiteCards;
         private ObservableCollection<int> _selectedWhiteCards;
@@ -84,6 +86,21 @@ namespace Soulful.Core.ViewModels
         {
             get => _canSendCards;
             set => SetProperty(ref _canSendCards, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the player
+        /// </summary>
+        public string PlayerName
+        {
+            get => _playerName;
+            set => SetProperty(ref _playerName, value);
+        }
+
+        public ObservableCollection<Tuple<string, int>> Leaderboard
+        {
+            get => _leaderboard;
+            set => SetProperty(ref _leaderboard, value);
         }
 
         #endregion
@@ -157,7 +174,7 @@ namespace Soulful.Core.ViewModels
 
             if (parameter)
             {
-                _gameService.Start(_playerName);
+                _gameService.Start();
                 _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
             }
         }

@@ -81,7 +81,7 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public void Start(string playerName)
+        public void Start()
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
@@ -109,15 +109,15 @@ namespace Soulful.Core.Services
             _players.AddRange(from NetPeer player in _server.Players
                               select new Player(player, (string)player.Tag));
 
-            // Alert clients the game has started
-            _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
+            // Alert clients the game has started and send names
+            SendStartGame();
 
             // Run the game
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
             IsRunning = true;
         }
 
-        public void Start(List<string> packKeys, string playerName)
+        public void Start(List<string> packKeys)
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
@@ -128,7 +128,7 @@ namespace Soulful.Core.Services
                     throw new ArgumentException("A provided key does not exist");
             }
             _packKeys = packKeys;
-            Start(playerName);
+            Start();
         }
 
         public void Stop()
@@ -271,6 +271,8 @@ namespace Soulful.Core.Services
             }
         }
 
+        #region Send methods
+
         private void SendWhiteCards()
         {
             void EnqueueWhiteCards()
@@ -349,6 +351,14 @@ namespace Soulful.Core.Services
             if (_czarPosition == _server.Players.Count)
                 _czarPosition = 0;
         }
+
+        private void SendStartGame()
+        {
+            // TODO resolve name duplicates and send name back to client
+            _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the next pack to use
