@@ -53,6 +53,16 @@
         /// <summary>
         /// Indicates to the server that the client is ready to start
         /// </summary>
-        ClientReady = 9
+        ClientReady = 9,
+
+        /// <summary>
+        /// The server is sending an updated leaderboard delta package
+        /// </summary>
+        UpdatingLeaderboard = 10,
+
+        /// <summary>
+        /// The server is sending the initial leaderboard, complete with names
+        /// </summary>
+        SendingInitialLeaderboard = 11
     }
 }

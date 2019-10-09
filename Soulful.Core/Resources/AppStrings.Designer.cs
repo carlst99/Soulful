@@ -214,6 +214,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to (You).
+        /// </summary>
+        public static string Leaderboard_You {
+            get {
+                return ResourceManager.GetString("Leaderboard_You", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to View the rules/how-to-play.
         /// </summary>
         public static string ToolTip_CAHHelp {

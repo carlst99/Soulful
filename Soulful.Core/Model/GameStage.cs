@@ -25,6 +25,16 @@
         /// <summary>
         /// The server is waiting for the czar to make their pick
         /// </summary>
-        AwaitingCzarPick = 4
+        AwaitingCzarPick = 4,
+
+        /// <summary>
+        /// The server is sending valid names to clients
+        /// </summary>
+        UpdatingLeaderboard = 5,
+
+        /// <summary>
+        /// The server needs to create an initial leaderboard and send it to all clients
+        /// </summary>
+        SendingInitialLeaderboard = 6
     }
 }

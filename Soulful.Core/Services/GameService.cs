@@ -109,8 +109,8 @@ namespace Soulful.Core.Services
             _players.AddRange(from NetPeer player in _server.Players
                               select new Player(player, (string)player.Tag));
 
-            // Alert clients the game has started and send names
-            SendStartGame();
+            // Alert clients the game has started
+            _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
 
             // Run the game
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
@@ -213,7 +213,7 @@ namespace Soulful.Core.Services
                 {
                     // Waiting for all players to ready up
                     case GameStage.AwaitingPlayerReady:
-                        currentStage = GameStage.SendingRoundData;
+                        currentStage = GameStage.SendingInitialLeaderboard;
                         foreach (Player p in _players)
                         {
                             if (!p.IsReady)
@@ -223,6 +223,11 @@ namespace Soulful.Core.Services
                             }
                         }
                         break;
+                    case GameStage.SendingInitialLeaderboard:
+                        SendInitialLeaderboard();
+                        currentStage = GameStage.SendingRoundData;
+                        break;
+                    
                     // Preparing server and clients for the next round
                     case GameStage.SendingRoundData:
                         // Remove used white cards
@@ -263,7 +268,13 @@ namespace Soulful.Core.Services
                         currentStage = GameStage.AwaitingCzarPick;
                         break;
                     case GameStage.AwaitingCzarPick:
-
+                        // TODO await czar pick
+                        currentStage = GameStage.UpdatingLeaderboard;
+                        break;
+                    // Sends an updated leaderboard to all players
+                    case GameStage.UpdatingLeaderboard:
+                        SendUpdatedLeaderboard();
+                        currentStage = GameStage.SendingRoundData;
                         break;
                 }
 
@@ -352,10 +363,96 @@ namespace Soulful.Core.Services
                 _czarPosition = 0;
         }
 
-        private void SendStartGame()
+        private void SendInitialLeaderboard()
         {
-            // TODO resolve name duplicates and send name back to client
-            _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
+            // Fix duplicate names
+            Dictionary<string, int> nameCountPairs = new Dictionary<string, int>();
+            foreach (Player player in _players)
+            {
+                if (!nameCountPairs.ContainsKey(player.Name))
+                {
+                    nameCountPairs.Add(player.Name, 0);
+                }
+                else
+                {
+                    // Increment the duplicate count
+                    nameCountPairs[player.Name]++;
+                    player.Name += nameCountPairs[player.Name].ToString();
+                }
+            }
+            nameCountPairs.Clear();
+
+            _players.OrderBy(k => k.Name);
+
+            // Send leaderboard to each player
+            SendToAll(GameKey.SendingInitialLeaderboard, (w, p) =>
+            {
+                foreach (Player player in _players)
+                {
+                    string name = player.Name;
+                    if (p.Id == player.Id)
+                        name += " " + Resources.AppStrings.ResourceManager.GetString("Leaderboard_You");
+
+                    w.Put(player.Id);
+                    w.Put(player.Name);
+                }
+            });
+        }
+
+        private void SendUpdatedLeaderboard()
+        {
+            NetDataWriter w = new NetDataWriter();
+            foreach (Player p in _players)
+            {
+                if (p.NeedsLeaderboardUpdate)
+                {
+                    w.Put(p.Id);
+                    w.Put(p.Score);
+                }
+            }
+            SendToAll(w);
+        }
+
+        #endregion
+
+        #region Data distribution helper methods
+
+        /// <summary>
+        /// Sends data to a player and clears the writer
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="writer"></param>
+        private void SendToPlayer(Player player, NetDataWriter writer)
+        {
+            _server.Send(player.Peer, writer);
+            writer.Reset();
+        }
+
+        /// <summary>
+        /// Fills a <see cref="NetDataWriter"/> using the specified action and sends this to each player
+        /// </summary>
+        /// <param name="dataFiller">An action to fill a <see cref="NetDataWriter"/> with data to send</param>
+        private void SendToAll(GameKey key, Action<NetDataWriter, Player> dataFiller)
+        {
+            NetDataWriter writer = null;
+            foreach (Player p in _players)
+            {
+                writer = NetHelpers.GetKeyValue(key);
+                dataFiller.Invoke(writer, p);
+                SendToPlayer(p, writer);
+            }
+            writer?.Reset();
+        }
+
+        /// <summary>
+        /// Sends a data package to all players
+        /// </summary>
+        /// <param name="writer">The data package to send</param>
+        private void SendToAll(NetDataWriter writer)
+        {
+            foreach (Player p in _players)
+                _server.Send(p.Peer, writer);
+            writer.Reset();
         }
 
         #endregion
@@ -373,37 +470,6 @@ namespace Soulful.Core.Services
 
             return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
         }
-
-        #region Data distribution helper methods
-
-        /// <summary>
-        /// Sends data to a player and clears the writer
-        /// </summary>
-        /// <param name="player"></param>
-        /// <param name="writer"></param>
-        private void SendToPlayer(Player player, NetDataWriter writer)
-        {
-            _server.Send(player.Peer, writer);
-            writer.Reset();
-        }
-
-        /// <summary>
-        /// Sends data to both the server client and player clients
-        /// </summary>
-        /// <param name="dataFiller">An action to fill a <see cref="NetDataWriter"/> with data to send</param>
-        private void SendToAll(GameKey key, Action<NetDataWriter, Player> dataFiller)
-        {
-            NetDataWriter writer = null;
-            foreach (Player p in _players)
-            {
-                writer = NetHelpers.GetKeyValue(key);
-                dataFiller.Invoke(writer, p);
-                SendToPlayer(p, writer);
-            }
-            writer?.Reset();
-        }
-
-        #endregion
 
         /// <summary>
         /// Shuffles a list using the Fisher-Yates algorithm

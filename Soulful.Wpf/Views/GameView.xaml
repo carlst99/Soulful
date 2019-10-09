@@ -4,6 +4,7 @@
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+                  xmlns:model="clr-namespace:Soulful.Core.Model;assembly=Soulful.Core"
                   xmlns:ui="clr-namespace:Soulful.Wpf.UI"
                   xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
                   d:DesignHeight="450"
@@ -16,66 +17,71 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <!-- Back button -->
-        <Button x:Name="BtnNavigateBack"
-                Margin="8"
-                HorizontalAlignment="Left"
-                Command="{Binding NavigateBackCommand}"
-                Content="{md:PackIcon Kind=ArrowBack}"
-                Opacity="0.5"
-                ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}">
-            <Button.Triggers>
-                <EventTrigger RoutedEvent="MouseEnter">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="BtnNavigateBack"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="0.5"
-                                             To="1.0"
-                                             Duration="0:0:0.5"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="MouseLeave">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="BtnNavigateBack"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="1.0"
-                                             To="0.5"
-                                             Duration="0:0:0.5"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Button.Triggers>
-        </Button>
+        <!-- Top buttons -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <Button Grid.Column="1"
-                Margin="8"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Command="{Binding PickCardsCommand}"
-                Content="{Binding SendButtonText, Mode=OneWay}">
-            <Button.IsEnabled>
-                <MultiBinding Converter="{StaticResource BoolAndConverter}">
-                    <Binding Converter="{StaticResource BoolInverterConverter}"
-                             ElementName="WCC"
-                             Mode="OneWay"
-                             Path="SelectionEnabled"/>
-                    <Binding Mode="OneWay"
-                             Path="CanSendCards"/>
-                </MultiBinding>
-            </Button.IsEnabled>
-        </Button>
+            <!-- Back button -->
+            <Button x:Name="BtnNavigateBack"
+                    Margin="8"
+                    HorizontalAlignment="Left"
+                    Command="{Binding NavigateBackCommand}"
+                    Content="{md:PackIcon Kind=ArrowBack}"
+                    Opacity="0.5"
+                    ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}">
+                <Button.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="BtnNavigateBack"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 From="0.5"
+                                                 To="1.0"
+                                                 Duration="0:0:0.5"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="BtnNavigateBack"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 From="1.0"
+                                                 To="0.5"
+                                                 Duration="0:0:0.5"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Button.Triggers>
+            </Button>
 
+            <!-- Send cards button -->
+            <Button Grid.Column="1"
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding PickCardsCommand}"
+                    Content="{Binding SendButtonText, Mode=OneWay}">
+                <Button.IsEnabled>
+                    <MultiBinding Converter="{StaticResource BoolAndConverter}">
+                        <Binding Converter="{StaticResource BoolInverterConverter}"
+                                 ElementName="WCC"
+                                 Mode="OneWay"
+                                 Path="SelectionEnabled"/>
+                        <Binding Mode="OneWay"
+                                 Path="CanSendCards"/>
+                    </MultiBinding>
+                </Button.IsEnabled>
+            </Button>
+        </Grid>
+
+        <!-- White cards manipulator -->
         <ui:WhiteCardControl x:Name="WCC"
                              Grid.Row="1"
-                             Grid.ColumnSpan="2"
                              Margin="0,0,0,0"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top"
@@ -86,39 +92,70 @@
                              SelectionEnabled="True"
                              Visibility="{Binding CzarMode, Converter={StaticResource InvertedVisibilityConverter}}"/>
 
-        <!-- Black card -->
-        <md:Card Grid.Row="2"
-                 Grid.Column="2"
-                 Width="150"
-                 Height="200"
-                 Margin="8"
-                 Padding="8"
-                 HorizontalAlignment="Center"
-                 Background="{StaticResource MaterialDesignPaper}"
-                 Foreground="White"
-                 UniformCornerRadius="4">
-            <Grid>
-                <Viewbox VerticalAlignment="Top">
-                    <TextBlock Width="134"
-                               FontSize="16"
-                               Style="{StaticResource MaterialDesignSubheadingTextBlock}"
-                               Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
-                               TextWrapping="Wrap"/>
-                </Viewbox>
-                <Border Width="20"
-                        Height="20"
-                        Margin="4"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom"
-                        Background="White"
-                        CornerRadius="100">
-                    <TextBlock HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontWeight="Bold"
-                               Foreground="Black"
-                               Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"/>
-                </Border>
-            </Grid>
-        </md:Card>
+        <!-- Black card, leaderboard -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Black card -->
+            <md:Card Width="150"
+                     Height="200"
+                     Margin="8"
+                     Padding="8"
+                     HorizontalAlignment="Center"
+                     Background="{StaticResource MaterialDesignPaper}"
+                     Foreground="White"
+                     UniformCornerRadius="4">
+                <Grid>
+                    <Viewbox VerticalAlignment="Top">
+                        <TextBlock Width="134"
+                                   FontSize="16"
+                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                   Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
+                                   TextWrapping="Wrap"/>
+                    </Viewbox>
+                    <Border Width="20"
+                            Height="20"
+                            Margin="4"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Background="White"
+                            CornerRadius="100">
+                        <TextBlock HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontWeight="Bold"
+                                   Foreground="Black"
+                                   Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"/>
+                    </Border>
+                </Grid>
+            </md:Card>
+
+            <!-- Leaderboard -->
+            <DataGrid Grid.Column="1"
+                      AutoGenerateColumns="False"
+                      CanUserReorderColumns="False"
+                      CanUserResizeColumns="False"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Leaderboard}">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <md:PackIcon Kind="Crown"
+                                                 Visibility="{Binding IsTop, Converter={StaticResource VisibilityConverter}}"/>
+                                    <md:PackIcon Kind="EmoticonPoop"
+                                                 Visibility="{Binding IsBottom, Converter={StaticResource VisibilityConverter}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Binding="{Binding PlayerName}"/>
+                    <DataGridTextColumn Binding="{Binding Score}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
     </Grid>
 </views:MvxWpfView>
