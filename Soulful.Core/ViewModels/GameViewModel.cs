@@ -6,7 +6,9 @@ using Soulful.Core.Model;
 using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
@@ -19,8 +21,7 @@ namespace Soulful.Core.ViewModels
         private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
 
-        private string _playerName;
-
+        private ObservableCollection<LeaderboardEntry> _leaderboard;
         private ObservableCollection<int> _whiteCards;
         private ObservableCollection<int> _selectedWhiteCards;
         private int _blackCard;
@@ -86,6 +87,15 @@ namespace Soulful.Core.ViewModels
             set => SetProperty(ref _canSendCards, value);
         }
 
+        /// <summary>
+        /// Gets or sets the leaderboard
+        /// </summary>
+        public ObservableCollection<LeaderboardEntry> Leaderboard
+        {
+            get => _leaderboard;
+            set => SetProperty(ref _leaderboard, value);
+        }
+
         #endregion
 
         #region Commands
@@ -109,6 +119,7 @@ namespace Soulful.Core.ViewModels
             _gameService = gameService;
             _messenger = messenger;
 
+            Leaderboard = new ObservableCollection<LeaderboardEntry>();
             WhiteCards = new ObservableCollection<int>();
             SendButtonText = this["Command_PlayerPickCards"];
             CanSendCards = true;
@@ -143,6 +154,21 @@ namespace Soulful.Core.ViewModels
                     CzarMode = true;
                     SendButtonText = this["Command_CzarPickCards"];
                     break;
+                case GameKey.UpdatingLeaderboard:
+                    while (!e.Data.EndOfData)
+                    {
+                        int id = e.Data.GetInt();
+                        int score = e.Data.GetInt();
+
+                        if (Leaderboard.Any(l => l.PlayerId == id))
+                            Leaderboard.First(l => l.PlayerId == id).Score = score;
+                    }
+                    DoLeaderboardManipulation();
+                    break;
+                case GameKey.SendingInitialLeaderboard:
+                    while (!e.Data.EndOfData)
+                        Leaderboard.Add(new LeaderboardEntry(e.Data.GetInt(), e.Data.GetString()));
+                    break;
             }
         }
 
@@ -157,7 +183,7 @@ namespace Soulful.Core.ViewModels
 
             if (parameter)
             {
-                _gameService.Start(_playerName);
+                _gameService.Start();
                 _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
             }
         }
@@ -196,7 +222,7 @@ namespace Soulful.Core.ViewModels
         {
             if (CzarMode)
             {
-
+                
             } else
             {
                 NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.ClientSendWhiteCards);
@@ -207,6 +233,24 @@ namespace Soulful.Core.ViewModels
             }
 
             CanSendCards = false;
+        }
+
+        /// <summary>
+        /// Finds the top and bottom players in the leaderboard and marks them as so
+        /// </summary>
+        private void DoLeaderboardManipulation()
+        {
+            int highestScore = Leaderboard.Max(l => l.Score);
+            int lowestScore = Leaderboard.Min(l => l.Score);
+
+            foreach (LeaderboardEntry element in Leaderboard)
+                element.Reset();
+
+            foreach (LeaderboardEntry element in Leaderboard.Where(l => l.Score == highestScore))
+                element.IsTop = true;
+
+            foreach (LeaderboardEntry element in Leaderboard.Where(l => l.Score == lowestScore))
+                element.IsBottom = true;
         }
 
         private void OnDisconnected(object sender, NetKey e)

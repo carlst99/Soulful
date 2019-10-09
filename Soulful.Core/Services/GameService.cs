@@ -81,7 +81,7 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public void Start(string playerName)
+        public void Start()
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
@@ -117,7 +117,7 @@ namespace Soulful.Core.Services
             IsRunning = true;
         }
 
-        public void Start(List<string> packKeys, string playerName)
+        public void Start(List<string> packKeys)
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
@@ -128,7 +128,7 @@ namespace Soulful.Core.Services
                     throw new ArgumentException("A provided key does not exist");
             }
             _packKeys = packKeys;
-            Start(playerName);
+            Start();
         }
 
         public void Stop()
@@ -213,7 +213,7 @@ namespace Soulful.Core.Services
                 {
                     // Waiting for all players to ready up
                     case GameStage.AwaitingPlayerReady:
-                        currentStage = GameStage.SendingRoundData;
+                        currentStage = GameStage.SendingInitialLeaderboard;
                         foreach (Player p in _players)
                         {
                             if (!p.IsReady)
@@ -223,6 +223,11 @@ namespace Soulful.Core.Services
                             }
                         }
                         break;
+                    case GameStage.SendingInitialLeaderboard:
+                        SendInitialLeaderboard();
+                        currentStage = GameStage.SendingRoundData;
+                        break;
+                    
                     // Preparing server and clients for the next round
                     case GameStage.SendingRoundData:
                         // Remove used white cards
@@ -263,13 +268,21 @@ namespace Soulful.Core.Services
                         currentStage = GameStage.AwaitingCzarPick;
                         break;
                     case GameStage.AwaitingCzarPick:
-
+                        // TODO await czar pick
+                        currentStage = GameStage.UpdatingLeaderboard;
+                        break;
+                    // Sends an updated leaderboard to all players
+                    case GameStage.UpdatingLeaderboard:
+                        SendUpdatedLeaderboard();
+                        currentStage = GameStage.SendingRoundData;
                         break;
                 }
 
                 _stopToken.Token.WaitHandle.WaitOne(NetHelpers.POLL_DELAY);
             }
         }
+
+        #region Send methods
 
         private void SendWhiteCards()
         {
@@ -350,19 +363,57 @@ namespace Soulful.Core.Services
                 _czarPosition = 0;
         }
 
-        /// <summary>
-        /// Gets the next pack to use
-        /// </summary>
-        /// <returns>A pack key</returns>
-        private string GetNextPackKey(bool whitePack)
+        private void SendInitialLeaderboard()
         {
-            if (_whitePackPosition == _loader.Packs.Count - 1)
-                _whitePackPosition = 0;
-            if (_blackPackPosition == _loader.Packs.Count - 1)
-                _blackPackPosition = 0;
+            // Fix duplicate names
+            Dictionary<string, int> nameCountPairs = new Dictionary<string, int>();
+            foreach (Player player in _players)
+            {
+                if (!nameCountPairs.ContainsKey(player.Name))
+                {
+                    nameCountPairs.Add(player.Name, 0);
+                }
+                else
+                {
+                    // Increment the duplicate count
+                    nameCountPairs[player.Name]++;
+                    player.Name += nameCountPairs[player.Name].ToString();
+                }
+            }
+            nameCountPairs.Clear();
 
-            return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
+            _players.OrderBy(k => k.Name);
+
+            // Send leaderboard to each player
+            SendToAll(GameKey.SendingInitialLeaderboard, (w, p) =>
+            {
+                foreach (Player player in _players)
+                {
+                    string name = player.Name;
+                    if (p.Id == player.Id)
+                        name += " " + Resources.AppStrings.ResourceManager.GetString("Leaderboard_You");
+
+                    w.Put(player.Id);
+                    w.Put(player.Name);
+                }
+            });
         }
+
+        private void SendUpdatedLeaderboard()
+        {
+            NetDataWriter w = new NetDataWriter();
+            foreach (Player p in _players)
+            {
+                if (p.NeedsLeaderboardUpdate)
+                {
+                    w.Put(p.Id);
+                    w.Put(p.Score);
+                }
+            }
+            SendToAll(w);
+        }
+
+        #endregion
 
         #region Data distribution helper methods
 
@@ -378,7 +429,7 @@ namespace Soulful.Core.Services
         }
 
         /// <summary>
-        /// Sends data to both the server client and player clients
+        /// Fills a <see cref="NetDataWriter"/> using the specified action and sends this to each player
         /// </summary>
         /// <param name="dataFiller">An action to fill a <see cref="NetDataWriter"/> with data to send</param>
         private void SendToAll(GameKey key, Action<NetDataWriter, Player> dataFiller)
@@ -393,7 +444,32 @@ namespace Soulful.Core.Services
             writer?.Reset();
         }
 
+        /// <summary>
+        /// Sends a data package to all players
+        /// </summary>
+        /// <param name="writer">The data package to send</param>
+        private void SendToAll(NetDataWriter writer)
+        {
+            foreach (Player p in _players)
+                _server.Send(p.Peer, writer);
+            writer.Reset();
+        }
+
         #endregion
+
+        /// <summary>
+        /// Gets the next pack to use
+        /// </summary>
+        /// <returns>A pack key</returns>
+        private string GetNextPackKey(bool whitePack)
+        {
+            if (_whitePackPosition == _loader.Packs.Count - 1)
+                _whitePackPosition = 0;
+            if (_blackPackPosition == _loader.Packs.Count - 1)
+                _blackPackPosition = 0;
+
+            return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
+        }
 
         /// <summary>
         /// Shuffles a list using the Fisher-Yates algorithm

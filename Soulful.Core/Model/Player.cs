@@ -5,10 +5,14 @@ namespace Soulful.Core.Model
 {
     public class Player
     {
+        private int _score;
+
+        #region Properties
+
         /// <summary>
         /// Gets or sets the network peer of this player
         /// </summary>
-        public NetPeer Peer { get; set; }
+        public readonly NetPeer Peer;
 
         /// <summary>
         /// Gets the peer ID of this player
@@ -28,7 +32,15 @@ namespace Soulful.Core.Model
         /// <summary>
         /// Gets or sets the total score for this player
         /// </summary>
-        public int TotalScore { get; set; }
+        public int Score
+        {
+            get => _score;
+            set
+            {
+                _score = value;
+                NeedsLeaderboardUpdate = true;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the players name
@@ -45,13 +57,21 @@ namespace Soulful.Core.Model
         /// </summary>
         public bool IsCzar { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value which indicates whether this player's leaderboard entry needs an update
+        /// </summary>
+        public bool NeedsLeaderboardUpdate { get; set; }
+
+        #endregion
+
         public Player(NetPeer peer, string name)
         {
             Peer = peer;
             Name = name;
             WhiteCards = new List<int>();
             SelectedWhiteCards = new List<int>();
-            TotalScore = 0;
+            Score = 0;
+            NeedsLeaderboardUpdate = true;
             IsReady = false;
             IsCzar = false;
         }

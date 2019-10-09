@@ -185,6 +185,10 @@
     <value>Max Players</value>
     <comment>This label appears beside the maximum number of players allowed into the game</comment>
   </data>
+  <data name="Leaderboard_You" xml:space="preserve">
+    <value>(You)</value>
+    <comment>This suffix appears after the player's own name on the leaderboard</comment>
+  </data>
   <data name="ToolTip_CAHHelp" xml:space="preserve">
     <value>View the rules/how-to-play</value>
     <comment>This tooltip appears on a control which opens the CAH game rules</comment>
