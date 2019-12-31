@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using CardHelper.CardDb;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Realms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,15 +23,17 @@ namespace CardHelper
         public const string WHITE_CARDS_RANGE_IDENTIFIER = "white";
         public const string PACK_NAME_IDENTIFIER = "name";
 
-        private static string _saveDirectory;
+        private static Realm _cardsRealm;
 
         public static void Main(string[] args)
         {
             if (args.Length != 2)
                 throw new ArgumentException("Required: pathToFile, pathToOutputDirectory");
-            _saveDirectory = Path.GetFullPath(args[1]);
-            if (!Directory.Exists(_saveDirectory))
-                Directory.CreateDirectory(_saveDirectory);
+
+            string saveDirectory = Path.GetFullPath(args[1]);
+            if (!Directory.Exists(saveDirectory))
+                Directory.CreateDirectory(saveDirectory);
+            _cardsRealm = Realm.GetInstance(new RealmConfiguration(Path.Combine(saveDirectory, "cards.realm")));
 
             using (StreamReader reader = File.OpenText(args[0]))
             {
@@ -37,18 +41,18 @@ namespace CardHelper
 
                 // Get all the packs in the file
                 List<string> packKeys = (cardList[PACK_KEY_IDENTIFIER] as JArray)?.Select(k => k.ToString()).ToList();
-                if (packKeys == null || packKeys.Count <= 0)
+                if (packKeys == null || packKeys.Count == 0)
                     throw new Exception("The loaded file contains no pack keys");
 
                 // Save all the black cards
                 List<JObject> blackCards = (cardList[BLACK_CARDS_IDENTIFIER] as JArray)?.Select(c => (JObject)c).ToList();
-                if (blackCards == null || blackCards.Count <= 0)
+                if (blackCards == null || blackCards.Count == 0)
                     throw new Exception("The loaded file contains no black cards");
                 else
                     SaveBlackCards(blackCards);
 
                 List<string> whiteCards = (cardList[WHITE_CARDS_IDENTIFIER] as JArray)?.Select(c => c.ToString()).ToList();
-                if (whiteCards == null || whiteCards.Count <= 0)
+                if (whiteCards == null || whiteCards.Count == 0)
                     throw new Exception("The loaded file contains no white cards");
                 else
                     SaveWhiteCards(whiteCards);
@@ -78,29 +82,33 @@ namespace CardHelper
 
         public static void SaveBlackCards(List<JObject> cards)
         {
-            using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "black.txt"), false, Encoding.UTF8))
+            _cardsRealm.Write(() =>
             {
                 foreach (JObject card in cards)
                 {
-                    string entry = card["text"].ToString();
-                    entry = PruneString(entry);
-                    entry += SEPARATOR;
-                    entry += card["pick"].ToString();
-                    writer.WriteLine(entry);
+                    BlackCard blackCard = new BlackCard
+                    {
+                        Content = PruneString(card["text"].ToString()),
+                        NumPicks = int.Parse(card["pick"].ToString())
+                    };
+                    _cardsRealm.Add(blackCard);
                 }
-            }
+            });
         }
 
         public static void SaveWhiteCards(List<string> cards)
         {
-            using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "white.txt"), false, Encoding.UTF8))
+            _cardsRealm.Write(() =>
             {
                 foreach (string card in cards)
                 {
-                    string pruned = PruneString(card);
-                    writer.WriteLine(pruned);
+                    WhiteCard whiteCard = new WhiteCard
+                    {
+                        Content = PruneString(card)
+                    };
+                    _cardsRealm.Add(whiteCard);
                 }
-            }
+            });
         }
 
         public static void SavePacks(List<PackInfo> packs)

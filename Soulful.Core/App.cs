@@ -20,6 +20,7 @@ namespace Soulful.Core
     public class App : MvxApplication
     {
         public const string LOG_FILE_NAME = "log.log";
+        public const string APP_NAME = "Soulful";
 
         public override void Initialize()
         {
@@ -100,15 +101,27 @@ namespace Soulful.Core
         /// </returns>
         public static string GetPlatformAppdataPath()
         {
-            switch (Mvx.IoCProvider.GetSingleton<IDeviceInfo>().Platform)
+            string path;
+            if (CrossDeviceInfo.IsSupported)
             {
-                case Platform.Android:
-                    return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                case Platform.iOS:
-                    return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                default:
-                    return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                switch (CrossDeviceInfo.Current.Platform)
+                {
+                    case Platform.Android:
+                        path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                        break;
+                    case Platform.iOS:
+                        path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                        break;
+                    default:
+                        path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                        break;
+                }
+            } else
+            {
+                path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             }
+
+            return Path.Combine(path, APP_NAME);
         }
 
         /// <summary>
@@ -116,7 +129,7 @@ namespace Soulful.Core
         /// </summary>
         /// <param name="fileName">The name of the file to resolve the path to</param>
         /// <returns></returns>
-        public static string GetAppdataFilePath(string fileName) => Path.Combine(GetPlatformAppdataPath(), Assembly.GetEntryAssembly().GetName().Name, fileName);
+        public static string GetAppdataFilePath(string fileName) => Path.Combine(GetPlatformAppdataPath(), fileName);
 
         #endregion
     }
