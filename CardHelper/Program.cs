@@ -11,16 +11,49 @@ namespace CardHelper
 {
     public static class Program
     {
-        public const char SEPARATOR = '|';
+        #region JSON Keys
 
+        /// <summary>
+        /// The JSON key for the pack information
+        /// </summary>
         public const string PACK_KEY_IDENTIFIER = "order";
 
+        /// <summary>
+        /// The JSON key for the black cards information
+        /// </summary>
         public const string BLACK_CARDS_IDENTIFIER = "blackCards";
+
+        /// <summary>
+        /// The JSON key for the white cards information
+        /// </summary>
         public const string WHITE_CARDS_IDENTIFIER = "whiteCards";
 
+        /// <summary>
+        /// The JSON key for the black cards range/index information
+        /// </summary>
         public const string BLACK_CARDS_RANGE_IDENTIFIER = "black";
+
+        /// <summary>
+        /// The JSON key for the white cards range/index information
+        /// </summary>
         public const string WHITE_CARDS_RANGE_IDENTIFIER = "white";
+
+        /// <summary>
+        /// The JSON key for the pack name
+        /// </summary>
         public const string PACK_NAME_IDENTIFIER = "name";
+
+        /// <summary>
+        /// The JSON key for the content part of a black card object
+        /// </summary>
+        public const string BLACK_CARD_TEXT_IDENTIFIER = "text";
+
+        /// <summary>
+        /// The JSON key for the content part of a white card object
+        /// </summary>
+        public const string BLACK_CARD_PICK_IDENTIFIER = "pick";
+
+        #endregion
 
         private static Realm _cardsRealm;
 
@@ -78,7 +111,7 @@ namespace CardHelper
 
                         foreach (int element in blackRange)
                         {
-                            string cardContent = PruneString(blackCards[element]["text"].ToString());
+                            string cardContent = PruneString(blackCards[element][BLACK_CARD_TEXT_IDENTIFIER].ToString());
                             pack.BlackCards.Add(realmBlackCards.First(c => c.Content == cardContent));
                         }
 
@@ -106,8 +139,8 @@ namespace CardHelper
                     BlackCard blackCard = new BlackCard
                     {
                         Id = id,
-                        Content = PruneString(card["text"].ToString()),
-                        NumPicks = int.Parse(card["pick"].ToString())
+                        Content = PruneString(card[BLACK_CARD_TEXT_IDENTIFIER].ToString()),
+                        NumPicks = int.Parse(card[BLACK_CARD_PICK_IDENTIFIER].ToString())
                     };
                     _cardsRealm.Add(blackCard);
                     id++;
