@@ -59,28 +59,40 @@ namespace CardHelper
                 else
                     SaveWhiteCards(whiteCards);
 
-                // Save all the packs
-                List<PackInfo> packInfos = new List<PackInfo>();
-                foreach (string key in packKeys)
+                IQueryable<WhiteCard> realmWhiteCards = _cardsRealm.All<WhiteCard>();
+                IQueryable<BlackCard> realmBlackCards = _cardsRealm.All<BlackCard>();
+                _cardsRealm.Write(() =>
                 {
-                    List<int> blackRange = (cardList[key][BLACK_CARDS_RANGE_IDENTIFIER] as JArray)?.Select(n => (int)n).ToList();
-                    List<int> whiteRange = (cardList[key][WHITE_CARDS_RANGE_IDENTIFIER] as JArray)?.Select(n => (int)n).ToList();
-                    string name = cardList[key][PACK_NAME_IDENTIFIER].ToString();
-
-                    PackInfo info = new PackInfo
+                    int id = 0;
+                    foreach (string key in packKeys)
                     {
-                        Name = name,
-                        Key = key,
-                        BlackStartRange = blackRange.Count > 0 ? blackRange[0] : -1,
-                        BlackCount = blackRange.Count > 0 ? blackRange.Count : -1,
-                        WhiteStartRange = whiteRange.Count > 0 ? whiteRange[0] : -1,
-                        WhiteCount = whiteRange.Count > 0 ? whiteRange.Count : -1
-                    };
-                    packInfos.Add(info);
-                }
-                NormalisePackIndexes(packInfos);
-                _cardsRealm.Refresh();
-                SavePacks(packInfos);
+                        List<int> blackRange = (cardList[key][BLACK_CARDS_RANGE_IDENTIFIER] as JArray)?.Select(n => (int)n).ToList();
+                        List<int> whiteRange = (cardList[key][WHITE_CARDS_RANGE_IDENTIFIER] as JArray)?.Select(n => (int)n).ToList();
+                        string name = cardList[key][PACK_NAME_IDENTIFIER].ToString();
+
+                        Pack pack = new Pack
+                        {
+                            Id = id,
+                            Name = name
+                        };
+
+                        foreach (int element in blackRange)
+                        {
+                            string cardContent = PruneString(blackCards[element]["text"].ToString());
+                            pack.BlackCards.Add(realmBlackCards.First(c => c.Content == cardContent));
+                        }
+
+                        foreach (int element in whiteRange)
+                        {
+                            string cardContent = PruneString(whiteCards[element]);
+                            pack.WhiteCards.Add(realmWhiteCards.First(c => c.Content == cardContent));
+                        }
+
+                        _cardsRealm.Add(pack);
+                        id++;
+                    }
+                });
+                Console.WriteLine("Packs saved to DB");
             }
         }
 
@@ -121,59 +133,6 @@ namespace CardHelper
                 }
             });
             Console.WriteLine("White cards saved to DB");
-        }
-
-        public static void NormalisePackIndexes(List<PackInfo> packInfos)
-        {
-            int lastBlackIndex = 0;
-            int lastWhiteIndex = 0;
-
-            for (int i = 0; i < packInfos.Count; i++)
-            {
-                PackInfo info = packInfos[i];
-                if (info.BlackStartRange != -1 && info.BlackCount != -1)
-                {
-                    info.BlackStartRange = lastBlackIndex;
-                    lastBlackIndex += info.BlackCount;
-                }
-                if (info.WhiteStartRange != -1 && info.WhiteCount != -1)
-                {
-                    info.WhiteStartRange = lastWhiteIndex;
-                    lastWhiteIndex += info.WhiteCount;
-                }
-            }
-        }
-
-        public static void SavePacks(List<PackInfo> packs)
-        {
-            Queue<WhiteCard> whiteCards = new Queue<WhiteCard>(_cardsRealm.All<WhiteCard>());
-            Queue<BlackCard> blackCards = new Queue<BlackCard>(_cardsRealm.All<BlackCard>());
-
-            _cardsRealm.Write(() =>
-            {
-                int id = 0;
-                foreach (PackInfo info in packs)
-                {
-                    Pack pack = new Pack
-                    {
-                        Id = id,
-                        Name = info.Name
-                    };
-                    if (info.BlackStartRange != -1 && info.BlackCount != -1)
-                    {
-                        for (int i = info.BlackStartRange; i < info.BlackStartRange + info.BlackCount; i++)
-                            pack.BlackCards.Add(blackCards.Dequeue());
-                    }
-                    if (info.WhiteStartRange != -1 && info.WhiteCount != -1)
-                    {
-                        for (int i = info.WhiteStartRange; i < info.WhiteStartRange + info.WhiteCount; i++)
-                            pack.WhiteCards.Add(whiteCards.Dequeue());
-                    }
-                    _cardsRealm.Add(pack);
-                    id++;
-                }
-            });
-            Console.WriteLine("Packs saved to DB");
         }
 
         private static string PruneString(string s)
