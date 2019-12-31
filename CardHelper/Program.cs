@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace CardHelper
 {
@@ -33,7 +32,10 @@ namespace CardHelper
             string saveDirectory = Path.GetFullPath(args[1]);
             if (!Directory.Exists(saveDirectory))
                 Directory.CreateDirectory(saveDirectory);
-            _cardsRealm = Realm.GetInstance(new RealmConfiguration(Path.Combine(saveDirectory, "cards.realm")));
+
+            RealmConfiguration config = new RealmConfiguration(Path.Combine(saveDirectory, "cards.realm"));
+            Realm.DeleteRealm(config);
+            _cardsRealm = Realm.GetInstance(config);
 
             using (StreamReader reader = File.OpenText(args[0]))
             {
@@ -76,6 +78,8 @@ namespace CardHelper
                     };
                     packInfos.Add(info);
                 }
+                NormalisePackIndexes(packInfos);
+                _cardsRealm.Refresh();
                 SavePacks(packInfos);
             }
         }
@@ -84,76 +88,92 @@ namespace CardHelper
         {
             _cardsRealm.Write(() =>
             {
+                int id = 0;
                 foreach (JObject card in cards)
                 {
                     BlackCard blackCard = new BlackCard
                     {
+                        Id = id,
                         Content = PruneString(card["text"].ToString()),
                         NumPicks = int.Parse(card["pick"].ToString())
                     };
                     _cardsRealm.Add(blackCard);
+                    id++;
                 }
             });
+            Console.WriteLine("Black cards saved to DB");
         }
 
         public static void SaveWhiteCards(List<string> cards)
         {
             _cardsRealm.Write(() =>
             {
+                int id = 0;
                 foreach (string card in cards)
                 {
                     WhiteCard whiteCard = new WhiteCard
                     {
+                        Id = id,
                         Content = PruneString(card)
                     };
                     _cardsRealm.Add(whiteCard);
+                    id++;
                 }
             });
+            Console.WriteLine("White cards saved to DB");
+        }
+
+        public static void NormalisePackIndexes(List<PackInfo> packInfos)
+        {
+            int lastBlackIndex = 0;
+            int lastWhiteIndex = 0;
+
+            for (int i = 0; i < packInfos.Count; i++)
+            {
+                PackInfo info = packInfos[i];
+                if (info.BlackStartRange != -1 && info.BlackCount != -1)
+                {
+                    info.BlackStartRange = lastBlackIndex;
+                    lastBlackIndex += info.BlackCount;
+                }
+                if (info.WhiteStartRange != -1 && info.WhiteCount != -1)
+                {
+                    info.WhiteStartRange = lastWhiteIndex;
+                    lastWhiteIndex += info.WhiteCount;
+                }
+            }
         }
 
         public static void SavePacks(List<PackInfo> packs)
         {
-            using (StreamWriter writer = new StreamWriter(Path.Combine(_saveDirectory, "packs.txt"), false, Encoding.UTF8))
+            Queue<WhiteCard> whiteCards = new Queue<WhiteCard>(_cardsRealm.All<WhiteCard>());
+            Queue<BlackCard> blackCards = new Queue<BlackCard>(_cardsRealm.All<BlackCard>());
+
+            _cardsRealm.Write(() =>
             {
-                foreach (PackInfo pack in packs)
-                    writer.WriteLine(pack.ToString());
-            }
-        }
-
-        public struct PackInfo
-        {
-            public string Key { get; set; }
-            public string Name { get; set; }
-
-            /// <summary>
-            /// Gets or sets the point at which the black cards for this pack start
-            /// </summary>
-            public int BlackStartRange { get; set; }
-
-            /// <summary>
-            /// Gets or sets the number of black cards in the pack
-            /// </summary>
-            public int BlackCount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the point at which the white cards for this pack start
-            /// </summary>
-            public int WhiteStartRange { get; set; }
-
-            /// <summary>
-            /// Gets or sets the number of white cards in the pack
-            /// </summary>
-            public int WhiteCount { get; set; }
-
-            public override string ToString()
-            {
-                return Key + SEPARATOR
-                    + Name + SEPARATOR
-                    + BlackStartRange + SEPARATOR
-                    + BlackCount + SEPARATOR
-                    + WhiteStartRange + SEPARATOR
-                    + WhiteCount;
-            }
+                int id = 0;
+                foreach (PackInfo info in packs)
+                {
+                    Pack pack = new Pack
+                    {
+                        Id = id,
+                        Name = info.Name
+                    };
+                    if (info.BlackStartRange != -1 && info.BlackCount != -1)
+                    {
+                        for (int i = info.BlackStartRange; i < info.BlackStartRange + info.BlackCount; i++)
+                            pack.BlackCards.Add(blackCards.Dequeue());
+                    }
+                    if (info.WhiteStartRange != -1 && info.WhiteCount != -1)
+                    {
+                        for (int i = info.WhiteStartRange; i < info.WhiteStartRange + info.WhiteCount; i++)
+                            pack.WhiteCards.Add(whiteCards.Dequeue());
+                    }
+                    _cardsRealm.Add(pack);
+                    id++;
+                }
+            });
+            Console.WriteLine("Packs saved to DB");
         }
 
         private static string PruneString(string s)
