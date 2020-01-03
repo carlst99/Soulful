@@ -1,90 +1,9 @@
-﻿<views:MvxApplication x:Class="Soulful.Wpf.App"
-                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                      xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-                      xmlns:ui="clr-namespace:Soulful.Wpf.UI"
-                      xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
-                      StartupUri="MainWindow.xaml">
-
-    <views:MvxApplication.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <!-- Material Design < 2.6.0 (should work for time being) -->
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Lime.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.LightBlue.xaml"/>
-
-                <!-- Material Design (throws compiler warning -->
-                <!--<md:BundledTheme BaseTheme="Dark" PrimaryColor="Lime" SecondaryColor="LightBlue"/>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />-->
-
-                <!-- Custom themes -->
-                <ResourceDictionary Source="pack://application:,,,/Soulful.Wpf;component/UI/Styles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
-            <ui:NativeIntToCardConverter x:Key="IntToCardConverter"/>
-            <ui:NativeBoolInverterConverter x:Key="BoolInverterConverter"/>
-            <ui:NativeMvxVisibilityValueConverter x:Key="VisibilityConverter"/>
-            <ui:NativeMvxInvertedVisibilityValueConverter x:Key="InvertedVisibilityConverter"/>
-            <ui:BoolOrToVisibilityConverter x:Key="BoolOrToVisibilityConverter"/>
-            <ui:BoolAndToVisibilityConverter x:Key="BoolAndToVisibilityConverter"/>
-            <ui:BoolAndConverter x:Key="BoolAndConverter"/>
-
-            <DataTemplate x:Key="WhiteCardTemplate">
-                <md:Card Width="150"
-                         Height="200"
-                         Margin="8"
-                         Padding="8"
-                         Background="White"
-                         Foreground="Black"
-                         UniformCornerRadius="4">
-                    <Viewbox VerticalAlignment="Top">
-                        <TextBlock Width="134"
-                                   FontSize="16"
-                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"
-                                   Text="{Binding Converter={StaticResource IntToCardConverter}}"
-                                   TextWrapping="Wrap"/>
-                    </Viewbox>
-                </md:Card>
-            </DataTemplate>
-
-            <DataTemplate x:Key="BlackCardTemplate">
-                <md:Card Width="150"
-                         Height="200"
-                         Margin="8"
-                         Padding="8"
-                         Background="{StaticResource MaterialDesignPaper}"
-                         Foreground="White"
-                         UniformCornerRadius="4">
-                    <Grid>
-                        <Viewbox VerticalAlignment="Top">
-                            <TextBlock Width="134"
-                                       FontSize="16"
-                                       Style="{StaticResource MaterialDesignSubheadingTextBlock}"
-                                       Text="{Binding Item1, Converter={StaticResource IntToCardConverter}}"
-                                       TextWrapping="Wrap"/>
-                        </Viewbox>
-                        <Border Width="20"
-                                Height="20"
-                                Margin="4"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Background="White"
-                                CornerRadius="100">
-                            <TextBlock HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       FontWeight="Bold"
-                                       Foreground="Black"
-                                       Text="{Binding Item2}"/>
-                        </Border>
-                    </Grid>
-                </md:Card>
-            </DataTemplate>
-
-            <ItemsPanelTemplate x:Key="ItemsControlWrapPanelTemplate">
-                <WrapPanel/>
-            </ItemsPanelTemplate>
-        </ResourceDictionary>
-    </views:MvxApplication.Resources>
-</views:MvxApplication>
+﻿<Application x:Class="Soulful.Wpf.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Soulful.Wpf"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>
