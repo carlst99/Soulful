@@ -82,24 +82,24 @@ namespace Soulful.Core.Net
                 Task.Delay(DISCOVERY_TIMEOUT).Wait();
                 if (!IsConnected && IsRunning)
                 {
-                    Log.Information("Client failed to connect to server");
+                    Log.Information("[NetClient]Client failed to connect to server");
                     Stop();
                     ConnectionFailed?.Invoke(this, EventArgs.Empty);
                 }
             });
 
-            Log.Information("Client started");
-            Log.Information("Client attempting to discover server with pin {pin}", Pin);
+            Log.Information("[NetClient]Client started");
+            Log.Information("[NetClient]Client attempting to discover server with pin {pin}", Pin);
         }
 
         public override void Stop()
         {
             if (!IsRunning)
-                throw App.CreateError<InvalidOperationException>("Client is not running");
+                throw new InvalidOperationException("Client is not running");
 
             IsConnected = false;
             base.Stop();
-            Log.Information("Client stopped");
+            Log.Information("[NetClient]Client stopped");
         }
 
         public void Send(NetDataWriter data)
@@ -124,7 +124,7 @@ namespace Soulful.Core.Net
             _serverPeer = RunNetworkerTask(() => _networker.Connect("localhost", PORT, writer));
             writer.Reset();
             IsConnected = true;
-            Log.Information("Client connected to local server");
+            Log.Information("[NetClient]Client connected to local server");
         }
 
         protected override void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
@@ -135,7 +135,7 @@ namespace Soulful.Core.Net
                 IsConnected = true;
                 ConnectedToServer?.Invoke(this, EventArgs.Empty);
                 reader.Recycle();
-                Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
+                Log.Information("[NetClient]Client successfully connected to server at {endPoint}", peer.EndPoint);
             }
             else
             {
@@ -153,7 +153,7 @@ namespace Soulful.Core.Net
                 writer.Put(Pin);
                 writer.Put(PlayerName);
                 _serverPeer = RunNetworkerTask(() => _networker.Connect(remoteEndPoint, writer));
-                Log.Information("Client attempting to connect to server at {endPoint}", remoteEndPoint);
+                Log.Information("[NetClient]Client attempting to connect to server at {endPoint}", remoteEndPoint);
             }
             reader.Recycle();
         }
@@ -170,7 +170,7 @@ namespace Soulful.Core.Net
                 else
                     key = NetKey.DisconnectUnknownError;
 
-                Log.Information("Client disconnected from server with reason {key}", key);
+                Log.Information("[NetClient]Client disconnected from server with reason {key}", key);
                 DisconnectedFromServer?.Invoke(this, key);
             }
         }

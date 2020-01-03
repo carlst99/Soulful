@@ -1,7 +1,9 @@
 ﻿using IntraMessaging;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Realms;
 using Soulful.Core.Model;
+using Soulful.Core.Model.CardDb;
 using Soulful.Core.Net;
 using System;
 using System.Collections.Generic;
@@ -18,10 +20,11 @@ namespace Soulful.Core.Services
         #region Service Fields
 
         private readonly INetServerService _server;
-        private readonly ICardLoaderService _loader;
         private readonly Random rng;
         private readonly IIntraMessenger _messenger;
 
+        private Realm _cardsRealm;
+        private ThreadSafeReference.Query<Pack> _packsThreadingReference;
         private CancellationTokenSource _stopToken;
 
         #endregion
@@ -30,14 +33,13 @@ namespace Soulful.Core.Services
 
         private readonly List<Player> _players;
 
-        private Queue<int> _whiteCards;
-        private Queue<int> _blackCards;
-        private int _currentBlackCard;
+        private Queue<WhiteCard> _whiteCards;
+        private Queue<BlackCard> _blackCards;
 
         private int _czarPosition;
         private int _whitePackPosition;
         private int _blackPackPosition;
-        private List<string> _packKeys;
+        private IQueryable<Pack> _packs;
 
         #endregion
 
@@ -51,7 +53,7 @@ namespace Soulful.Core.Services
         /// <summary>
         /// Gets the full value of the current black card
         /// </summary>
-        public Tuple<string, int> CurrentBlackCard => _loader.GetBlackCardAsync(_currentBlackCard).Result;
+        public BlackCard CurrentBlackCard { get; private set; }
 
         #endregion
 
@@ -70,10 +72,9 @@ namespace Soulful.Core.Services
 
         #endregion
 
-        public GameService(INetServerService server, ICardLoaderService loader, IIntraMessenger messenger)
+        public GameService(INetServerService server, IIntraMessenger messenger)
         {
             _server = server;
-            _loader = loader;
             _messenger = messenger;
             rng = new Random();
             _players = new List<Player>();
@@ -91,16 +92,16 @@ namespace Soulful.Core.Services
             _server.GameEvent += OnGameEvent;
 
             // Initialise variables
-            _whiteCards = new Queue<int>();
-            _blackCards = new Queue<int>();
+            _whiteCards = new Queue<WhiteCard>();
+            _blackCards = new Queue<BlackCard>();
             _stopToken = new CancellationTokenSource();
 
-            // Get pack keys if necessary
-            if (_packKeys == null)
-                _packKeys = _loader.Packs.Select(p => p.Key).ToList();
+            // Get all the card packs if necessary
+            if (_packs == null)
+                _packs = RealmHelpers.GetCardsRealm().All<Pack>();
 
             // Set pack positions
-            int randPackPosition = rng.Next(_loader.Packs.Count);
+            int randPackPosition = rng.Next(_packs.Count());
             _whitePackPosition = randPackPosition;
             _blackPackPosition = randPackPosition;
 
@@ -113,21 +114,23 @@ namespace Soulful.Core.Services
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
 
             // Run the game
+            _packsThreadingReference = ThreadSafeReference.Create(_packs);
             new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
             IsRunning = true;
         }
 
-        public void Start(List<string> packKeys)
+        public void Start(IQueryable<Pack> packs)
         {
             if (IsRunning)
                 throw new InvalidOperationException("The game service is already running");
 
-            foreach (string key in packKeys)
+            Realm cardsRealm = RealmHelpers.GetCardsRealm();
+            foreach (Pack p in packs)
             {
-                if (_loader.Packs.Find(p => p.Key == key).Equals(default))
+                if (!cardsRealm.All<Pack>().Contains(p))
                     throw new ArgumentException("A provided key does not exist");
             }
-            _packKeys = packKeys;
+            _packs = packs;
             Start();
         }
 
@@ -160,7 +163,7 @@ namespace Soulful.Core.Services
                 case GameKey.ClientSendWhiteCards:
                     while (!e.Data.EndOfData)
                     {
-                        int card = e.Data.GetInt();
+                        WhiteCard card = _cardsRealm.Find<WhiteCard>(e.Data.GetInt());
                         int unknownCount = 0;
 
                         // Add card, checking for invalid cards that have been sent
@@ -170,7 +173,7 @@ namespace Soulful.Core.Services
                             p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
 
                         // Limit cards to required amount
-                        int cardCount = CurrentBlackCard.Item2;
+                        int cardCount = CurrentBlackCard.NumPicks;
                         while (p.SelectedWhiteCards.Count < cardCount)
                             p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
                         while (p.SelectedWhiteCards.Count > cardCount)
@@ -206,6 +209,9 @@ namespace Soulful.Core.Services
         private void RunGame()
         {
             GameStage currentStage = GameStage.AwaitingPlayerReady;
+            _cardsRealm = RealmHelpers.GetCardsRealm();
+            _packs = _cardsRealm.ResolveReference(_packsThreadingReference);
+            //_packs = _cardsRealm.All<Pack>();
 
             while (!_stopToken.IsCancellationRequested)
             {
@@ -227,13 +233,12 @@ namespace Soulful.Core.Services
                         SendInitialLeaderboard();
                         currentStage = GameStage.SendingRoundData;
                         break;
-                    
                     // Preparing server and clients for the next round
                     case GameStage.SendingRoundData:
                         // Remove used white cards
                         foreach (Player p in _players)
                         {
-                            foreach (int card in p.SelectedWhiteCards)
+                            foreach (WhiteCard card in p.SelectedWhiteCards)
                                 p.WhiteCards.Remove(card);
                         }
 
@@ -289,16 +294,14 @@ namespace Soulful.Core.Services
             void EnqueueWhiteCards()
             {
                 // Initialise the list
-                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey(true));
-                List<int> whiteCards = new List<int>();
-                for (int i = pack.WhiteStartRange; i < pack.WhiteStartRange + pack.WhiteCount; i++)
-                    whiteCards.Add(i);
+                Pack pack = GetNextPack(true);
+                List<WhiteCard> whiteCards = pack.WhiteCards.ToList();
 
                 // Remove cards that have already been distributed
-                IEnumerable<int> existingCards = from player in _players
-                                        from int value in player.WhiteCards
-                                        select value;
-                foreach (int element in existingCards)
+                IEnumerable<WhiteCard> existingCards = from player in _players
+                                        from WhiteCard card in player.WhiteCards
+                                        select card;
+                foreach (WhiteCard element in existingCards)
                 {
                     if (whiteCards.Contains(element))
                         whiteCards.Remove(element);
@@ -306,7 +309,7 @@ namespace Soulful.Core.Services
 
                 // Shuffle and enqueue the list
                 Shuffle(whiteCards);
-                foreach (int element in whiteCards)
+                foreach (WhiteCard element in whiteCards)
                     _whiteCards.Enqueue(element);
             }
 
@@ -322,9 +325,9 @@ namespace Soulful.Core.Services
                 {
                     if (_whiteCards.Count == 0)
                         EnqueueWhiteCards();
-                    int card = _whiteCards.Dequeue();
+                    WhiteCard card = _whiteCards.Dequeue();
                     p.WhiteCards.Add(card);
-                    w.Put(card);
+                    w.Put(card.Id);
                 }
             });
         }
@@ -335,21 +338,17 @@ namespace Soulful.Core.Services
             while (_blackCards.Count == 0)
             {
                 // Initialise the list
-                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey(false));
-                List<int> blackCards = new List<int>();
-                for (int i = pack.BlackStartRange; i < pack.BlackStartRange + pack.BlackCount; i++)
-                    blackCards.Add(i);
+                Pack pack = GetNextPack(false);
+                List<BlackCard> blackCards = pack.BlackCards.ToList();
 
                 // Shuffle and enqueue the list
                 Shuffle(blackCards);
-                foreach (int element in blackCards)
+                foreach (BlackCard element in blackCards)
                     _blackCards.Enqueue(element);
             }
 
-            _currentBlackCard = _blackCards.Dequeue();
-            NetDataWriter writer = new NetDataWriter();
-            writer.Put(_currentBlackCard);
-            SendToAll(GameKey.SendBlackCard, (w, _) => w.Put(_currentBlackCard));
+            CurrentBlackCard = _blackCards.Dequeue();
+            SendToAll(GameKey.SendBlackCard, (w, _) => w.Put(CurrentBlackCard.Id));
         }
 
         private void SendNextCzar()
@@ -461,14 +460,14 @@ namespace Soulful.Core.Services
         /// Gets the next pack to use
         /// </summary>
         /// <returns>A pack key</returns>
-        private string GetNextPackKey(bool whitePack)
+        private Pack GetNextPack(bool whitePack)
         {
-            if (_whitePackPosition == _loader.Packs.Count - 1)
+            if (_whitePackPosition == _packs.Count() - 1)
                 _whitePackPosition = 0;
-            if (_blackPackPosition == _loader.Packs.Count - 1)
+            if (_blackPackPosition == _packs.Count() - 1)
                 _blackPackPosition = 0;
 
-            return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
+            return whitePack ? _packs.ElementAt(_whitePackPosition++) : _packs.ElementAt(_blackPackPosition++);
         }
 
         /// <summary>

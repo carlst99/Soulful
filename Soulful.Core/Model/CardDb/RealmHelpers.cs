@@ -1,6 +1,8 @@
 ﻿using Realms;
 using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Soulful.Core.Model.CardDb
 {
@@ -18,7 +20,9 @@ namespace Soulful.Core.Model.CardDb
 
         public static Realm GetCardsRealm()
         {
-            string realmPath = App.GetAppdataFilePath("cards.realm");
+            string assemPath = Assembly.GetEntryAssembly().Location;
+            assemPath = Path.GetDirectoryName(assemPath);
+            string realmPath = Path.Combine(assemPath, "Resources", "cards.realm");
             RealmConfiguration config = new RealmConfiguration(realmPath)
             {
                 ObjectClasses = new Type[] { typeof(Pack), typeof(WhiteCard), typeof(BlackCard) }

@@ -1,6 +1,7 @@
 ﻿using Soulful.Core.Model;
+using Soulful.Core.Model.CardDb;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Soulful.Core.Services
 {
@@ -23,7 +24,7 @@ namespace Soulful.Core.Services
         event EventHandler GameStopped;
 
         void Start();
-        void Start(List<string> packKeys);
+        void Start(IQueryable<Pack> packKeys);
         void Stop();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MvvmCross.Commands;
+using Soulful.Core.Model.CardDb;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -16,17 +17,17 @@ namespace Soulful.Wpf.UI
         public static readonly DependencyProperty SelectedCardsProperty =
             DependencyProperty.Register(
                 "SelectedCards",
-                typeof(ObservableCollection<int>),
+                typeof(ObservableCollection<WhiteCard>),
                 typeof(WhiteCardControl),
                 new FrameworkPropertyMetadata
                 {
-                    DefaultValue = new ObservableCollection<int>()
+                    DefaultValue = new ObservableCollection<WhiteCard>()
                 });
 
         public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(
                 "ItemsSource",
-                typeof(ObservableCollection<int>),
+                typeof(ObservableCollection<WhiteCard>),
                 typeof(WhiteCardControl),
                 new FrameworkPropertyMetadata
                 {
@@ -54,18 +55,18 @@ namespace Soulful.Wpf.UI
         /// <summary>
         /// Gets or sets the list of white cards to display
         /// </summary>
-        public ObservableCollection<int> ItemsSource
+        public ObservableCollection<WhiteCard> ItemsSource
         {
-            get => (ObservableCollection<int>)GetValue(ItemsSourceProperty);
+            get => (ObservableCollection<WhiteCard>)GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
 
         /// <summary>
         /// Gets the list of selected cards
         /// </summary>
-        public ObservableCollection<int> SelectedCards
+        public ObservableCollection<WhiteCard> SelectedCards
         {
-            get => (ObservableCollection<int>)GetValue(SelectedCardsProperty);
+            get => (ObservableCollection<WhiteCard>)GetValue(SelectedCardsProperty);
             set => throw new InvalidOperationException("Cannot modify a read-only dependency property");
         }
 
@@ -91,8 +92,8 @@ namespace Soulful.Wpf.UI
 
         #region Commands
 
-        public IMvxCommand<int> OnCheckedCommand => new MvxCommand<int>(OnChecked);
-        public IMvxCommand<int> OnUncheckedCommand => new MvxCommand<int>(OnUnchecked);
+        public IMvxCommand<WhiteCard> OnCheckedCommand => new MvxCommand<WhiteCard>(OnChecked);
+        public IMvxCommand<WhiteCard> OnUncheckedCommand => new MvxCommand<WhiteCard>(OnUnchecked);
 
         #endregion
 
@@ -101,7 +102,7 @@ namespace Soulful.Wpf.UI
             InitializeComponent();
         }
 
-        private void OnChecked(int card)
+        private void OnChecked(WhiteCard card)
         {
             if (SelectionEnabled && ItemsSource.Contains(card))
                 SelectedCards.Add(card);
@@ -110,7 +111,7 @@ namespace Soulful.Wpf.UI
                 SelectionEnabled = false;
         }
 
-        private void OnUnchecked(int card)
+        private void OnUnchecked(WhiteCard card)
         {
             if (SelectedCards.Contains(card))
                 SelectedCards.Remove(card);

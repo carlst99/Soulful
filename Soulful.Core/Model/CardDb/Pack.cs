@@ -22,5 +22,10 @@ namespace Soulful.Core.Model.CardDb
         /// Gets or sets the black cards contained in this pack
         /// </summary>
         public IList<BlackCard> BlackCards { get; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

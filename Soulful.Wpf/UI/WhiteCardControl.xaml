@@ -30,8 +30,8 @@
                             <Viewbox VerticalAlignment="Top">
                                 <TextBlock Width="134"
                                            FontSize="16"
-                                           Style="{StaticResource MaterialDesignSubheadingTextBlock}"
-                                           Text="{Binding Converter={StaticResource IntToCardConverter}}"
+                                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                           Text="{Binding Content}"
                                            TextWrapping="Wrap"/>
                             </Viewbox>
                         </md:Card>

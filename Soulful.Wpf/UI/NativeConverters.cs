@@ -4,7 +4,7 @@ using Soulful.Core.Converters;
 
 namespace Soulful.Wpf.UI
 {
-    public class NativeIntToCardConverter : MvxNativeValueConverter<IntToCardConverter> { }
+    //public class NativeIntToCardConverter : MvxNativeValueConverter<IntToCardConverter> { }
 
     public class NativeBoolInverterConverter : MvxNativeValueConverter<BoolInverterConverter> { }
 

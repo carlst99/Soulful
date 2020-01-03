@@ -2,11 +2,12 @@
 using LiteNetLib.Utils;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Realms;
 using Soulful.Core.Model;
+using Soulful.Core.Model.CardDb;
 using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,11 +21,12 @@ namespace Soulful.Core.ViewModels
         private readonly INetClientService _client;
         private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
+        private readonly Realm _cardsRealm;
 
         private ObservableCollection<LeaderboardEntry> _leaderboard;
-        private ObservableCollection<int> _whiteCards;
-        private ObservableCollection<int> _selectedWhiteCards;
-        private int _blackCard;
+        private ObservableCollection<WhiteCard> _whiteCards;
+        private ObservableCollection<WhiteCard> _selectedWhiteCards;
+        private BlackCard _blackCard;
         private bool _czarMode;
         private string _sendButtonText;
         private bool _canSendCards;
@@ -36,7 +38,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets or sets the current white cards
         /// </summary>
-        public ObservableCollection<int> WhiteCards
+        public ObservableCollection<WhiteCard> WhiteCards
         {
             get => _whiteCards;
             set => SetProperty(ref _whiteCards, value);
@@ -45,7 +47,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets or sets the currently selected white cards
         /// </summary>
-        public ObservableCollection<int> SelectedWhiteCards
+        public ObservableCollection<WhiteCard> SelectedWhiteCards
         {
             get => _selectedWhiteCards;
             set => SetProperty(ref _selectedWhiteCards, value);
@@ -54,7 +56,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets or sets the current black card
         /// </summary>
-        public int BlackCard
+        public BlackCard BlackCard
         {
             get => _blackCard;
             set => SetProperty(ref _blackCard, value);
@@ -118,9 +120,10 @@ namespace Soulful.Core.ViewModels
             _client = client;
             _gameService = gameService;
             _messenger = messenger;
+            _cardsRealm = RealmHelpers.GetCardsRealm();
 
             Leaderboard = new ObservableCollection<LeaderboardEntry>();
-            WhiteCards = new ObservableCollection<int>();
+            WhiteCards = new ObservableCollection<WhiteCard>();
             SendButtonText = this["Command_PlayerPickCards"];
             CanSendCards = true;
         }
@@ -141,14 +144,15 @@ namespace Soulful.Core.ViewModels
         /// <param name="e"></param>
         private void OnGameEvent(GameKeyPackage e)
         {
+            Realm cardsRealm = RealmHelpers.GetCardsRealm();
             switch (e.Key)
             {
                 case GameKey.SendWhiteCards:
                     while (!e.Data.EndOfData)
-                        WhiteCards.Add(e.Data.GetInt());
+                        WhiteCards.Add(cardsRealm.Find<WhiteCard>(e.Data.GetInt()));
                     break;
                 case GameKey.SendBlackCard:
-                    BlackCard = e.Data.GetInt();
+                    BlackCard = cardsRealm.Find<BlackCard>(e.Data.GetInt());
                     break;
                 case GameKey.InitiateCzar:
                     CzarMode = true;
@@ -222,12 +226,11 @@ namespace Soulful.Core.ViewModels
         {
             if (CzarMode)
             {
-                
             } else
             {
                 NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.ClientSendWhiteCards);
-                foreach (int card in SelectedWhiteCards)
-                    writer.Put(card);
+                foreach (WhiteCard card in SelectedWhiteCards)
+                    writer.Put(card.Id);
                 _client.Send(writer);
                 writer.Reset();
             }

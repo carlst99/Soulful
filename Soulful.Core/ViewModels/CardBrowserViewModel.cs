@@ -1,10 +1,10 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.Navigation;
-using Soulful.Core.Services;
+using Realms;
+using Soulful.Core.Model.CardDb;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Soulful.Core.ViewModels
 {
@@ -12,75 +12,37 @@ namespace Soulful.Core.ViewModels
     {
         #region Fields
 
-        private readonly ICardLoaderService _cardLoader;
-
-        private ObservableCollection<string> _whiteCards;
-        private ObservableCollection<Tuple<string, int>> _blackCards;
-        private List<PackInfo> _cardPacks;
-        private PackInfo _selectedPack;
+        private readonly Realm _cardsRealm;
+        private IQueryable<Pack> _cardPacks;
+        private Pack _selectedPack;
 
         #endregion
 
         #region Properties
 
-        public ObservableCollection<string> WhiteCards
-        {
-            get => _whiteCards;
-            set => SetProperty(ref _whiteCards, value);
-        }
-
-        public ObservableCollection<Tuple<string, int>> BlackCards
-        {
-            get => _blackCards;
-            set => SetProperty(ref _blackCards, value);
-        }
-
-        public List<PackInfo> CardPacks
+        public IQueryable<Pack> CardPacks
         {
             get => _cardPacks;
             set => SetProperty(ref _cardPacks, value);
         }
 
-        public PackInfo SelectedPack
+        public Pack SelectedPack
         {
             get => _selectedPack;
-            set
-            {
-                SetProperty(ref _selectedPack, value);
-                LoadCards(value.Key);
-            }
+            set => SetProperty(ref _selectedPack, value);
         }
 
         #endregion
 
         public IMvxCommand NavigateBackCommand => new MvxCommand(() => NavigationService.Navigate<HomeViewModel>());
 
-        public CardBrowserViewModel(IMvxNavigationService navigationService, ICardLoaderService cardLoader)
+        public CardBrowserViewModel(IMvxNavigationService navigationService)
             : base(navigationService)
         {
-            _cardLoader = cardLoader;
-            CardPacks = cardLoader.Packs;
-            if (CardPacks.Count > 0)
-                SelectedPack = CardPacks[0];
+            _cardsRealm = RealmHelpers.GetCardsRealm();
+            CardPacks = _cardsRealm.All<Pack>();
+            if (CardPacks.Count() > 0)
+                SelectedPack = CardPacks.ElementAt(0);
         }
-
-        #region Card Loading
-
-        private async void LoadCards(string packKey)
-        {
-            await Task.WhenAll(LoadBlackCards(packKey), LoadWhiteCards(packKey)).ConfigureAwait(false);
-        }
-
-        private async Task LoadBlackCards(string packKey)
-        {
-            BlackCards = new ObservableCollection<Tuple<string, int>>(await _cardLoader.GetPackBlackCardsAsync(packKey).ConfigureAwait(false));
-        }
-
-        private async Task LoadWhiteCards(string packKey)
-        {
-            WhiteCards = new ObservableCollection<string>(await _cardLoader.GetPackWhiteCardsAsync(packKey).ConfigureAwait(false));
-        }
-
-        #endregion
     }
 }
