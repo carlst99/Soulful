@@ -21,6 +21,7 @@ namespace Soulful.Core.ViewModels
         private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
 
+        private bool _isServer;
         private ObservableCollection<LeaderboardEntry> _leaderboard;
         private ObservableCollection<int> _whiteCards;
         private ObservableCollection<int> _selectedWhiteCards;
@@ -183,6 +184,7 @@ namespace Soulful.Core.ViewModels
 
             if (parameter)
             {
+                _isServer = true;
                 _gameService.Start();
                 _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
             }
@@ -209,11 +211,11 @@ namespace Soulful.Core.ViewModels
         {
             UnregisterEvents();
 
-            if (_client.IsRunning)
-                _client.Stop();
-
             if (_gameService.IsRunning)
                 _gameService.Stop();
+
+            if (_client.IsRunning)
+                _client.Stop();
 
             await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
         }
@@ -256,6 +258,9 @@ namespace Soulful.Core.ViewModels
         private void OnDisconnected(object sender, NetKey e)
         {
             UnregisterEvents();
+            if (_isServer)
+                return;
+
             string message;
             string title;
             switch (e)

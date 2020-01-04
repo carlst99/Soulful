@@ -227,7 +227,6 @@ namespace Soulful.Core.Services
                         SendInitialLeaderboard();
                         currentStage = GameStage.SendingRoundData;
                         break;
-                    
                     // Preparing server and clients for the next round
                     case GameStage.SendingRoundData:
                         // Remove used white cards
