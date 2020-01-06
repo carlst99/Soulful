@@ -7,8 +7,11 @@ namespace Soulful.Core.Net
 {
     public interface INetServerService : INetBase
     {
+        string Pin { get; }
+        int MaxPlayers { get; }
         bool AcceptingPlayers { get; set; }
         List<NetPeer> Players { get; }
+
         event EventHandler<NetPeer> PlayerConnected;
         event EventHandler<NetPeer> PlayerDisconnected;
 

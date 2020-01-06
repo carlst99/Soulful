@@ -22,12 +22,12 @@ namespace Soulful.Core.Net
         #region Fields
 
         private NetPeer _serverPeer;
+        private string _pin;
 
         #endregion
 
         #region Properties
 
-        public string Pin { get; private set; }
         public string PlayerName { get; private set; }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Soulful.Core.Net
         {
             Start();
 
-            Pin = pin;
+            _pin = pin;
             PlayerName = playerName;
 
             // Request discovery
@@ -87,7 +87,7 @@ namespace Soulful.Core.Net
             });
 
             Log.Information("[Client]Client started");
-            Log.Information("[Client]Attempting to discover server with pin {pin}", Pin);
+            Log.Information("[Client]Attempting to discover server with pin {pin}", _pin);
         }
 
         public override void Stop()
@@ -109,23 +109,6 @@ namespace Soulful.Core.Net
                 throw App.CreateError<InvalidOperationException>("[Client]Cannot send data when the client is not connected");
 
             RunNetworkerTask(() => _serverPeer.Send(data, D_METHOD));
-        }
-
-        [Obsolete("This method should not be used. Use Start() instead")]
-        public void ConnectLocal(string pin, string playerName)
-        {
-            Start();
-            Pin = pin;
-            PlayerName = playerName;
-
-            NetDataWriter writer = new NetDataWriter();
-            writer.Put(Pin);
-            writer.Put(PlayerName);
-
-            _serverPeer = RunNetworkerTask(() => _networker.Connect("localhost", PORT, writer));
-            writer.Reset();
-            IsConnected = true;
-            Log.Information("Client connected to local server");
         }
 
         protected override void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
@@ -151,7 +134,7 @@ namespace Soulful.Core.Net
             if (messageType == UnconnectedMessageType.DiscoveryResponse)
             {
                 NetDataWriter writer = new NetDataWriter();
-                writer.Put(Pin);
+                writer.Put(_pin);
                 writer.Put(PlayerName);
                 _serverPeer = RunNetworkerTask(() => _networker.Connect(remoteEndPoint, writer));
                 Log.Information("[Client]Attempting to connect to server at {endPoint}", remoteEndPoint);

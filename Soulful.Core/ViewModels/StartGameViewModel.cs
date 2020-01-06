@@ -1,14 +1,11 @@
 ﻿using IntraMessaging;
 using LiteNetLib;
-using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
-using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 

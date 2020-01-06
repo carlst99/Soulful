@@ -35,6 +35,8 @@ namespace Soulful.Core.Net
 
         #endregion
 
+        #region Events
+
         /// <summary>
         /// Invoked when a player connects to the server
         /// </summary>
@@ -44,6 +46,8 @@ namespace Soulful.Core.Net
         /// Invoked when a player disconnects from the server
         /// </summary>
         public event EventHandler<NetPeer> PlayerDisconnected;
+
+        #endregion
 
         public NetServerService()
         {
