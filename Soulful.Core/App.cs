@@ -6,14 +6,12 @@ using Plugin.DeviceInfo;
 using Plugin.DeviceInfo.Abstractions;
 using Serilog;
 using Serilog.Events;
-using Soulful.Core.Net;
 using Soulful.Core.ViewModels;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("MvvmCrossCoreTestProject")]
+[assembly: InternalsVisibleTo("Soulful.Core.Tests")]
 
 namespace Soulful.Core
 {
@@ -32,11 +30,18 @@ namespace Soulful.Core
 
             Mvx.IoCProvider.RegisterSingleton<IIntraMessenger>(IntraMessenger.Instance);
 
+#if DEBUG
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Debug()
+                .CreateLogger();
+#else
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Debug()
                 .WriteTo.File(GetAppdataFilePath(LOG_FILE_NAME))
                 .CreateLogger();
+#endif
 
             if (CrossDeviceInfo.IsSupported)
             {

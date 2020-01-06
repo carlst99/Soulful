@@ -8,7 +8,9 @@ using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
@@ -21,7 +23,7 @@ namespace Soulful.Core.ViewModels
 #else
         public const double MIN_PLAYERS = 3;
 #endif
-        public const double MAX_PLAYERS = 100;
+        public const double MAX_PLAYERS = 16;
 
         #endregion
 
@@ -35,6 +37,11 @@ namespace Soulful.Core.ViewModels
         private int _maxPlayers;
         private string _playerName;
         private ObservableCollection<Tuple<int, string>> _players;
+
+        /// <summary>
+        /// Stores the ID of the client, used to ensure that the host cannot kick themselves
+        /// </summary>
+        private int _clientId;
 
         #endregion
 
@@ -97,7 +104,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Kicks a connected player
         /// </summary>
-        public IMvxCommand KickPlayerCommand => new MvxCommand<int>((i) => _server.Kick(i));
+        public IMvxCommand KickPlayerCommand => new MvxCommand<int>(KickPlayer);
 
         #endregion
 
@@ -113,10 +120,15 @@ namespace Soulful.Core.ViewModels
 
             MaxPlayers = 20;
             Players = new ObservableCollection<Tuple<int, string>>();
-
-            GenerateGamePin();
             _server.Players.CollectionChanged += OnPlayerCollectionChanged;
+        }
+
+        public override Task Initialize()
+        {
+            GenerateGamePin();
             _server.Start(MaxPlayers, GamePin);
+            _client.Start(GamePin, _playerName);
+            return base.Initialize();
         }
 
         private async void StartGame()
@@ -125,8 +137,24 @@ namespace Soulful.Core.ViewModels
                 return;
 
             _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
-            _client.ConnectLocal(GamePin, _playerName);
             await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
+        }
+
+        private void KickPlayer(int playerId)
+        {
+            if (playerId != _clientId)
+            {
+                _server.Kick(playerId);
+            }
+            else
+            {
+                _messenger.Send(new DialogMessage
+                {
+                    Content = "You can't kick yourself doofus!",
+                    Buttons = DialogMessage.Button.Ok,
+                    Title = "Insecurity lvl 100"
+                });
+            }
         }
 
         private void NavigateBack()
@@ -155,10 +183,10 @@ namespace Soulful.Core.ViewModels
 
         private void UnsafeNavigateBack()
         {
+            if (_client.IsRunning)
+                _client.Stop();
             if (_server.IsRunning)
-            {
                 _server.Stop();
-            }
 
             _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
             NavigationService.Navigate<HomeViewModel>();
@@ -172,22 +200,27 @@ namespace Soulful.Core.ViewModels
             _server.ChangeConnectPin(GamePin);
         }
 
-        private async void OnPlayerCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private async void OnPlayerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
                 foreach (NetPeer element in e.NewItems)
                 {
+                    // Should capture this client every time, preventing the host from kicking themselves.
+                    // No one can join the game in 30ms (I hope lol)
+                    if (_players.Count == 0)
+                        _clientId = element.Id;
+
                     await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(element.Id, (string)element.Tag))).ConfigureAwait(false);
                 }
-            } else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+            } else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
                 foreach (NetPeer element in e.OldItems)
                 {
                     await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == element.Id))).ConfigureAwait(false);
                 }
             }
-            await RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
+            await base.RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
         }
 
         public override void Prepare(string parameter)

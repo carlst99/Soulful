@@ -145,6 +145,7 @@ namespace Soulful.Core.Services
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStop));
             _server.Stop();
             _players.Clear();
+            _czarPosition = 0;
             GameStopped?.Invoke(this, EventArgs.Empty);
         }
 
@@ -490,7 +491,7 @@ namespace Soulful.Core.Services
 
         private void OnPlayerDisconnected(NetPeer player)
         {
-            if (_players[_czarPosition].Id == player.Id)
+            if (_players.Count > 0 && _players[_czarPosition].Id == player.Id)
             {
                 // TODO cancel round, send next czar
             }

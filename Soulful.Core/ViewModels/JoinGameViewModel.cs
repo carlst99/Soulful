@@ -3,7 +3,6 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
-using System;
 
 namespace Soulful.Core.ViewModels
 {

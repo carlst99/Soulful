@@ -24,7 +24,7 @@ namespace Soulful.Core.Net
         /// <summary>
         /// A lock should be taken on this object when a task involving the <see cref="_networker"/> is required
         /// </summary>
-        protected readonly object _networkerLock;
+        private static readonly object _networkerLock = new object();
 
         #endregion
 
@@ -34,20 +34,23 @@ namespace Soulful.Core.Net
 
         protected NetBase()
         {
-            _networkerLock = new object();
-
             _listener = new EventBasedNetListener();
             _listener.NetworkReceiveEvent += OnReceive;
             _networker = new NetManager(_listener);
         }
 
-        public virtual void Start()
+        public virtual void Start(int port = 0)
         {
             if (IsRunning)
                 throw App.CreateError<InvalidOperationException>("Server is already running");
 
+            if (port == 0)
+                RunNetworkerTask(() => _networker.Start());
+            else
+                RunNetworkerTask(() => _networker.Start(PORT));
+
             _cancelPollToken = new CancellationTokenSource();
-            new Task(PollEvents, _cancelPollToken.Token, TaskCreationOptions.LongRunning).Start();
+            new Task(PollEvents, TaskCreationOptions.LongRunning).Start();
         }
 
         public virtual void Stop()
@@ -61,13 +64,23 @@ namespace Soulful.Core.Net
 
         #region RunNetworkerTask
 
-        protected void RunNetworkerTask(Action action)
+        /// <summary>
+        /// Invokes a networker action in a thread-safe manner
+        /// </summary>
+        /// <param name="action"></param>
+        protected static void RunNetworkerTask(Action action)
         {
             lock (_networkerLock)
                 action.Invoke();
         }
 
-        protected T RunNetworkerTask<T>(Func<T> action)
+        /// <summary>
+        /// Invokes a networker action in a thread-safe manner
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        protected static T RunNetworkerTask<T>(Func<T> action)
         {
             T toReturn;
 
@@ -78,6 +91,12 @@ namespace Soulful.Core.Net
 
         #endregion
 
+        /// <summary>
+        /// Invoked when data is received from a peer
+        /// </summary>
+        /// <param name="peer"></param>
+        /// <param name="reader"></param>
+        /// <param name="deliveryMethod"></param>
         protected virtual void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
             GameKey key = (GameKey)reader.GetByte();
@@ -92,9 +111,9 @@ namespace Soulful.Core.Net
         /// </summary>
         private void PollEvents()
         {
-            while (!_cancelPollToken.IsCancellationRequested)
+            while (!_cancelPollToken.IsCancellationRequested && _networker.IsRunning)
             {
-                RunNetworkerTask(() => _networker?.PollEvents());
+                RunNetworkerTask(() => _networker.PollEvents());
                 _cancelPollToken.Token.WaitHandle.WaitOne(NetHelpers.POLL_DELAY);
             }
         }

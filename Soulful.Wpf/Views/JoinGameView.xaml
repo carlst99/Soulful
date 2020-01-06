@@ -33,6 +33,7 @@
                      md:HintAssist.Hint="{Binding [Hint_GamePin], Mode=OneTime}"
                      FontSize="22"
                      IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInverterConverter}}"
+                     KeyDown="TxtBxPin_KeyDown"
                      Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                      Text="{Binding GamePin, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
 

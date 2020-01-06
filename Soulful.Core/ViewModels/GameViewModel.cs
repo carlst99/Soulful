@@ -224,7 +224,8 @@ namespace Soulful.Core.ViewModels
         {
             if (CzarMode)
             {
-                
+                NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.CzarPick);
+
             } else
             {
                 NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.ClientSendWhiteCards);

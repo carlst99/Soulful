@@ -59,14 +59,12 @@ namespace Soulful.Core.Net
         public NetClientService()
         {
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
-            //_listener.NetworkReceiveEvent += OnReceive;
             _listener.PeerDisconnectedEvent += OnPeerDisconnect;
         }
 
         public void Start(string pin, string playerName)
         {
             Start();
-            RunNetworkerTask(() => _networker.Start());
 
             Pin = pin;
             PlayerName = playerName;
@@ -82,38 +80,41 @@ namespace Soulful.Core.Net
                 Task.Delay(DISCOVERY_TIMEOUT).Wait();
                 if (!IsConnected && IsRunning)
                 {
-                    Log.Information("Client failed to connect to server");
+                    Log.Information("[Client]Failed to connect to server");
                     Stop();
                     ConnectionFailed?.Invoke(this, EventArgs.Empty);
                 }
             });
 
-            Log.Information("Client started");
-            Log.Information("Client attempting to discover server with pin {pin}", Pin);
+            Log.Information("[Client]Client started");
+            Log.Information("[Client]Attempting to discover server with pin {pin}", Pin);
         }
 
         public override void Stop()
         {
             if (!IsRunning)
-                throw App.CreateError<InvalidOperationException>("Client is not running");
+                throw App.CreateError<InvalidOperationException>("[Client]Cannot stop the client if it is not running");
 
             IsConnected = false;
             base.Stop();
-            Log.Information("Client stopped");
+            Log.Information("[Client]Client stopped");
         }
 
         public void Send(NetDataWriter data)
         {
             if (!IsRunning)
-                throw new InvalidOperationException("Client is not running");
+                throw App.CreateError<InvalidOperationException>("[Client]Cannot send data when the client is not running");
+
+            if (!IsConnected)
+                throw App.CreateError<InvalidOperationException>("[Client]Cannot send data when the client is not connected");
 
             RunNetworkerTask(() => _serverPeer.Send(data, D_METHOD));
         }
 
+        [Obsolete("This method should not be used. Use Start() instead")]
         public void ConnectLocal(string pin, string playerName)
         {
             Start();
-            RunNetworkerTask(() => _networker.Start());
             Pin = pin;
             PlayerName = playerName;
 
@@ -135,7 +136,7 @@ namespace Soulful.Core.Net
                 IsConnected = true;
                 ConnectedToServer?.Invoke(this, EventArgs.Empty);
                 reader.Recycle();
-                Log.Information("Client successfully connected to server at {endPoint}", peer.EndPoint);
+                Log.Information("[Client]Successfully connected to server at {endPoint}", peer.EndPoint);
             }
             else
             {
@@ -153,7 +154,7 @@ namespace Soulful.Core.Net
                 writer.Put(Pin);
                 writer.Put(PlayerName);
                 _serverPeer = RunNetworkerTask(() => _networker.Connect(remoteEndPoint, writer));
-                Log.Information("Client attempting to connect to server at {endPoint}", remoteEndPoint);
+                Log.Information("[Client]Attempting to connect to server at {endPoint}", remoteEndPoint);
             }
             reader.Recycle();
         }
@@ -170,7 +171,7 @@ namespace Soulful.Core.Net
                 else
                     key = NetKey.DisconnectUnknownError;
 
-                Log.Information("Client disconnected from server with reason {key}", key);
+                Log.Information("[Client]Disconnected from server with reason {key}", key);
                 DisconnectedFromServer?.Invoke(this, key);
             }
         }
