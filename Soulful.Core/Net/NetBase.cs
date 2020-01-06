@@ -42,7 +42,7 @@ namespace Soulful.Core.Net
         public virtual void Start(int port = 0)
         {
             if (IsRunning)
-                throw App.CreateError<InvalidOperationException>("Server is already running");
+                throw App.CreateError<InvalidOperationException>("[NetBase]Cannot start a net service if it is already running");
 
             if (port == 0)
                 RunNetworkerTask(() => _networker.Start());
@@ -56,7 +56,7 @@ namespace Soulful.Core.Net
         public virtual void Stop()
         {
             if (!IsRunning)
-                throw App.CreateError<InvalidOperationException>("Server is not running");
+                throw App.CreateError<InvalidOperationException>("[NetBase]Cannot stop a net service if it is not already running");
 
             _cancelPollToken.Cancel();
             RunNetworkerTask(() => _networker.Stop());

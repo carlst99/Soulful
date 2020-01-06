@@ -120,7 +120,8 @@ namespace Soulful.Core.ViewModels
 
             MaxPlayers = 20;
             Players = new ObservableCollection<Tuple<int, string>>();
-            _server.Players.CollectionChanged += OnPlayerCollectionChanged;
+            _server.PlayerConnected += (_, p) => OnPlayerCollectionChanged(p, true);
+            _server.PlayerDisconnected += (_, p) => OnPlayerCollectionChanged(p, false);
         }
 
         public override Task Initialize()
@@ -136,7 +137,7 @@ namespace Soulful.Core.ViewModels
             if (!CanStartGame)
                 return;
 
-            _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
+            DeregisterEvents();
             await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
         }
 
@@ -188,7 +189,7 @@ namespace Soulful.Core.ViewModels
             if (_server.IsRunning)
                 _server.Stop();
 
-            _server.Players.CollectionChanged -= OnPlayerCollectionChanged;
+            DeregisterEvents();
             NavigationService.Navigate<HomeViewModel>();
         }
 
@@ -200,27 +201,26 @@ namespace Soulful.Core.ViewModels
             _server.ChangeConnectPin(GamePin);
         }
 
-        private async void OnPlayerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private async void OnPlayerCollectionChanged(NetPeer peer, bool connected)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add)
+            if (connected)
             {
-                foreach (NetPeer element in e.NewItems)
-                {
-                    // Should capture this client every time, preventing the host from kicking themselves.
-                    // No one can join the game in 30ms (I hope lol)
-                    if (_players.Count == 0)
-                        _clientId = element.Id;
-
-                    await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(element.Id, (string)element.Tag))).ConfigureAwait(false);
-                }
-            } else if (e.Action == NotifyCollectionChangedAction.Remove)
+                // Should capture this client every time, preventing the host from kicking themselves.
+                // No one can join the game in 30ms (I hope lol)
+                if (_players.Count == 0)
+                    _clientId = peer.Id;
+                await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag))).ConfigureAwait(false);
+            } else
             {
-                foreach (NetPeer element in e.OldItems)
-                {
-                    await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == element.Id))).ConfigureAwait(false);
-                }
+                await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == peer.Id))).ConfigureAwait(false);
             }
             await base.RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
+        }
+
+        private void DeregisterEvents()
+        {
+            _server.PlayerConnected -= (_, p) => OnPlayerCollectionChanged(p, true);
+            _server.PlayerDisconnected -= (_, p) => OnPlayerCollectionChanged(p, false);
         }
 
         public override void Prepare(string parameter)

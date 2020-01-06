@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 using Serilog;
 using Soulful.Core.Model;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -31,15 +31,23 @@ namespace Soulful.Core.Net
         /// <summary>
         /// Gets a collection of players connected to the server
         /// </summary>
-        public ObservableCollection<NetPeer> Players { get; }
+        public List<NetPeer> Players { get; }
 
         #endregion
 
+        /// <summary>
+        /// Invoked when a player connects to the server
+        /// </summary>
+        public event EventHandler<NetPeer> PlayerConnected;
+
+        /// <summary>
+        /// Invoked when a player disconnects from the server
+        /// </summary>
         public event EventHandler<NetPeer> PlayerDisconnected;
 
         public NetServerService()
         {
-            Players = new ObservableCollection<NetPeer>();
+            Players = new List<NetPeer>();
 
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;
@@ -51,6 +59,9 @@ namespace Soulful.Core.Net
 
         public void Start(int maxPlayers, string pin)
         {
+            if (IsRunning)
+                throw App.CreateError<InvalidOperationException>("[NetServer]Cannot start the server when it is already running");
+
             Start(PORT);
 
             MaxPlayers = maxPlayers;
@@ -92,10 +103,18 @@ namespace Soulful.Core.Net
 
         public void Kick(int playerId)
         {
-            NetPeer peer = Players.FirstOrDefault(p => p.Id == playerId);
-            RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked)));
-            Players.Remove(peer);
-            Log.Information("[Server]Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
+            try
+            {
+                NetPeer peer = Players.Find(p => p.Id == playerId);
+                RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked)));
+                Players.Remove(peer);
+                PlayerDisconnected?.Invoke(this, peer);
+                Log.Information("[Server]Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Server]Could not kick player");
+            }
         }
 
         /// <summary>
@@ -116,7 +135,12 @@ namespace Soulful.Core.Net
             if (disconnectAll)
             {
                 foreach (NetPeer peer in _networker.ConnectedPeerList)
+                {
                     RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
+                    PlayerDisconnected?.Invoke(this, peer);
+                }
+
+                Players.Clear();
             }
             else
             {
@@ -124,7 +148,11 @@ namespace Soulful.Core.Net
                 {
                     while (_networker.PeersCount > MaxPlayers)
                     {
-                        RunNetworkerTask(() => _networker.ConnectedPeerList[_networker.PeersCount - 1].Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
+                        NetPeer toDisconnect = _networker.ConnectedPeerList[_networker.PeersCount - 1];
+                        if (Players.Contains(toDisconnect))
+                            Players.Remove(toDisconnect);
+                        RunNetworkerTask(() => toDisconnect.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
+                        PlayerDisconnected?.Invoke(this, toDisconnect);
                     }
                 });
             }
@@ -154,6 +182,7 @@ namespace Soulful.Core.Net
                     peer.Tag = userName;
 
                     Players.Add(peer);
+                    PlayerConnected?.Invoke(this, peer);
                     Log.Information("[Server]Connection request from {endPoint} with username {userName} accepted", request.RemoteEndPoint, userName);
                 }
                 else
