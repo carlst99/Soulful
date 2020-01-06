@@ -10,12 +10,5 @@ namespace Soulful.Wpf.Views
             InitializeComponent();
             TxtBxPin.Focus();
         }
-
-        private void TxtBxPin_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            Regex match = new Regex("[0-9]");
-            if (!match.IsMatch(e.Key.ToString()))
-                e.Handled = true;
-        }
     }
 }
