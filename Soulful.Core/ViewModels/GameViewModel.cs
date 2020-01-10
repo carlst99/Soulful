@@ -6,7 +6,6 @@ using Soulful.Core.Model;
 using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -153,7 +152,7 @@ namespace Soulful.Core.ViewModels
                     break;
                 case GameKey.InitiateCzar:
                     CzarMode = true;
-                    SendButtonText = this["Command_CzarPickCards"];
+                    SendButtonText = Resources.AppStrings.Command_CzarPickCards;
                     break;
                 case GameKey.UpdatingLeaderboard:
                     while (!e.Data.EndOfData)
@@ -225,7 +224,7 @@ namespace Soulful.Core.ViewModels
             if (CzarMode)
             {
                 NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.CzarPick);
-
+                // Require server confirmation before exiting czar mode?
             } else
             {
                 NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.ClientSendWhiteCards);

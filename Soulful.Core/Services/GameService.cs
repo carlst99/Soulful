@@ -242,6 +242,8 @@ namespace Soulful.Core.Services
                         break;
                     case GameStage.AwaitingCzarPick:
                         // TODO await czar pick
+                        // Verify sender is czar first
+                        // Timeout/number verify for network issues
                         currentStage = GameStage.UpdatingLeaderboard;
                         break;
                     // Sends an updated leaderboard to all players
