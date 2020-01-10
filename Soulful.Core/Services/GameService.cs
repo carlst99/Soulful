@@ -30,14 +30,11 @@ namespace Soulful.Core.Services
 
         private readonly List<Player> _players;
 
-        private Queue<int> _whiteCards;
-        private Queue<int> _blackCards;
+        private CyclicCardQueue<int> _whiteCards;
+        private CyclicCardQueue<int> _blackCards;
         private int _currentBlackCard;
 
         private int _czarPosition;
-        private int _whitePackPosition;
-        private int _blackPackPosition;
-        private List<string> _packKeys;
 
         #endregion
 
@@ -81,28 +78,35 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public void Start()
+        public void Start(List<string> packKeys = null)
         {
             if (IsRunning)
-                throw new InvalidOperationException("The game service is already running");
+                throw App.CreateError<InvalidOperationException>("[GameService]Cannot start the game service when it is already running");
+
+            // Initialise card queues
+            List<PackInfo> packs = new List<PackInfo>();
+            if (packKeys == null)
+            {
+                packs = _loader.Packs;
+            } else
+            {
+                foreach (string key in packKeys)
+                {
+                    PackInfo pack = _loader.Packs.Find(p => p.Key == key);
+                    if (pack.Equals(default))
+                        throw App.CreateError<ArgumentException>($"[GameService]The provided pack key does not exist: {key}");
+                    else
+                        packs.Add(pack);
+                }
+            }
+            SetupCardQueues(packs);
 
             // Hook up events
             _server.PlayerDisconnected += (_, e) => OnPlayerDisconnected(e);
             _server.GameEvent += OnGameEvent;
 
             // Initialise variables
-            _whiteCards = new Queue<int>();
-            _blackCards = new Queue<int>();
             _stopToken = new CancellationTokenSource();
-
-            // Get pack keys if necessary
-            if (_packKeys == null)
-                _packKeys = _loader.Packs.Select(p => p.Key).ToList();
-
-            // Set pack positions
-            int randPackPosition = rng.Next(_loader.Packs.Count);
-            _whitePackPosition = randPackPosition;
-            _blackPackPosition = randPackPosition;
 
             // Prevent players from joining and add them to the local Player list
             _server.AcceptingPlayers = false;
@@ -113,28 +117,14 @@ namespace Soulful.Core.Services
             _server.SendToAll(NetHelpers.GetKeyValue(GameKey.GameStart));
 
             // Run the game
-            new Task(RunGame, _stopToken.Token, TaskCreationOptions.LongRunning).Start();
+            new Task(RunGame, TaskCreationOptions.LongRunning).Start();
             IsRunning = true;
-        }
-
-        public void Start(List<string> packKeys)
-        {
-            if (IsRunning)
-                throw new InvalidOperationException("The game service is already running");
-
-            foreach (string key in packKeys)
-            {
-                if (_loader.Packs.Find(p => p.Key == key).Equals(default))
-                    throw new ArgumentException("A provided key does not exist");
-            }
-            _packKeys = packKeys;
-            Start();
         }
 
         public void Stop()
         {
             if (!IsRunning)
-                throw new InvalidOperationException("The game service is already stopped");
+                throw new InvalidOperationException("[GameService]Cannot stop the game service if it is not running");
 
             // Unregister events
             _server.PlayerDisconnected -= (_, e) => OnPlayerDisconnected(e);
@@ -184,26 +174,6 @@ namespace Soulful.Core.Services
             }
         }
 
-        /// <summary>
-        /// Attempts to find a player with the provided <see cref="NetPeer"/>
-        /// </summary>
-        /// <param name="peer"></param>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        private bool TryGetPlayer(NetPeer peer, out Player player)
-        {
-            // Make sure that this player is in our list
-            if (!_players.Any(p => p.Id == peer.Id))
-            {
-                player = null;
-                return false;
-            }
-
-            // Add the white cards to the player's selected cards list
-            player = _players.First(p => p.Id == peer.Id);
-            return true;
-        }
-
         private void RunGame()
         {
             GameStage currentStage = GameStage.AwaitingPlayerReady;
@@ -234,7 +204,10 @@ namespace Soulful.Core.Services
                         foreach (Player p in _players)
                         {
                             foreach (int card in p.SelectedWhiteCards)
+                            {
                                 p.WhiteCards.Remove(card);
+                                _whiteCards.Enqueue(card);
+                            }
                         }
 
                         // Clear selected cards
@@ -286,42 +259,11 @@ namespace Soulful.Core.Services
 
         private void SendWhiteCards()
         {
-            void EnqueueWhiteCards()
-            {
-                // Initialise the list
-                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey(true));
-                List<int> whiteCards = new List<int>();
-                for (int i = pack.WhiteStartRange; i < pack.WhiteStartRange + pack.WhiteCount; i++)
-                    whiteCards.Add(i);
-
-                // Remove cards that have already been distributed
-                IEnumerable<int> existingCards = from player in _players
-                                        from int value in player.WhiteCards
-                                        select value;
-                foreach (int element in existingCards)
-                {
-                    if (whiteCards.Contains(element))
-                        whiteCards.Remove(element);
-                }
-
-                // Shuffle and enqueue the list
-                Shuffle(whiteCards);
-                foreach (int element in whiteCards)
-                    _whiteCards.Enqueue(element);
-            }
-
-            // Generate a new set of white cards if needed
-            // While loop used because some packs contain only black or only white cards
-            while (_whiteCards.Count == 0)
-                EnqueueWhiteCards();
-
             SendToAll(GameKey.SendWhiteCards, (w, p) =>
             {
                 int cardCount = p.WhiteCards.Count;
                 for (int i = 0; i < MAX_WHITE_CARDS - cardCount; i++)
                 {
-                    if (_whiteCards.Count == 0)
-                        EnqueueWhiteCards();
                     int card = _whiteCards.Dequeue();
                     p.WhiteCards.Add(card);
                     w.Put(card);
@@ -331,22 +273,7 @@ namespace Soulful.Core.Services
 
         private void SendBlackCard()
         {
-            // Generate a new set of black cards if needed
-            while (_blackCards.Count == 0)
-            {
-                // Initialise the list
-                PackInfo pack = _loader.Packs.Find(p => p.Key == GetNextPackKey(false));
-                List<int> blackCards = new List<int>();
-                for (int i = pack.BlackStartRange; i < pack.BlackStartRange + pack.BlackCount; i++)
-                    blackCards.Add(i);
-
-                // Shuffle and enqueue the list
-                Shuffle(blackCards);
-                foreach (int element in blackCards)
-                    _blackCards.Enqueue(element);
-            }
-
-            _currentBlackCard = _blackCards.Dequeue();
+            _currentBlackCard = _blackCards.Dequeue(false);
             NetDataWriter writer = new NetDataWriter();
             writer.Put(_currentBlackCard);
             SendToAll(GameKey.SendBlackCard, (w, _) => w.Put(_currentBlackCard));
@@ -354,13 +281,13 @@ namespace Soulful.Core.Services
 
         private void SendNextCzar()
         {
+            _czarPosition++;
+            if (_czarPosition == _players.Count)
+                _czarPosition = 0;
+
             Player p = _players[_czarPosition];
             p.IsCzar = true;
             SendToPlayer(p, NetHelpers.GetKeyValue(GameKey.InitiateCzar));
-
-            _czarPosition++;
-            if (_czarPosition == _server.Players.Count)
-                _czarPosition = 0;
         }
 
         private void SendInitialLeaderboard()
@@ -391,7 +318,7 @@ namespace Soulful.Core.Services
                 {
                     string name = player.Name;
                     if (p.Id == player.Id)
-                        name += " " + Resources.AppStrings.ResourceManager.GetString("Leaderboard_You");
+                        name += " " + Resources.AppStrings.Leaderboard_You;
 
                     w.Put(player.Id);
                     w.Put(player.Name);
@@ -401,7 +328,7 @@ namespace Soulful.Core.Services
 
         private void SendUpdatedLeaderboard()
         {
-            NetDataWriter w = new NetDataWriter();
+            NetDataWriter w = NetHelpers.GetKeyValue(GameKey.UpdatingLeaderboard);
             foreach (Player p in _players)
             {
                 if (p.NeedsLeaderboardUpdate)
@@ -458,17 +385,46 @@ namespace Soulful.Core.Services
         #endregion
 
         /// <summary>
-        /// Gets the next pack to use
+        /// Attempts to find a player with the provided <see cref="NetPeer"/>
         /// </summary>
-        /// <returns>A pack key</returns>
-        private string GetNextPackKey(bool whitePack)
+        /// <param name="peer"></param>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        private bool TryGetPlayer(NetPeer peer, out Player player)
         {
-            if (_whitePackPosition == _loader.Packs.Count - 1)
-                _whitePackPosition = 0;
-            if (_blackPackPosition == _loader.Packs.Count - 1)
-                _blackPackPosition = 0;
+            // Make sure that this player is in our list
+            if (!_players.Any(p => p.Id == peer.Id))
+            {
+                player = null;
+                return false;
+            }
 
-            return whitePack ? _packKeys[_whitePackPosition++] : _packKeys[_blackPackPosition++];
+            // Add the white cards to the player's selected cards list
+            player = _players.First(p => p.Id == peer.Id);
+            return true;
+        }
+
+        /// <summary>
+        /// Sets up the circular card queues
+        /// </summary>
+        /// <param name="packKeys"></param>
+        private void SetupCardQueues(List<PackInfo> packs)
+        {
+            List<int> blackCards = new List<int>();
+            List<int> whiteCards = new List<int>();
+
+            foreach (PackInfo pack in packs)
+            {
+                for (int i = pack.BlackStartRange; i < pack.BlackStartRange + pack.BlackCount; i++)
+                    blackCards.Add(i);
+                for (int i = pack.WhiteStartRange; i < pack.WhiteStartRange + pack.WhiteCount; i++)
+                    whiteCards.Add(i);
+            }
+
+            Shuffle(blackCards);
+            Shuffle(whiteCards);
+            _blackCards = new CyclicCardQueue<int>(blackCards.ToArray());
+            _whiteCards = new CyclicCardQueue<int>(whiteCards.ToArray());
         }
 
         /// <summary>

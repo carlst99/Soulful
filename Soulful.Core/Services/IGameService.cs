@@ -22,8 +22,7 @@ namespace Soulful.Core.Services
         /// </summary>
         event EventHandler GameStopped;
 
-        void Start();
-        void Start(List<string> packKeys);
+        void Start(List<string> packKeys = null);
         void Stop();
     }
 }

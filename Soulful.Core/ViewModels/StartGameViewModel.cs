@@ -134,7 +134,7 @@ namespace Soulful.Core.ViewModels
             if (!CanStartGame)
                 return;
 
-            DeregisterEvents();
+            UnregisterEvents();
             await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
         }
 
@@ -186,7 +186,7 @@ namespace Soulful.Core.ViewModels
             if (_server.IsRunning)
                 _server.Stop();
 
-            DeregisterEvents();
+            UnregisterEvents();
             NavigationService.Navigate<HomeViewModel>();
         }
 
@@ -214,7 +214,7 @@ namespace Soulful.Core.ViewModels
             await base.RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
         }
 
-        private void DeregisterEvents()
+        private void UnregisterEvents()
         {
             _server.PlayerConnected -= (_, p) => OnPlayerCollectionChanged(p, true);
             _server.PlayerDisconnected -= (_, p) => OnPlayerCollectionChanged(p, false);

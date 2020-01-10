@@ -118,7 +118,7 @@ namespace Soulful.Core.ViewModels
         {
             if (e.Key == GameKey.GameStart)
             {
-                DeregisterEvents();
+                UnregisterEvents();
                 NavigationService.Navigate<GameViewModel, bool>(false);
             }
         }
@@ -155,14 +155,14 @@ namespace Soulful.Core.ViewModels
 
         private void UnsafeNavigateBack()
         {
-            DeregisterEvents();
+            UnregisterEvents();
             if (_client.IsRunning)
                 _client.Stop();
 
             NavigationService.Navigate<HomeViewModel>();
         }
 
-        private void DeregisterEvents()
+        private void UnregisterEvents()
         {
             _client.ConnectedToServer -= (s, a) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer -= OnDisconnected;
