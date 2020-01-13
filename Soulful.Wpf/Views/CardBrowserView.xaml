@@ -13,23 +13,23 @@
     <views:MvxWpfView.Resources>
         <DataTemplate x:Key="TabItemHeaderTemplate">
             <TextBlock FontSize="15"
-                       Text="{Binding}"/>
+                       Text="{Binding}" />
         </DataTemplate>
     </views:MvxWpfView.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <md:ColorZone Padding="8"
                       Mode="Accent">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="0"
@@ -37,12 +37,12 @@
                         VerticalAlignment="Center"
                         Command="{Binding NavigateBackCommand}"
                         Content="{md:PackIcon Kind=ArrowBack}"
-                        ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"/>
+                        ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}" />
                 <TextBlock Grid.Column="1"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                           Text="{Binding [Header_CardBrowser], Mode=OneTime}"/>
+                           Text="{Binding [Header_CardBrowser], Mode=OneTime}" />
                 <md:ColorZone Grid.Column="2"
                               Margin="64,0,0,0"
                               Padding="8,2"
@@ -53,7 +53,7 @@
                               CornerRadius="2"
                               Mode="Standard">
                     <ComboBox ItemsSource="{Binding CardPacks}"
-                              SelectedItem="{Binding SelectedPack}"/>
+                              SelectedItem="{Binding SelectedPack}" />
                 </md:ColorZone>
             </Grid>
         </md:ColorZone>
@@ -72,7 +72,7 @@
                                   HorizontalAlignment="Center"
                                   ItemTemplate="{StaticResource WhiteCardTemplate}"
                                   ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                                  ItemsSource="{Binding WhiteCards}"/>
+                                  ItemsSource="{Binding SelectedPack.WhiteCards}" />
                 </ScrollViewer>
             </TabItem>
             <!-- Black cards -->
@@ -83,7 +83,7 @@
                                   HorizontalAlignment="Center"
                                   ItemTemplate="{StaticResource BlackCardTemplate}"
                                   ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                                  ItemsSource="{Binding BlackCards}"/>
+                                  ItemsSource="{Binding SelectedPack.BlackCards}" />
                 </ScrollViewer>
             </TabItem>
         </TabControl>
