@@ -10,6 +10,17 @@
         /// </summary>
         public int NumPicks { get; set; }
 
+        public BlackCard()
+        {
+        }
+
+        public BlackCard(int id, string content, int numPicks)
+        {
+            Id = id;
+            Content = content;
+            NumPicks = numPicks;
+        }
+
         public override string ToString() => Content;
     }
 }

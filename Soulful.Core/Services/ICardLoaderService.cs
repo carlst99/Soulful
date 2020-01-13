@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Soulful.Core.Model.Cards;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,12 +6,9 @@ namespace Soulful.Core.Services
 {
     public interface ICardLoaderService
     {
-        List<PackInfo> Packs { get; }
+        List<Pack> Packs { get; }
 
-        Task<List<Tuple<string, int>>> GetPackBlackCardsAsync(string packKey);
-        Task<List<string>> GetPackWhiteCardsAsync(string packKey);
-
-        Task<Tuple<string, int>> GetBlackCardAsync(int index);
-        Task<string> GetWhiteCardAsync(int index);
+        Task<BlackCard> GetBlackCardAsync(int id);
+        Task<WhiteCard> GetWhiteCardAsync(int id);
     }
 }
