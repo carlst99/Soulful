@@ -1,14 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Navigation;
-using MvvmCross;
+﻿using MvvmCross;
 using MvvmCross.Core;
 using MvvmCross.Navigation;
 using MvvmCross.Platforms.Wpf.Core;
 using MvvmCross.Platforms.Wpf.Views;
 using Soulful.Core.Net;
 using Soulful.Core.ViewModels;
+using System;
+using System.Diagnostics;
+using System.Windows;
 
 namespace Soulful.Wpf
 {
