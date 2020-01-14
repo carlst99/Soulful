@@ -15,16 +15,15 @@ namespace Soulful.Core.Services
         protected const string PACK_INFO_FILENAME = "packs.txt";
         protected const string RESOURCE_LOCATION = "Soulful.Core.Resources.Cards.";
 
+        private List<Pack> _packs;
+
         private readonly Assembly _resourceAssembly;
         private Dictionary<int, BlackCard> _blackCards;
         private Dictionary<int, WhiteCard> _whiteCards;
 
-        public List<Pack> Packs { get; protected set; }
-
         public CardLoaderService()
         {
             _resourceAssembly = typeof(CardLoaderService).GetTypeInfo().Assembly;
-            LoadPacks();
         }
 
         public async Task<BlackCard> GetBlackCardAsync(int id)
@@ -43,9 +42,12 @@ namespace Soulful.Core.Services
             return _whiteCards[index];
         }
 
-        private async Task LoadPacks()
+        public async Task<List<Pack>> GetPacks()
         {
-            Packs = new List<Pack>();
+            if (_packs != null)
+                return _packs;
+
+            _packs = new List<Pack>();
             await LoadBlackCards().ConfigureAwait(false);
             await LoadWhiteCards().ConfigureAwait(false);
 
@@ -54,17 +56,15 @@ namespace Soulful.Core.Services
             for (int packId = 0; !reader.EndOfStream; packId++)
             {
                 PackInfo info = PackInfo.Parse(await reader.ReadLineAsync().ConfigureAwait(false));
-                Pack pack = new Pack
-                {
-                    Id = packId,
-                    Name = info.Name
-                };
+                Pack pack = new Pack(packId, info.Name);
                 for (int i = info.BlackStartRange; i < info.BlackStartRange + info.BlackCount; i++)
                     pack.BlackCards.Add(_blackCards[i]);
                 for (int i = info.WhiteStartRange; i < info.WhiteStartRange + info.WhiteCount; i++)
                     pack.WhiteCards.Add(_whiteCards[i]);
-                Packs.Add(pack);
+                _packs.Add(pack);
             }
+
+            return _packs;
         }
 
         private async Task LoadBlackCards()

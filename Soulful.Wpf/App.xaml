@@ -44,7 +44,7 @@
                     <Viewbox VerticalAlignment="Top">
                         <TextBlock Width="134"
                                    FontSize="16"
-                                   Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                    Text="{Binding Content}"
                                    TextWrapping="Wrap"/>
                     </Viewbox>
@@ -64,7 +64,7 @@
                         <Viewbox VerticalAlignment="Top">
                             <TextBlock Width="134"
                                        FontSize="16"
-                                       Style="{StaticResource MaterialDesignSubheadingTextBlock}"
+                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                        Text="{Binding Content}"
                                        TextWrapping="Wrap"/>
                         </Viewbox>

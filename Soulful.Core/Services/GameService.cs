@@ -78,14 +78,14 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public void Start(List<Pack> packs = null)
+        public async void Start(List<Pack> packs = null)
         {
             if (IsRunning)
                 throw App.CreateError<InvalidOperationException>("[GameService]Cannot start the game service when it is already running");
 
             // Initialise card queues
             if (packs == null)
-                packs = _loader.Packs;
+                packs = await _loader.GetPacks().ConfigureAwait(false);
             SetupCardQueues(packs);
 
             // Hook up events
