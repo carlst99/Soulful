@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Soulful.Core.Model.Cards;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -14,39 +15,26 @@ namespace Soulful.Core.Services
         protected const string PACK_INFO_FILENAME = "packs.txt";
         protected const string RESOURCE_LOCATION = "Soulful.Core.Resources.Cards.";
 
-        private readonly Assembly _resourceAssembly;
-        private List<Tuple<string, int>> _blackCards;
-        private List<string> _whiteCards;
+        private List<Pack> _packs;
 
-        public List<PackInfo> Packs { get; protected set; }
+        private readonly Assembly _resourceAssembly;
+        private Dictionary<int, BlackCard> _blackCards;
+        private Dictionary<int, WhiteCard> _whiteCards;
 
         public CardLoaderService()
         {
             _resourceAssembly = typeof(CardLoaderService).GetTypeInfo().Assembly;
-            LoadPackInfo();
         }
 
-        public async Task<Tuple<string, int>> GetBlackCardAsync(int index)
+        public async Task<BlackCard> GetBlackCardAsync(int id)
         {
             if (_blackCards == null)
                 await LoadBlackCards().ConfigureAwait(false);
 
-            return _blackCards[index];
+            return _blackCards[id];
         }
 
-        public async Task<List<Tuple<string, int>>> GetPackBlackCardsAsync(string packKey)
-        {
-            if (_blackCards == null)
-                await LoadBlackCards().ConfigureAwait(false);
-
-            PackInfo info = Packs.Find(p => p.Key == packKey);
-            if (info.Equals(default))
-                throw App.CreateError<ArgumentException>("The specified pack does not exist: " + packKey);
-
-            return _blackCards.GetRange(info.BlackStartRange, info.BlackCount);
-        }
-
-        public async Task<string> GetWhiteCardAsync(int index)
+        public async Task<WhiteCard> GetWhiteCardAsync(int index)
         {
             if (_whiteCards == null)
                 await LoadWhiteCards().ConfigureAwait(false);
@@ -54,64 +42,61 @@ namespace Soulful.Core.Services
             return _whiteCards[index];
         }
 
-        public async Task<List<string>> GetPackWhiteCardsAsync(string packKey)
+        public async Task<List<Pack>> GetPacks()
         {
-            if (_whiteCards == null)
-                await LoadWhiteCards().ConfigureAwait(false);
+            if (_packs != null)
+                return _packs;
 
-            PackInfo info = Packs.Find(p => p.Key == packKey);
-            if (info.Equals(default))
-                throw App.CreateError<ArgumentException>("The specified pack does not exist" + packKey);
+            _packs = new List<Pack>();
+            await LoadBlackCards().ConfigureAwait(false);
+            await LoadWhiteCards().ConfigureAwait(false);
 
-            return _whiteCards.GetRange(info.WhiteStartRange, info.WhiteCount);
-        }
-
-        private async void LoadPackInfo()
-        {
-            Packs = new List<PackInfo>();
-
-            using (Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + PACK_INFO_FILENAME))
-            using (StreamReader reader = new StreamReader(packsResource, Encoding.UTF8))
+            using Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + PACK_INFO_FILENAME);
+            using StreamReader reader = new StreamReader(packsResource, Encoding.UTF8);
+            for (int packId = 0; !reader.EndOfStream; packId++)
             {
-                while (!reader.EndOfStream)
-                {
-                    PackInfo info = PackInfo.Parse(await reader.ReadLineAsync().ConfigureAwait(false));
-                    Packs.Add(info);
-                }
+                PackInfo info = PackInfo.Parse(await reader.ReadLineAsync().ConfigureAwait(false));
+                Pack pack = new Pack(packId, info.Name);
+                for (int i = info.BlackStartRange; i < info.BlackStartRange + info.BlackCount; i++)
+                    pack.BlackCards.Add(_blackCards[i]);
+                for (int i = info.WhiteStartRange; i < info.WhiteStartRange + info.WhiteCount; i++)
+                    pack.WhiteCards.Add(_whiteCards[i]);
+                _packs.Add(pack);
             }
+
+            return _packs;
         }
 
         private async Task LoadBlackCards()
         {
-            _blackCards = new List<Tuple<string, int>>();
+            _blackCards = new Dictionary<int, BlackCard>();
 
-            using (Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + BLACK_CARDS_FILENAME))
-            using (StreamReader reader = new StreamReader(packsResource, Encoding.UTF8))
+            using Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + BLACK_CARDS_FILENAME);
+            using StreamReader reader = new StreamReader(packsResource, Encoding.UTF8);
+            for (int cardId = 0; !reader.EndOfStream; cardId++)
             {
-                while (!reader.EndOfStream)
-                {
-                    string card = await reader.ReadLineAsync().ConfigureAwait(false);
-                    string[] components = card.Split('|');
-                    components[0] = components[0].Replace("/", "\n");
-                    _blackCards.Add(new Tuple<string, int>(components[0], int.Parse(components[1])));
-                }
+                string card = await reader.ReadLineAsync().ConfigureAwait(false);
+                string[] components = card.Split('|');
+                components[0] = components[0].Replace("/", "\n");
+                _blackCards.Add(cardId, new BlackCard(cardId, components[0], int.Parse(components[1])));
             }
         }
 
         private async Task LoadWhiteCards()
         {
-            _whiteCards = new List<string>();
+            _whiteCards = new Dictionary<int, WhiteCard>();
 
-            using (Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + WHITE_CARDS_FILENAME))
-            using (StreamReader reader = new StreamReader(packsResource, Encoding.UTF8))
-            {
-                while (!reader.EndOfStream)
-                    _whiteCards.Add(await reader.ReadLineAsync().ConfigureAwait(false));
-            }
+            using Stream packsResource = _resourceAssembly.GetManifestResourceStream(RESOURCE_LOCATION + WHITE_CARDS_FILENAME);
+            using StreamReader reader = new StreamReader(packsResource, Encoding.UTF8);
+            for (int cardId = 0; !reader.EndOfStream; cardId++)
+                _whiteCards.Add(cardId, new WhiteCard(cardId, await reader.ReadLineAsync().ConfigureAwait(false)));
         }
     }
 
-    public struct PackInfo
+    /// <summary>
+    /// Provides a direct interpretation of the card resource structure
+    /// </summary>
+    internal struct PackInfo
     {
         /// <summary>
         /// Gets the key of the pack

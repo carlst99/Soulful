@@ -157,7 +157,7 @@ namespace Soulful.Core.ViewModels
 
         private void NavigateBack()
         {
-            if (_server.Players.Count > 0)
+            if (_server.Players.Count > 1)
             {
                 void callback(DialogMessage.Button button)
                 {

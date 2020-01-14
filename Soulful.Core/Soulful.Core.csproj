@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Description>A ripoff of Cards Against Humanity (c)</Description>
     <LangVersion>default</LangVersion>
-    <Configurations>Debug;Release;Debug (Server);Debug (Client)</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

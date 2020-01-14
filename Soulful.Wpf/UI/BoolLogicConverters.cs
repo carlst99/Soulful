@@ -8,6 +8,9 @@ namespace Soulful.Wpf.UI
     {
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
             return value[0] is bool b1
                 && value[1] is bool b2
                 && b1 && b2;

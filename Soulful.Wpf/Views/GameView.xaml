@@ -87,7 +87,7 @@
                              VerticalAlignment="Top"
                              IsEnabled="{Binding CanSendCards, Mode=OneWay}"
                              ItemsSource="{Binding WhiteCards}"
-                             MaxSelection="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"
+                             MaxSelection="{Binding BlackCard.NumPicks}"
                              SelectedCards="{Binding SelectedWhiteCards, Mode=OneWayToSource}"
                              SelectionEnabled="True"
                              Visibility="{Binding CzarMode, Converter={StaticResource InvertedVisibilityConverter}}"/>
@@ -113,7 +113,7 @@
                         <TextBlock Width="134"
                                    FontSize="16"
                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                   Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackText}"
+                                   Text="{Binding BlackCard.Content}"
                                    TextWrapping="Wrap"/>
                     </Viewbox>
                     <Border Width="20"
@@ -127,7 +127,7 @@
                                    VerticalAlignment="Center"
                                    FontWeight="Bold"
                                    Foreground="Black"
-                                   Text="{Binding BlackCard, Converter={StaticResource IntToCardConverter}, ConverterParameter=BlackPick}"/>
+                                   Text="{Binding BlackCard.NumPicks}"/>
                     </Border>
                 </Grid>
             </md:Card>

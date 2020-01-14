@@ -72,7 +72,7 @@
                                   HorizontalAlignment="Center"
                                   ItemTemplate="{StaticResource WhiteCardTemplate}"
                                   ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                                  ItemsSource="{Binding WhiteCards}"/>
+                                  ItemsSource="{Binding SelectedPack.WhiteCards}"/>
                 </ScrollViewer>
             </TabItem>
             <!-- Black cards -->
@@ -83,7 +83,7 @@
                                   HorizontalAlignment="Center"
                                   ItemTemplate="{StaticResource BlackCardTemplate}"
                                   ItemsPanel="{StaticResource ItemsControlWrapPanelTemplate}"
-                                  ItemsSource="{Binding BlackCards}"/>
+                                  ItemsSource="{Binding SelectedPack.BlackCards}"/>
                 </ScrollViewer>
             </TabItem>
         </TabControl>

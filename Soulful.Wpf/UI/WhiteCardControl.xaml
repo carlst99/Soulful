@@ -31,7 +31,7 @@
                                 <TextBlock Width="134"
                                            FontSize="16"
                                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                           Text="{Binding Converter={StaticResource IntToCardConverter}}"
+                                           Text="{Binding Content}"
                                            TextWrapping="Wrap"/>
                             </Viewbox>
                         </md:Card>

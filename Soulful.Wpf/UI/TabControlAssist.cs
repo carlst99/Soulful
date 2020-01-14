@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using System.Windows;
+using System;
 
 namespace Soulful.Wpf.UI
 {
@@ -25,6 +26,9 @@ namespace Soulful.Wpf.UI
         /// <returns></returns>
         public static HorizontalAlignment GetTabHeaderAlignment(DependencyObject element)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+
             return (HorizontalAlignment)element.GetValue(TabHeaderAlignmentProperty);
         }
 
@@ -35,6 +39,9 @@ namespace Soulful.Wpf.UI
         /// <param name="value"></param>
         public static void SetTabHeaderAlignment(DependencyObject element, HorizontalAlignment value)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+
             element.SetValue(TabHeaderAlignmentProperty, value);
         }
 
@@ -55,6 +62,9 @@ namespace Soulful.Wpf.UI
         /// <returns></returns>
         public static Brush GetTabHeaderInactiveBrush(DependencyObject element)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+
             return (Brush)element.GetValue(TabHeaderInactiveBrushProperty);
         }
 
@@ -65,6 +75,11 @@ namespace Soulful.Wpf.UI
         /// <param name="value"></param>
         public static void SetTabHeaderInactiveBrush(DependencyObject element, Brush value)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
             element.SetValue(TabHeaderInactiveBrushProperty, value);
         }
 
@@ -85,6 +100,9 @@ namespace Soulful.Wpf.UI
         /// <returns></returns>
         public static double GetTabHeaderInactiveOpacity(DependencyObject element)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+
             return (double)element.GetValue(TabHeaderInactiveOpacityProperty);
         }
 
@@ -95,6 +113,11 @@ namespace Soulful.Wpf.UI
         /// <param name="value"></param>
         public static void SetTabHeaderInactiveOpacity(DependencyObject element, double value)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+            if (value < 0 || value > 1)
+                throw new ArgumentOutOfRangeException(nameof(value), "Opacity may be between 0 and 1");
+
             element.SetValue(TabHeaderInactiveOpacityProperty, value);
         }
 
@@ -115,6 +138,9 @@ namespace Soulful.Wpf.UI
         /// <returns></returns>
         public static Brush GetTabHeaderHighlightBrush(DependencyObject element)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+
             return (Brush)element.GetValue(TabHeaderHighlightBrushProperty);
         }
 
@@ -125,6 +151,11 @@ namespace Soulful.Wpf.UI
         /// <param name="value"></param>
         public static void SetTabHeaderHighlightBrush(DependencyObject element, Brush value)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
             element.SetValue(TabHeaderHighlightBrushProperty, value);
         }
 
@@ -145,6 +176,9 @@ namespace Soulful.Wpf.UI
         /// <returns></returns>
         public static Brush GetTabHeaderForeground(DependencyObject element)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+
             return (Brush)element.GetValue(TabHeaderForegroundProperty);
         }
 
@@ -155,6 +189,11 @@ namespace Soulful.Wpf.UI
         /// <param name="value"></param>
         public static void SetTabHeaderForeground(DependencyObject element, Brush value)
         {
+            if (element is null)
+                throw new ArgumentNullException(nameof(element));
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
             element.SetValue(TabHeaderForegroundProperty, value);
         }
     }

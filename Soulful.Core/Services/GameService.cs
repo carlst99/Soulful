@@ -2,6 +2,7 @@
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Soulful.Core.Model;
+using Soulful.Core.Model.Cards;
 using Soulful.Core.Net;
 using System;
 using System.Collections.Generic;
@@ -30,9 +31,8 @@ namespace Soulful.Core.Services
 
         private readonly List<Player> _players;
 
-        private CyclicCardQueue<int> _whiteCards;
-        private CyclicCardQueue<int> _blackCards;
-        private int _currentBlackCard;
+        private CyclicCardQueue<WhiteCard> _whiteCards;
+        private CyclicCardQueue<BlackCard> _blackCards;
 
         private int _czarPosition;
 
@@ -48,7 +48,7 @@ namespace Soulful.Core.Services
         /// <summary>
         /// Gets the full value of the current black card
         /// </summary>
-        public Tuple<string, int> CurrentBlackCard => _loader.GetBlackCardAsync(_currentBlackCard).Result;
+        public BlackCard CurrentBlackCard { get; private set; }
 
         #endregion
 
@@ -78,27 +78,14 @@ namespace Soulful.Core.Services
 
         #region Start/Stop
 
-        public void Start(List<string> packKeys = null)
+        public async void Start(List<Pack> packs = null)
         {
             if (IsRunning)
                 throw App.CreateError<InvalidOperationException>("[GameService]Cannot start the game service when it is already running");
 
             // Initialise card queues
-            List<PackInfo> packs = new List<PackInfo>();
-            if (packKeys == null)
-            {
-                packs = _loader.Packs;
-            } else
-            {
-                foreach (string key in packKeys)
-                {
-                    PackInfo pack = _loader.Packs.Find(p => p.Key == key);
-                    if (pack.Equals(default))
-                        throw App.CreateError<ArgumentException>($"[GameService]The provided pack key does not exist: {key}");
-                    else
-                        packs.Add(pack);
-                }
-            }
+            if (packs == null)
+                packs = await _loader.GetPacks().ConfigureAwait(false);
             SetupCardQueues(packs);
 
             // Hook up events
@@ -141,7 +128,7 @@ namespace Soulful.Core.Services
 
         #endregion
 
-        private void OnGameEvent(object sender, GameKeyPackage e)
+        private async void OnGameEvent(object sender, GameKeyPackage e)
         {
             if (!TryGetPlayer(e.Peer, out Player p))
                 return;
@@ -151,7 +138,7 @@ namespace Soulful.Core.Services
                 case GameKey.ClientSendWhiteCards:
                     while (!e.Data.EndOfData)
                     {
-                        int card = e.Data.GetInt();
+                        WhiteCard card = await _loader.GetWhiteCardAsync(e.Data.GetInt()).ConfigureAwait(true);
                         int unknownCount = 0;
 
                         // Add card, checking for invalid cards that have been sent
@@ -161,7 +148,7 @@ namespace Soulful.Core.Services
                             p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
 
                         // Limit cards to required amount
-                        int cardCount = CurrentBlackCard.Item2;
+                        int cardCount = CurrentBlackCard.NumPicks;
                         while (p.SelectedWhiteCards.Count < cardCount)
                             p.SelectedWhiteCards.Add(p.WhiteCards[unknownCount++]);
                         while (p.SelectedWhiteCards.Count > cardCount)
@@ -203,7 +190,7 @@ namespace Soulful.Core.Services
                         // Remove used white cards
                         foreach (Player p in _players)
                         {
-                            foreach (int card in p.SelectedWhiteCards)
+                            foreach (WhiteCard card in p.SelectedWhiteCards)
                             {
                                 p.WhiteCards.Remove(card);
                                 _whiteCards.Enqueue(card);
@@ -266,19 +253,17 @@ namespace Soulful.Core.Services
                 int cardCount = p.WhiteCards.Count;
                 for (int i = 0; i < MAX_WHITE_CARDS - cardCount; i++)
                 {
-                    int card = _whiteCards.Dequeue();
+                    WhiteCard card = _whiteCards.Dequeue();
                     p.WhiteCards.Add(card);
-                    w.Put(card);
+                    w.Put(card.Id);
                 }
             });
         }
 
         private void SendBlackCard()
         {
-            _currentBlackCard = _blackCards.Dequeue(false);
-            NetDataWriter writer = new NetDataWriter();
-            writer.Put(_currentBlackCard);
-            SendToAll(GameKey.SendBlackCard, (w, _) => w.Put(_currentBlackCard));
+            CurrentBlackCard = _blackCards.Dequeue(false);
+            SendToAll(GameKey.SendBlackCard, (w, _) => w.Put(CurrentBlackCard.Id));
         }
 
         private void SendNextCzar()
@@ -410,23 +395,21 @@ namespace Soulful.Core.Services
         /// Sets up the circular card queues
         /// </summary>
         /// <param name="packKeys"></param>
-        private void SetupCardQueues(List<PackInfo> packs)
+        private void SetupCardQueues(List<Pack> packs)
         {
-            List<int> blackCards = new List<int>();
-            List<int> whiteCards = new List<int>();
+            List<BlackCard> blackCards = new List<BlackCard>();
+            List<WhiteCard> whiteCards = new List<WhiteCard>();
 
-            foreach (PackInfo pack in packs)
+            foreach (Pack pack in packs)
             {
-                for (int i = pack.BlackStartRange; i < pack.BlackStartRange + pack.BlackCount; i++)
-                    blackCards.Add(i);
-                for (int i = pack.WhiteStartRange; i < pack.WhiteStartRange + pack.WhiteCount; i++)
-                    whiteCards.Add(i);
+                blackCards.AddRange(pack.BlackCards);
+                whiteCards.AddRange(pack.WhiteCards);
             }
 
             Shuffle(blackCards);
             Shuffle(whiteCards);
-            _blackCards = new CyclicCardQueue<int>(blackCards.ToArray());
-            _whiteCards = new CyclicCardQueue<int>(whiteCards.ToArray());
+            _blackCards = new CyclicCardQueue<BlackCard>(blackCards.ToArray());
+            _whiteCards = new CyclicCardQueue<WhiteCard>(whiteCards.ToArray());
         }
 
         /// <summary>

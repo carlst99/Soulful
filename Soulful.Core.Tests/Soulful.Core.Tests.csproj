@@ -9,7 +9,7 @@
 
     <LangVersion>7.1</LangVersion>
 
-    <Configurations>Debug;Release;Debug (Server);Debug (Client)</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   
   <ItemGroup>
