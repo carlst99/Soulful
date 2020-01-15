@@ -156,7 +156,7 @@ namespace Soulful.Core.ViewModels
                         WhiteCards.Add(await _cardLoader.GetWhiteCardAsync(e.Data.GetInt()).ConfigureAwait(false));
                     break;
                 case GameKey.SendBlackCard:
-                    BlackCard = await _cardLoader.GetBlackCardAsync(e.Data.GetInt());
+                    BlackCard = await _cardLoader.GetBlackCardAsync(e.Data.GetInt()).ConfigureAwait(false);
                     break;
                 case GameKey.InitiateCzar:
                     CzarMode = true;

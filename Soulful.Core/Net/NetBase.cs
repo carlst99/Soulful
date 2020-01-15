@@ -59,7 +59,8 @@ namespace Soulful.Core.Net
                 throw App.CreateError<InvalidOperationException>("[NetBase]Cannot stop a net service if it is not already running");
 
             _cancelPollToken.Cancel();
-            RunNetworkerTask(() => _networker.Stop());
+            _cancelPollToken.Token.WaitHandle.WaitOne();
+            _networker.Stop();
         }
 
         #region RunNetworkerTask
