@@ -1,4 +1,5 @@
 ﻿using LiteNetLib;
+using Soulful.Core.Model.Cards;
 using System.Collections.Generic;
 
 namespace Soulful.Core.Model
@@ -22,12 +23,12 @@ namespace Soulful.Core.Model
         /// <summary>
         /// Gets or sets the list of white cards that this player currently holds
         /// </summary>
-        public List<int> WhiteCards { get; set; }
+        public List<WhiteCard> WhiteCards { get; set; }
 
         /// <summary>
         /// Gets or sets the list of white cards that this player has selected in the last round
         /// </summary>
-        public List<int> SelectedWhiteCards { get; set; }
+        public List<WhiteCard> SelectedWhiteCards { get; set; }
 
         /// <summary>
         /// Gets or sets the total score for this player
@@ -68,8 +69,8 @@ namespace Soulful.Core.Model
         {
             Peer = peer;
             Name = name;
-            WhiteCards = new List<int>();
-            SelectedWhiteCards = new List<int>();
+            WhiteCards = new List<WhiteCard>();
+            SelectedWhiteCards = new List<WhiteCard>();
             Score = 0;
             NeedsLeaderboardUpdate = true;
             IsReady = false;

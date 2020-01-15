@@ -3,7 +3,6 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
-using System;
 
 namespace Soulful.Core.ViewModels
 {
@@ -74,7 +73,6 @@ namespace Soulful.Core.ViewModels
 
         private void OnDisconnected(object sender, NetKey e)
         {
-            UnregisterEvents();
             AttemptingConnection = false;
             ShowConfirmationLabel = false;
 
@@ -157,10 +155,10 @@ namespace Soulful.Core.ViewModels
 
         private void UnsafeNavigateBack()
         {
+            UnregisterEvents();
             if (_client.IsRunning)
                 _client.Stop();
 
-            UnregisterEvents();
             NavigationService.Navigate<HomeViewModel>();
         }
 

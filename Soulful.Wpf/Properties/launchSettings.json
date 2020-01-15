@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Soulful.Wpf": {
+      "commandName": "Project",
+      "commandLineArgs": "autoServer launchOther"
+    }
+  }
+}

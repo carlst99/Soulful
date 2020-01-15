@@ -159,6 +159,8 @@ namespace CardHelper
             mod = mod.Replace("&trade", "™");
             mod = mod.Replace("&Uuml;", "Ü");
             mod = mod.Replace("_", "________");
+            mod = mod.Replace("<i>", "\"");
+            mod = mod.Replace("</i>", "\"");
             mod = mod.Trim('.');
             return mod;
         }

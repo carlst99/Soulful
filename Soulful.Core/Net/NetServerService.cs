@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 using Serilog;
 using Soulful.Core.Model;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -31,15 +31,27 @@ namespace Soulful.Core.Net
         /// <summary>
         /// Gets a collection of players connected to the server
         /// </summary>
-        public ObservableCollection<NetPeer> Players { get; }
+        public List<NetPeer> Players { get; }
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Invoked when a player connects to the server
+        /// </summary>
+        public event EventHandler<NetPeer> PlayerConnected;
+
+        /// <summary>
+        /// Invoked when a player disconnects from the server
+        /// </summary>
         public event EventHandler<NetPeer> PlayerDisconnected;
+
+        #endregion
 
         public NetServerService()
         {
-            Players = new ObservableCollection<NetPeer>();
+            Players = new List<NetPeer>();
 
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;
@@ -51,20 +63,22 @@ namespace Soulful.Core.Net
 
         public void Start(int maxPlayers, string pin)
         {
-            Start();
-            RunNetworkerTask(() => _networker.Start(PORT));
+            if (IsRunning)
+                throw App.CreateError<InvalidOperationException>("[NetServer]Cannot start the server when it is already running");
+
+            Start(PORT);
 
             MaxPlayers = maxPlayers;
             Pin = pin;
             AcceptingPlayers = true;
 
-            Log.Information("Server started with pin {pin} and max connections {max}", pin, maxPlayers);
+            Log.Information("[Server]Started with pin {pin} and max connections {max}", pin, maxPlayers);
         }
 
         public override void Stop()
         {
             if (!IsRunning)
-                throw App.CreateError<InvalidOperationException>("Server is not running");
+                throw App.CreateError<InvalidOperationException>("[Server]Cannot stop the server when it is not running");
 
             AcceptingPlayers = false;
             Players.Clear();
@@ -72,13 +86,13 @@ namespace Soulful.Core.Net
                 RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerClosed)));
 
             base.Stop();
-            Log.Information("Server stopped");
+            Log.Information("[Server]Server stopped");
         }
 
         public void Send(NetPeer peer, NetDataWriter data)
         {
             if (!IsRunning)
-                throw new InvalidOperationException("Server is not running");
+                throw App.CreateError<InvalidOperationException>("[Server]Cannot send data when the server is not running");
 
             RunNetworkerTask(() => peer.Send(data, D_METHOD));
         }
@@ -86,17 +100,25 @@ namespace Soulful.Core.Net
         public void SendToAll(NetDataWriter data)
         {
             if (!IsRunning)
-                throw new InvalidOperationException("Server is not running");
+                throw App.CreateError<InvalidOperationException>("[Server]Cannot send data when the server is not running");
 
             RunNetworkerTask(() => _networker.SendToAll(data, D_METHOD));
         }
 
         public void Kick(int playerId)
         {
-            NetPeer peer = Players.FirstOrDefault(p => p.Id == playerId);
-            RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked)));
-            Players.Remove(peer);
-            Log.Information("Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
+            try
+            {
+                NetPeer peer = Players.Find(p => p.Id == playerId);
+                RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked)));
+                Players.Remove(peer);
+                PlayerDisconnected?.Invoke(this, peer);
+                Log.Information("[Server]Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Server]Could not kick player");
+            }
         }
 
         /// <summary>
@@ -117,7 +139,12 @@ namespace Soulful.Core.Net
             if (disconnectAll)
             {
                 foreach (NetPeer peer in _networker.ConnectedPeerList)
+                {
                     RunNetworkerTask(() => peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
+                    PlayerDisconnected?.Invoke(this, peer);
+                }
+
+                Players.Clear();
             }
             else
             {
@@ -125,7 +152,11 @@ namespace Soulful.Core.Net
                 {
                     while (_networker.PeersCount > MaxPlayers)
                     {
-                        RunNetworkerTask(() => _networker.ConnectedPeerList[_networker.PeersCount - 1].Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
+                        NetPeer toDisconnect = _networker.ConnectedPeerList[_networker.PeersCount - 1];
+                        if (Players.Contains(toDisconnect))
+                            Players.Remove(toDisconnect);
+                        RunNetworkerTask(() => toDisconnect.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged)));
+                        PlayerDisconnected?.Invoke(this, toDisconnect);
                     }
                 });
             }
@@ -139,7 +170,7 @@ namespace Soulful.Core.Net
             {
                 string pin = reader.GetString();
                 if (pin == Pin)
-                    RunNetworkerTask(() => _networker.SendDiscoveryResponse(new byte[0], remoteEndPoint));
+                    RunNetworkerTask(() => _networker.SendDiscoveryResponse(Array.Empty<byte>(), remoteEndPoint));
             }
         }
 
@@ -155,25 +186,26 @@ namespace Soulful.Core.Net
                     peer.Tag = userName;
 
                     Players.Add(peer);
-                    Log.Information("Connection request from {endPoint} with username {userName} accepted", request.RemoteEndPoint, userName);
+                    PlayerConnected?.Invoke(this, peer);
+                    Log.Information("[Server]Connection request from {endPoint} with username {userName} accepted", request.RemoteEndPoint, userName);
                 }
                 else
                 {
                     RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.InvalidPin)));
-                    Log.Information("Connection request from {endPoint} rejected due to invalid key", request.RemoteEndPoint);
+                    Log.Information("[Server]Connection request from {endPoint} rejected due to invalid key", request.RemoteEndPoint);
                 }
             }
             else
             {
                 RunNetworkerTask(() => request.Reject(NetHelpers.GetKeyValue(NetKey.ServerFull)));
-                Log.Information("Connection request from {endPoint} rejected as server full", request.RemoteEndPoint);
+                Log.Information("[Server]Connection request from {endPoint} rejected as server full", request.RemoteEndPoint);
             }
         }
 
         private void OnPeerConnected(NetPeer peer)
         {
             Send(peer, NetHelpers.GetKeyValue(GameKey.JoinedGame));
-            Log.Information("Alerting client that connection was successful");
+            Log.Information("[Server]Alerting client that connection was successful");
         }
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
@@ -184,7 +216,7 @@ namespace Soulful.Core.Net
                 PlayerDisconnected?.Invoke(this, peer);
             }
 
-            Log.Information("Peer at {endPoint} disconnected", peer.EndPoint);
+            Log.Information("[Server]Peer at {endPoint} disconnected", peer.EndPoint);
         }
 
         #endregion

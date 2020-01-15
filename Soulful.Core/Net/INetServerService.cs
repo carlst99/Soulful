@@ -1,14 +1,18 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 
 namespace Soulful.Core.Net
 {
     public interface INetServerService : INetBase
     {
+        string Pin { get; }
+        int MaxPlayers { get; }
         bool AcceptingPlayers { get; set; }
-        ObservableCollection<NetPeer> Players { get; }
+        List<NetPeer> Players { get; }
+
+        event EventHandler<NetPeer> PlayerConnected;
         event EventHandler<NetPeer> PlayerDisconnected;
 
         void Start(int maxPlayers, string pin);

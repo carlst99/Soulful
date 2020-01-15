@@ -1,33 +1,17 @@
-﻿using AmRoMessageDialog;
-using IntraMessaging;
+﻿using IntraMessaging;
 using MvvmCross;
 using MvvmCross.Platforms.Wpf.Views;
 using Soulful.Core.Model;
 using System;
+using System.Windows;
 
 namespace Soulful.Wpf
 {
     public partial class MainWindow : MvxWindow
     {
-        private readonly AmRoMessageBox _messageBox;
-
         public MainWindow()
         {
             InitializeComponent();
-
-            _messageBox = new AmRoMessageBox
-            {
-                Background = "#333",
-                TextColor = "#fff",
-                RippleEffectColor = "#000",
-                ClickEffectColor = "#1F2023",
-                ShowMessageWithEffect = true,
-                EffectArea = this,
-                ParentWindow = this,
-                IconColor = "#3399ff",
-                CaptionFontSize = 16,
-                MessageFontSize = 14
-            };
 
             IIntraMessenger messenger = Mvx.IoCProvider.Resolve<IIntraMessenger>();
             messenger.Subscribe(OnMessage, new Type[] { typeof(DialogMessage) });
@@ -37,35 +21,34 @@ namespace Soulful.Wpf
         {
             if (message is DialogMessage dMessage)
             {
-                AmRoMessageBoxButton buttons = AmRoMessageBoxButton.Ok;
+                MessageBoxButton buttons = MessageBoxButton.OK;
                 if ((dMessage.Buttons & DialogMessage.Button.Ok) != 0)
                 {
                     if ((dMessage.Buttons & DialogMessage.Button.Cancel) != 0)
-                        buttons = AmRoMessageBoxButton.OkCancel;
+                        buttons = MessageBoxButton.OKCancel;
                     else
-                        buttons = AmRoMessageBoxButton.Ok;
-                } else if ((dMessage.Buttons & DialogMessage.Button.Yes) != 0)
+                        buttons = MessageBoxButton.OK;
+                }
+                else if ((dMessage.Buttons & DialogMessage.Button.Yes) != 0)
                 {
                     if ((dMessage.Buttons & DialogMessage.Button.Cancel) != 0)
-                        buttons = AmRoMessageBoxButton.YesNoCancel;
+                        buttons = MessageBoxButton.YesNoCancel;
                     else
-                        buttons = AmRoMessageBoxButton.YesNo;
+                        buttons = MessageBoxButton.YesNo;
                 }
 
-                AmRoMessageBoxResult result = Dispatcher.Invoke(() => _messageBox.Show(dMessage.Content, dMessage.Title, buttons));
-
-                switch (result)
+                switch (Dispatcher.Invoke(() => MessageBox.Show(dMessage.Content, dMessage.Title, buttons)))
                 {
-                    case AmRoMessageBoxResult.Cancel:
+                    case MessageBoxResult.Cancel:
                         dMessage.Callback?.Invoke(DialogMessage.Button.Cancel);
                         break;
-                    case AmRoMessageBoxResult.No:
+                    case MessageBoxResult.No:
                         dMessage.Callback?.Invoke(DialogMessage.Button.No);
                         break;
-                    case AmRoMessageBoxResult.Ok:
+                    case MessageBoxResult.OK:
                         dMessage.Callback?.Invoke(DialogMessage.Button.Ok);
                         break;
-                    case AmRoMessageBoxResult.Yes:
+                    case MessageBoxResult.Yes:
                         dMessage.Callback?.Invoke(DialogMessage.Button.Yes);
                         break;
                 }

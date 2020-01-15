@@ -6,14 +6,12 @@ using Plugin.DeviceInfo;
 using Plugin.DeviceInfo.Abstractions;
 using Serilog;
 using Serilog.Events;
-using Soulful.Core.Net;
 using Soulful.Core.ViewModels;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("MvvmCrossCoreTestProject")]
+[assembly: InternalsVisibleTo("Soulful.Core.Tests")]
 
 namespace Soulful.Core
 {
@@ -30,14 +28,20 @@ namespace Soulful.Core
 
             RegisterAppStart<HomeViewModel>();
 
-            Mvx.IoCProvider.RegisterSingleton(CrossDeviceInfo.Current);
             Mvx.IoCProvider.RegisterSingleton<IIntraMessenger>(IntraMessenger.Instance);
 
+#if DEBUG
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Debug()
+                .CreateLogger();
+#else
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Debug()
                 .WriteTo.File(GetAppdataFilePath(LOG_FILE_NAME))
                 .CreateLogger();
+#endif
 
             if (CrossDeviceInfo.IsSupported)
             {
@@ -100,15 +104,26 @@ namespace Soulful.Core
         /// </returns>
         public static string GetPlatformAppdataPath()
         {
-            switch (Mvx.IoCProvider.GetSingleton<IDeviceInfo>().Platform)
+            string path;
+
+            if (CrossDeviceInfo.IsSupported)
             {
-                case Platform.Android:
-                    return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                case Platform.iOS:
-                    return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                default:
-                    return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                path = CrossDeviceInfo.Current.Platform switch
+                {
+                    Platform.Android => Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                    Platform.iOS => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    _ => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                };
+            } else
+            {
+                path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             }
+
+            path = Path.Combine(path, "Soulful");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            return path;
         }
 
         /// <summary>
@@ -116,7 +131,7 @@ namespace Soulful.Core
         /// </summary>
         /// <param name="fileName">The name of the file to resolve the path to</param>
         /// <returns></returns>
-        public static string GetAppdataFilePath(string fileName) => Path.Combine(GetPlatformAppdataPath(), Assembly.GetEntryAssembly().GetName().Name, fileName);
+        public static string GetAppdataFilePath(string fileName) => Path.Combine(GetPlatformAppdataPath(), fileName);
 
         #endregion
     }

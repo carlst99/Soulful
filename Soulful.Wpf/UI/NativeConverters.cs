@@ -1,5 +1,4 @@
 ﻿using MvvmCross.Platforms.Wpf.Converters;
-using MvvmCross.Plugin.Visibility;
 using Soulful.Core.Converters;
 
 namespace Soulful.Wpf.UI
@@ -8,7 +7,7 @@ namespace Soulful.Wpf.UI
 
     public class NativeBoolInverterConverter : MvxNativeValueConverter<BoolInverterConverter> { }
 
-    public class NativeMvxVisibilityValueConverter : MvxNativeValueConverter<MvxVisibilityValueConverter> { }
+    public class NativeVisibilityValueConverter : MvxNativeValueConverter<VisibilityValueConverter> { }
 
-    public class NativeMvxInvertedVisibilityValueConverter : MvxNativeValueConverter<MvxInvertedVisibilityValueConverter> { }
+    public class NativeInvertedVisibilityValueConverter : MvxNativeValueConverter<InvertedVisibilityValueConverter> { }
 }

@@ -1,5 +1,6 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using System.Diagnostics;
 
 namespace Soulful.Core.ViewModels
 {
@@ -35,7 +36,11 @@ namespace Soulful.Core.ViewModels
 
         public IMvxCommand BrowseCardsCommand => new MvxCommand(() => NavigationService.Navigate<CardBrowserViewModel>());
 
-        public IMvxCommand LaunchHyperlinkCommand => new MvxCommand<string>((l) => System.Diagnostics.Process.Start(l));
+        public IMvxCommand LaunchHyperlinkCommand => new MvxCommand<string>((l) =>
+        {
+            l = l.Replace("&", "^&");
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {l}") { CreateNoWindow = true });
+        });
 
         #endregion
 

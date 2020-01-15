@@ -3,10 +3,10 @@ using LiteNetLib.Utils;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
+using Soulful.Core.Model.Cards;
 using Soulful.Core.Net;
 using Soulful.Core.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,11 +20,13 @@ namespace Soulful.Core.ViewModels
         private readonly INetClientService _client;
         private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
+        private readonly ICardLoaderService _cardLoader;
 
+        private bool _isServer;
         private ObservableCollection<LeaderboardEntry> _leaderboard;
-        private ObservableCollection<int> _whiteCards;
-        private ObservableCollection<int> _selectedWhiteCards;
-        private int _blackCard;
+        private ObservableCollection<WhiteCard> _whiteCards;
+        private ObservableCollection<WhiteCard> _selectedWhiteCards;
+        private BlackCard _blackCard;
         private bool _czarMode;
         private string _sendButtonText;
         private bool _canSendCards;
@@ -36,7 +38,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets or sets the current white cards
         /// </summary>
-        public ObservableCollection<int> WhiteCards
+        public ObservableCollection<WhiteCard> WhiteCards
         {
             get => _whiteCards;
             set => SetProperty(ref _whiteCards, value);
@@ -45,7 +47,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets or sets the currently selected white cards
         /// </summary>
-        public ObservableCollection<int> SelectedWhiteCards
+        public ObservableCollection<WhiteCard> SelectedWhiteCards
         {
             get => _selectedWhiteCards;
             set => SetProperty(ref _selectedWhiteCards, value);
@@ -54,7 +56,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets or sets the current black card
         /// </summary>
-        public int BlackCard
+        public BlackCard BlackCard
         {
             get => _blackCard;
             set => SetProperty(ref _blackCard, value);
@@ -112,15 +114,21 @@ namespace Soulful.Core.ViewModels
 
         #endregion
 
-        public GameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger, IGameService gameService)
+        public GameViewModel(
+            IMvxNavigationService navigationService,
+            INetClientService client,
+            IIntraMessenger messenger,
+            IGameService gameService,
+            ICardLoaderService cardLoader)
             : base(navigationService)
         {
             _client = client;
             _gameService = gameService;
             _messenger = messenger;
+            _cardLoader = cardLoader;
 
             Leaderboard = new ObservableCollection<LeaderboardEntry>();
-            WhiteCards = new ObservableCollection<int>();
+            WhiteCards = new ObservableCollection<WhiteCard>();
             SendButtonText = this["Command_PlayerPickCards"];
             CanSendCards = true;
         }
@@ -139,20 +147,20 @@ namespace Soulful.Core.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnGameEvent(GameKeyPackage e)
+        private async void OnGameEvent(GameKeyPackage e)
         {
             switch (e.Key)
             {
                 case GameKey.SendWhiteCards:
                     while (!e.Data.EndOfData)
-                        WhiteCards.Add(e.Data.GetInt());
+                        WhiteCards.Add(await _cardLoader.GetWhiteCardAsync(e.Data.GetInt()).ConfigureAwait(false));
                     break;
                 case GameKey.SendBlackCard:
-                    BlackCard = e.Data.GetInt();
+                    BlackCard = await _cardLoader.GetBlackCardAsync(e.Data.GetInt()).ConfigureAwait(false);
                     break;
                 case GameKey.InitiateCzar:
                     CzarMode = true;
-                    SendButtonText = this["Command_CzarPickCards"];
+                    SendButtonText = Resources.AppStrings.Command_CzarPickCards;
                     break;
                 case GameKey.UpdatingLeaderboard:
                     while (!e.Data.EndOfData)
@@ -183,6 +191,7 @@ namespace Soulful.Core.ViewModels
 
             if (parameter)
             {
+                _isServer = true;
                 _gameService.Start();
                 _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
             }
@@ -209,11 +218,11 @@ namespace Soulful.Core.ViewModels
         {
             UnregisterEvents();
 
-            if (_client.IsRunning)
-                _client.Stop();
-
             if (_gameService.IsRunning)
                 _gameService.Stop();
+
+            if (_client.IsRunning)
+                _client.Stop();
 
             await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
         }
@@ -222,12 +231,13 @@ namespace Soulful.Core.ViewModels
         {
             if (CzarMode)
             {
-                
+                NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.CzarPick);
+                // Require server confirmation before exiting czar mode?
             } else
             {
                 NetDataWriter writer = NetHelpers.GetKeyValue(GameKey.ClientSendWhiteCards);
-                foreach (int card in SelectedWhiteCards)
-                    writer.Put(card);
+                foreach (WhiteCard card in SelectedWhiteCards)
+                    writer.Put(card.Id);
                 _client.Send(writer);
                 writer.Reset();
             }
@@ -256,6 +266,9 @@ namespace Soulful.Core.ViewModels
         private void OnDisconnected(object sender, NetKey e)
         {
             UnregisterEvents();
+            if (_isServer)
+                return;
+
             string message;
             string title;
             switch (e)

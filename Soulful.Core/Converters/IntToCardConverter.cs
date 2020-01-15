@@ -1,5 +1,6 @@
 ﻿using MvvmCross;
 using MvvmCross.Converters;
+using Soulful.Core.Model.Cards;
 using Soulful.Core.Services;
 using System;
 using System.Globalization;
@@ -18,18 +19,18 @@ namespace Soulful.Core.Converters
                 }
                 else if (parameter is string s)
                 {
-                    Tuple<string, int> card = Mvx.IoCProvider.Resolve<ICardLoaderService>().GetBlackCardAsync(iValue).Result;
+                    BlackCard card = Mvx.IoCProvider.Resolve<ICardLoaderService>().GetBlackCardAsync(iValue).Result;
 
                     if (string.Equals(s, "BlackText", StringComparison.OrdinalIgnoreCase))
-                        return card.Item1;
+                        return card.Content;
                     else if (string.Equals(s, "BlackPick", StringComparison.OrdinalIgnoreCase))
-                        return card.Item2;
+                        return card.NumPicks;
                     else
                         throw new ArgumentException("Parameter string was invalid - use either 'BlackText' or 'BlackPick'");
                 }
                 else
                 {
-                    throw new ArgumentException("Parameter must be a string containing either 'BlackText' or 'BlackPick'");
+                    throw new ArgumentException("Parameter must be either null or a string");
                 }
             }
             else if (value is string sValue)

@@ -1,4 +1,5 @@
 ﻿using Soulful.Core.Model;
+using Soulful.Core.Model.Cards;
 using System;
 using System.Collections.Generic;
 
@@ -22,8 +23,7 @@ namespace Soulful.Core.Services
         /// </summary>
         event EventHandler GameStopped;
 
-        void Start();
-        void Start(List<string> packKeys);
+        void Start(List<Pack> packs = null);
         void Stop();
     }
 }
