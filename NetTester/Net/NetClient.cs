@@ -48,11 +48,6 @@ namespace NetTester.Net
         /// </summary>
         public event EventHandler<NetKey> DisconnectedFromServer;
 
-        /// <summary>
-        /// Invoked when the server fails to connect to a server
-        /// </summary>
-        public event EventHandler ConnectionFailed;
-
         #endregion
 
         public NetClient()
@@ -90,27 +85,11 @@ namespace NetTester.Net
             return false;
         }
 
-        public bool SafeStop()
-        {
-            try
-            {
-                Stop();
-                return true;
-            }
-            catch (InvalidOperationException)
-            {
-                Log.Information("[Client]SafeStop was initiated");
-                return false;
-            }
-        }
-
         public override void Stop()
         {
             IsConnected = false;
-            if (!IsRunning)
-                throw App.CreateError<InvalidOperationException>("[Client]Cannot stop the client if it is not running");
-
-            base.Stop();
+            if (IsRunning)
+                base.Stop();
             Log.Information("[Client]Client stopped");
         }
 
@@ -160,7 +139,7 @@ namespace NetTester.Net
         {
             if (peer.Id == _serverPeer.Id)
             {
-                SafeStop();
+                Stop();
 
                 NetKey key;
                 if (disconnectInfo.AdditionalData.AvailableBytes > 0)

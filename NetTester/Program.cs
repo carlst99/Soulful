@@ -2,14 +2,13 @@
 using Serilog;
 using Serilog.Events;
 using System;
-using System.Threading.Tasks;
 
 namespace NetTester
 {
     public static class Program
     {
-        private static NetServer _server = new NetServer();
-        private static NetClient _client = new NetClient();
+        private readonly static NetServer _server = new NetServer();
+        private readonly static NetClient _client = new NetClient();
 
         public static void Main()
         {
@@ -35,7 +34,7 @@ namespace NetTester
             _client.Start("t", "name");
 
             _server.Stop();
-            _client.SafeStop();
+            _client.Stop();
         }
     }
 

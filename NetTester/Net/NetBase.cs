@@ -64,10 +64,9 @@ namespace NetTester.Net
 
             // Cancel the polling
             _cancelPollToken.Cancel();
-            // Wait for the poll task to complete
-            while (!_pollTask.IsCompleted)
-                Task.Delay(5).Wait();
             _cancelPollToken.Dispose();
+
+            _networker.Stop();
         }
 
         /// <summary>
@@ -90,8 +89,6 @@ namespace NetTester.Net
         /// </summary>
         private void PollEvents(CancellationToken token)
         {
-            token.Register(() => _networker.Stop());
-
             while (!token.IsCancellationRequested)
             {
                 _networker.PollEvents();
