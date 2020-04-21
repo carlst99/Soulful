@@ -6,10 +6,14 @@ using System.Threading.Tasks;
 
 namespace Soulful.Core.Net
 {
-    public abstract class NetBase : INetBase
+    public abstract class NetBase
     {
+        #region Constants
+
         public const int PORT = 6259;
         public const DeliveryMethod D_METHOD = DeliveryMethod.ReliableOrdered;
+
+        #endregion
 
         #region Fields
 
@@ -21,15 +25,15 @@ namespace Soulful.Core.Net
         /// </summary>
         protected CancellationTokenSource _cancelPollToken;
 
-        /// <summary>
-        /// A lock should be taken on this object when a task involving the <see cref="_networker"/> is required
-        /// </summary>
-        private static readonly object _networkerLock = new object();
+        private Task _pollTask;
 
         #endregion
 
         public bool IsRunning => _networker.IsRunning;
 
+        /// <summary>
+        /// Asynchronously invoked when a game package is received
+        /// </summary>
         public event EventHandler<GameKeyPackage> GameEvent;
 
         protected NetBase()
@@ -39,18 +43,19 @@ namespace Soulful.Core.Net
             _networker = new NetManager(_listener);
         }
 
-        public virtual void Start(int port = 0)
+        protected virtual void Start(int port = 0)
         {
             if (IsRunning)
                 throw App.CreateError<InvalidOperationException>("[NetBase]Cannot start a net service if it is already running");
 
             if (port == 0)
-                RunNetworkerTask(() => _networker.Start());
+                _networker.Start();
             else
-                RunNetworkerTask(() => _networker.Start(PORT));
+                _networker.Start(PORT);
 
             _cancelPollToken = new CancellationTokenSource();
-            new Task(PollEvents, TaskCreationOptions.LongRunning).Start();
+            _pollTask = new Task(() => PollEvents(_cancelPollToken.Token), TaskCreationOptions.LongRunning);
+            _pollTask.Start();
         }
 
         public virtual void Stop()
@@ -58,39 +63,12 @@ namespace Soulful.Core.Net
             if (!IsRunning)
                 throw App.CreateError<InvalidOperationException>("[NetBase]Cannot stop a net service if it is not already running");
 
+            // Cancel the polling
             _cancelPollToken.Cancel();
-            _cancelPollToken.Token.WaitHandle.WaitOne();
+            _cancelPollToken.Dispose();
+
             _networker.Stop();
         }
-
-        #region RunNetworkerTask
-
-        /// <summary>
-        /// Invokes a networker action in a thread-safe manner
-        /// </summary>
-        /// <param name="action"></param>
-        protected static void RunNetworkerTask(Action action)
-        {
-            lock (_networkerLock)
-                action.Invoke();
-        }
-
-        /// <summary>
-        /// Invokes a networker action in a thread-safe manner
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        protected static T RunNetworkerTask<T>(Func<T> action)
-        {
-            T toReturn;
-
-            lock (_networkerLock)
-                toReturn = action.Invoke();
-            return toReturn;
-        }
-
-        #endregion
 
         /// <summary>
         /// Invoked when data is received from a peer
@@ -108,13 +86,13 @@ namespace Soulful.Core.Net
         }
 
         /// <summary>
-        /// Polls events on the networker
+        /// Polls events on the networker. When a cancellation is received, stops the networker
         /// </summary>
-        private void PollEvents()
+        private void PollEvents(CancellationToken token)
         {
-            while (!_cancelPollToken.IsCancellationRequested && _networker.IsRunning)
+            while (!token.IsCancellationRequested)
             {
-                RunNetworkerTask(() => _networker.PollEvents());
+                _networker.PollEvents();
                 _cancelPollToken.Token.WaitHandle.WaitOne(NetHelpers.POLL_DELAY);
             }
         }

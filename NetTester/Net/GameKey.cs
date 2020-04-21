@@ -8,61 +8,61 @@
         /// <summary>
         /// The server has started the game
         /// </summary>
-        GameStart = 0,
+        GameStart,
 
         /// <summary>
         /// Indicates to the client that they have successfully joined the game server
         /// </summary>
-        JoinedGame = 1,
+        JoinedGame,
 
         /// <summary>
         /// The server has stopped the game
         /// </summary>
-        GameStop = 2,
+        GameStop,
 
         /// <summary>
         /// The server is sending white card numbers
         /// </summary>
-        SendWhiteCards = 3,
+        SendWhiteCards,
 
         /// <summary>
         /// The server is sending a black card
         /// </summary>
-        SendBlackCard = 4,
+        SendBlackCard,
 
         /// <summary>
         /// Inidicates that this client should switch to czar mode
         /// </summary>
-        InitiateCzar = 5,
+        InitiateCzar,
 
         /// <summary>
         /// The server is sending white cards to add to the czar pick list
         /// </summary>
-        SendCzarWhiteCards = 6,
+        SendCzarWhiteCards,
 
         /// <summary>
         /// The client is sending their favourite pick and exiting czar mode
         /// </summary>
-        CzarPick = 7,
+        CzarPick,
 
         /// <summary>
         /// The client is sending their selected white cards
         /// </summary>
-        ClientSendWhiteCards = 8,
+        ClientSendWhiteCards,
 
         /// <summary>
         /// Indicates to the server that the client is ready to start
         /// </summary>
-        ClientReady = 9,
+        ClientReady,
 
         /// <summary>
         /// The server is sending an updated leaderboard delta package
         /// </summary>
-        UpdatingLeaderboard = 10,
+        UpdatingLeaderboard,
 
         /// <summary>
         /// The server is sending the initial leaderboard, complete with names
         /// </summary>
-        SendingInitialLeaderboard = 11
+        SendingInitialLeaderboard
     }
 }

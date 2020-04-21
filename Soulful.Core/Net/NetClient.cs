@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Soulful.Core.Net
 {
-    public sealed class NetClientService : NetBase, INetClientService
+    public sealed class NetClient : NetBase
     {
         #region Constants
 
@@ -49,20 +49,15 @@ namespace Soulful.Core.Net
         /// </summary>
         public event EventHandler<NetKey> DisconnectedFromServer;
 
-        /// <summary>
-        /// Invoked when the server fails to connect to a server
-        /// </summary>
-        public event EventHandler ConnectionFailed;
-
         #endregion
 
-        public NetClientService()
+        public NetClient()
         {
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
             _listener.PeerDisconnectedEvent += OnPeerDisconnect;
         }
 
-        public void Start(string pin, string playerName)
+        public bool Start(string pin, string playerName)
         {
             Start();
 
@@ -72,31 +67,30 @@ namespace Soulful.Core.Net
             // Request discovery
             NetDataWriter writer = new NetDataWriter();
             writer.Put(pin);
-            RunNetworkerTask(() => _networker.SendDiscoveryRequest(writer, PORT));
-
-            // Stop on timeout
-            Task.Run(() =>
-            {
-                Task.Delay(DISCOVERY_TIMEOUT).Wait();
-                if (!IsConnected && IsRunning)
-                {
-                    Log.Information("[Client]Failed to connect to server");
-                    Stop();
-                    ConnectionFailed?.Invoke(this, EventArgs.Empty);
-                }
-            });
+            _networker.SendDiscoveryRequest(writer, PORT);
 
             Log.Information("[Client]Client started");
             Log.Information("[Client]Attempting to discover server with pin {pin}", _pin);
+            for (int i = 0; i < 10; i++)
+            {
+                Task.Delay(50).Wait();
+                if (IsConnected)
+                {
+                    Log.Information("[Client]Connection delay (ms): {delay}", 50 * i);
+                    return true;
+                }
+            }
+
+            Log.Information("[Client]Failed to connect to server");
+            Stop();
+            return false;
         }
 
         public override void Stop()
         {
-            if (!IsRunning)
-                throw App.CreateError<InvalidOperationException>("[Client]Cannot stop the client if it is not running");
-
             IsConnected = false;
-            base.Stop();
+            if (IsRunning)
+                base.Stop();
             Log.Information("[Client]Client stopped");
         }
 
@@ -108,7 +102,7 @@ namespace Soulful.Core.Net
             if (!IsConnected)
                 throw App.CreateError<InvalidOperationException>("[Client]Cannot send data when the client is not connected");
 
-            RunNetworkerTask(() => _serverPeer.Send(data, D_METHOD));
+            _serverPeer.Send(data, D_METHOD);
         }
 
         protected override void OnReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
@@ -136,7 +130,7 @@ namespace Soulful.Core.Net
                 NetDataWriter writer = new NetDataWriter();
                 writer.Put(_pin);
                 writer.Put(PlayerName);
-                _serverPeer = RunNetworkerTask(() => _networker.Connect(remoteEndPoint, writer));
+                _serverPeer = _networker.Connect(remoteEndPoint, writer);
                 Log.Information("[Client]Attempting to connect to server at {endPoint}", remoteEndPoint);
             }
             reader.Recycle();
