@@ -2,6 +2,7 @@
 using LiteNetLib.Utils;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Serilog;
 using Soulful.Core.Model;
 using Soulful.Core.Model.Cards;
 using Soulful.Core.Net;
@@ -155,19 +156,24 @@ namespace Soulful.Core.ViewModels
                 case GameKey.SendWhiteCards:
                     while (!e.Data.EndOfData)
                         WhiteCards.Add(await _cardLoader.GetWhiteCardAsync(e.Data.GetInt()).ConfigureAwait(false));
+                    Log.Verbose("[GameVM]Updated white cards");
                     break;
                 case GameKey.SendBlackCard:
                     BlackCard = await _cardLoader.GetBlackCardAsync(e.Data.GetInt()).ConfigureAwait(false);
+                    Log.Verbose("[GameVM]Updated black card to {cardId}", BlackCard.Id);
                     break;
                 case GameKey.InitiateCzar:
                     CzarMode = true;
                     SendButtonText = Resources.AppStrings.Command_CzarPickCards;
+                    Log.Verbose("[Initated Czar mode");
                     break;
                 case GameKey.UpdatingLeaderboard:
+                    Log.Verbose("[GameVM]Updating Leaderboard");
                     while (!e.Data.EndOfData)
                     {
                         int id = e.Data.GetInt();
                         int score = e.Data.GetInt();
+                        Log.Verbose("[GameVM]Setting score of player {id} to {score}", id, score);
 
                         if (Leaderboard.Any(l => l.PlayerId == id))
                             Leaderboard.First(l => l.PlayerId == id).Score = score;
@@ -175,8 +181,10 @@ namespace Soulful.Core.ViewModels
                     DoLeaderboardManipulation();
                     break;
                 case GameKey.SendingInitialLeaderboard:
-                    while (e.Data.AvailableBytes > 0)
+                    Log.Verbose("[GameVM]Constructing initial leaderboard");
+                    while (!e.Data.EndOfData)
                         Leaderboard.Add(new LeaderboardEntry(e.Data.GetInt(), e.Data.GetString()));
+
                     break;
             }
         }
@@ -302,11 +310,8 @@ namespace Soulful.Core.ViewModels
             if (_gameService.IsRunning)
                 _gameService.GameStopped -= (_, __) => UnsafeNavigateBack();
 
-            if (_client.IsRunning)
-            {
-                _client.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
-                _client.DisconnectedFromServer -= (_, e) => EOMT(() => OnDisconnected(e));
-            }
+            _client.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
+            _client.DisconnectedFromServer -= (_, e) => EOMT(() => OnDisconnected(e));
         }
     }
 }
