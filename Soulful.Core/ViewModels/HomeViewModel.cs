@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Soulful.Core.ViewModels
 {
-    public class HomeViewModel : Base.ViewModelBase
+    public class HomeViewModel : Base.ViewModelBase<string>
     {
         #region Fields
 
@@ -51,6 +51,11 @@ namespace Soulful.Core.ViewModels
         public HomeViewModel(IMvxNavigationService navigationService)
             : base(navigationService)
         {
+        }
+
+        public override void Prepare(string parameter)
+        {
+            PlayerName = parameter;
         }
     }
 }

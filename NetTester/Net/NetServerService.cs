@@ -60,7 +60,7 @@ namespace NetTester.Net
         public void Start(int maxPlayers, string pin)
         {
             if (IsRunning)
-                throw App.CreateError<InvalidOperationException>("[NetServer]Cannot start the server when it is already running");
+                throw App.CreateError<InvalidOperationException>("[Server]Cannot start the server when it is already running");
 
             Start(PORT);
 

@@ -30,7 +30,7 @@ namespace Soulful.Core.ViewModels
         private readonly NetClientService _client;
         private readonly IIntraMessenger _messenger;
 
-        private int _gamePin;
+        private string _gamePin;
         private int _maxPlayers;
         private string _playerName;
         private ObservableCollection<Tuple<int, string>> _players;
@@ -49,7 +49,8 @@ namespace Soulful.Core.ViewModels
         /// </summary>
         public string GamePin
         {
-            get => _gamePin.ToString("000000");
+            get => _gamePin;
+            set => SetProperty(ref _gamePin, value);
         }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace Soulful.Core.ViewModels
             _client = client;
             _messenger = messenger;
 
-            MaxPlayers = 20;
+            MaxPlayers = (int)MAX_PLAYERS;
             Players = new ObservableCollection<Tuple<int, string>>();
             _server.PlayerConnected += (_, p) => OnPlayerCollectionChanged(p, true);
             _server.PlayerDisconnected += (_, p) => OnPlayerCollectionChanged(p, false);
@@ -126,6 +127,7 @@ namespace Soulful.Core.ViewModels
             GenerateGamePin();
             _server.Start(MaxPlayers, GamePin);
             await _client.Start(GamePin, _playerName).ConfigureAwait(false);
+            _clientId = _server.Players[0].Id;
             await base.Initialize().ConfigureAwait(false);
             return;
         }
@@ -136,7 +138,7 @@ namespace Soulful.Core.ViewModels
                 return;
 
             UnregisterEvents();
-            await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
+            await NavigationService.Navigate<GameViewModel, Tuple<bool, string>>(new Tuple<bool, string>(true, _playerName)).ConfigureAwait(false);
         }
 
         private void KickPlayer(int playerId)
@@ -182,20 +184,18 @@ namespace Soulful.Core.ViewModels
 
         private void UnsafeNavigateBack()
         {
-            if (_client.IsRunning)
-                _client.Stop();
+            _client.Stop();
             if (_server.IsRunning)
                 _server.Stop();
 
             UnregisterEvents();
-            NavigationService.Navigate<HomeViewModel>();
+            NavigationService.Navigate<HomeViewModel, string>(_playerName);
         }
 
         private void GenerateGamePin()
         {
             Random r = new Random();
-            _gamePin = r.Next(100000, 999999);
-            RaisePropertyChanged(nameof(GamePin));
+            GamePin = r.Next(100000, 999999).ToString("000000");
             _server.ChangeConnectPin(GamePin);
         }
 
@@ -203,10 +203,6 @@ namespace Soulful.Core.ViewModels
         {
             if (connected)
             {
-                // Should capture this client every time, preventing the host from kicking themselves.
-                // No one can join the game in 30ms (I hope lol)
-                if (_players.Count == 0)
-                    _clientId = peer.Id;
                 await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag))).ConfigureAwait(false);
             } else
             {

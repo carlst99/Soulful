@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
-    public class GameViewModel : Base.ViewModelBase<bool>
+    public class GameViewModel : Base.ViewModelBase<Tuple<bool, string>>
     {
         #region Fields
 
@@ -22,6 +22,7 @@ namespace Soulful.Core.ViewModels
         private readonly IIntraMessenger _messenger;
         private readonly ICardLoaderService _cardLoader;
 
+        private string _playerName;
         private bool _isServer;
         private ObservableCollection<LeaderboardEntry> _leaderboard;
         private ObservableCollection<WhiteCard> _whiteCards;
@@ -136,7 +137,7 @@ namespace Soulful.Core.ViewModels
         public override Task Initialize()
         {
             _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
-            _client.DisconnectedFromServer += OnDisconnected;
+            _client.DisconnectedFromServer += (_, e) => EOMT(() => OnDisconnected(e));
             _client.Send(NetHelpers.GetKeyValue(GameKey.ClientReady));
 
             return base.Initialize();
@@ -174,7 +175,7 @@ namespace Soulful.Core.ViewModels
                     DoLeaderboardManipulation();
                     break;
                 case GameKey.SendingInitialLeaderboard:
-                    while (!e.Data.EndOfData)
+                    while (e.Data.AvailableBytes > 0)
                         Leaderboard.Add(new LeaderboardEntry(e.Data.GetInt(), e.Data.GetString()));
                     break;
             }
@@ -184,16 +185,18 @@ namespace Soulful.Core.ViewModels
         /// Prepares the <see cref="GameViewModel"/>
         /// </summary>
         /// <param name="parameter">Indicates whether the game service should be started</param>
-        public override void Prepare(bool parameter)
+        public override void Prepare(Tuple<bool, string> parameter)
         {
             if (!_client.IsRunning)
                 NavigationService.Navigate<HomeViewModel>();
 
-            if (parameter)
+            _playerName = parameter.Item2;
+
+            if (parameter.Item1)
             {
                 _isServer = true;
                 _gameService.Start();
-                _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
+                _gameService.GameStopped += (_, __) => EOMT(UnsafeNavigateBack);
             }
         }
 
@@ -214,17 +217,16 @@ namespace Soulful.Core.ViewModels
             });
         }
 
-        private async void UnsafeNavigateBack()
+        private void UnsafeNavigateBack()
         {
             UnregisterEvents();
 
             if (_gameService.IsRunning)
                 _gameService.Stop();
 
-            if (_client.IsRunning)
-                _client.Stop();
+            _client.Stop();
 
-            await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
+            NavigationService.Navigate<HomeViewModel, string>(_playerName);
         }
 
         private void PickCards()
@@ -263,9 +265,8 @@ namespace Soulful.Core.ViewModels
                 element.IsBottom = true;
         }
 
-        private void OnDisconnected(object sender, NetKey e)
+        private void OnDisconnected(NetKey e)
         {
-            UnregisterEvents();
             if (_isServer)
                 return;
 
@@ -287,14 +288,13 @@ namespace Soulful.Core.ViewModels
                     break;
             }
 
+            UnsafeNavigateBack();
             _messenger.Send(new DialogMessage
             {
                 Title = title,
                 Content = message,
                 Buttons = DialogMessage.Button.Ok
             });
-
-            NavigationService.Navigate<HomeViewModel>();
         }
 
         private void UnregisterEvents()
@@ -305,7 +305,7 @@ namespace Soulful.Core.ViewModels
             if (_client.IsRunning)
             {
                 _client.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
-                _client.DisconnectedFromServer -= OnDisconnected;
+                _client.DisconnectedFromServer -= (_, e) => EOMT(() => OnDisconnected(e));
             }
         }
     }

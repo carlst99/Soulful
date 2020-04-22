@@ -47,7 +47,7 @@
                      HorizontalAlignment="Stretch"
                      HorizontalContentAlignment="Center"
                      md:HintAssist.Hint="{Binding [Hint_PlayerName], Mode=OneTime}"
-                     Text="{Binding PlayerName, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                     Text="{Binding PlayerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
             <Button Margin="0,16,0,0"
                     Command="{Binding StartGameCommand}"

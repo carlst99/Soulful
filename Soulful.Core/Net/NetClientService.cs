@@ -76,7 +76,7 @@ namespace Soulful.Core.Net
                 await Task.Delay(50).ConfigureAwait(true);
                 if (IsConnected)
                 {
-                    Log.Information("[Client]Connection delay (ms): {delay}", 50 * i);
+                    Log.Verbose("[Client]Connection delay (ms): {delay}", 50 * i);
                     return true;
                 }
             }
@@ -102,6 +102,7 @@ namespace Soulful.Core.Net
             if (!IsConnected)
                 throw App.CreateError<InvalidOperationException>("[Client]Cannot send data when the client is not connected");
 
+            Log.Verbose("[Client]Data packet size: {size}", data.Length);
             _serverPeer.Send(data, D_METHOD);
         }
 

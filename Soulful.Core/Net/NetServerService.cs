@@ -61,7 +61,7 @@ namespace Soulful.Core.Net
         public void Start(int maxPlayers, string pin)
         {
             if (IsRunning)
-                throw App.CreateError<InvalidOperationException>("[NetServer]Cannot start the server when it is already running");
+                throw App.CreateError<InvalidOperationException>("[Server]Cannot start the server when it is already running");
 
             Start(PORT);
 
@@ -129,7 +129,7 @@ namespace Soulful.Core.Net
                 foreach (NetPeer peer in _networker.ConnectedPeerList)
                 {
                     peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged));
-                    PlayerDisconnected?.Invoke(this, peer);
+                    //PlayerDisconnected?.Invoke(this, peer);
                 }
             }
             else
@@ -138,7 +138,7 @@ namespace Soulful.Core.Net
                 {
                     NetPeer peer = _networker.ConnectedPeerList[_networker.PeersCount - 1];
                     peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged));
-                    PlayerDisconnected?.Invoke(this, peer);
+                    //PlayerDisconnected?.Invoke(this, peer);
                 }
             }
         }

@@ -3,6 +3,7 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
+using System;
 using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
@@ -119,7 +120,7 @@ namespace Soulful.Core.ViewModels
             if (e.Key == GameKey.GameStart)
             {
                 UnregisterEvents();
-                NavigationService.Navigate<GameViewModel, bool>(false);
+                NavigationService.Navigate<GameViewModel, Tuple<bool, string>>(new Tuple<bool, string>(false, _playerName));
             }
         }
 
@@ -156,10 +157,9 @@ namespace Soulful.Core.ViewModels
         private void UnsafeNavigateBack()
         {
             UnregisterEvents();
-            if (_client.IsRunning)
-                _client.Stop();
+            _client.Stop();
 
-            NavigationService.Navigate<HomeViewModel>();
+            NavigationService.Navigate<HomeViewModel, string>(_playerName);
         }
 
         private void UnregisterEvents()
