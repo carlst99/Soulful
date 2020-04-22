@@ -39,7 +39,11 @@ namespace Soulful.Core.ViewModels
         public IMvxCommand LaunchHyperlinkCommand => new MvxCommand<string>((l) =>
         {
             l = l.Replace("&", "^&");
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {l}") { CreateNoWindow = true });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = l,
+                UseShellExecute = true
+            });
         });
 
         #endregion

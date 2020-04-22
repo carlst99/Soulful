@@ -26,8 +26,8 @@ namespace Soulful.Core.ViewModels
 
         #region Fields
 
-        private readonly INetServerService _server;
-        private readonly INetClientService _client;
+        private readonly NetServerService _server;
+        private readonly NetClientService _client;
         private readonly IIntraMessenger _messenger;
 
         private int _gamePin;
@@ -77,7 +77,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets a value indicating whether the game can be started
         /// </summary>
-        public bool CanStartGame => _server.Players.Count >= MIN_PLAYERS - 1;
+        public bool CanStartGame => _server.Players.Count >= MIN_PLAYERS;
 
         #endregion
 
@@ -106,8 +106,8 @@ namespace Soulful.Core.ViewModels
         #endregion
 
         public StartGameViewModel(IMvxNavigationService navigationService,
-            INetServerService server,
-            INetClientService client,
+            NetServerService server,
+            NetClientService client,
             IIntraMessenger messenger)
             : base(navigationService)
         {
@@ -121,12 +121,13 @@ namespace Soulful.Core.ViewModels
             _server.PlayerDisconnected += (_, p) => OnPlayerCollectionChanged(p, false);
         }
 
-        public override Task Initialize()
+        public async override Task Initialize()
         {
             GenerateGamePin();
             _server.Start(MaxPlayers, GamePin);
-            _client.Start(GamePin, _playerName);
-            return base.Initialize();
+            await _client.Start(GamePin, _playerName).ConfigureAwait(false);
+            await base.Initialize().ConfigureAwait(false);
+            return;
         }
 
         private async void StartGame()
@@ -209,7 +210,9 @@ namespace Soulful.Core.ViewModels
                 await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag))).ConfigureAwait(false);
             } else
             {
-                await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == peer.Id))).ConfigureAwait(false);
+                Tuple<int, string> player = Players.First(p => p.Item1 == peer.Id);
+                if (player != null)
+                    await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(player)).ConfigureAwait(false);
             }
             await base.RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
         }

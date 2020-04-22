@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NetTester.Net
 {
-    public sealed class NetClient : NetBase
+    public sealed class NetClientService : NetBase
     {
         #region Constants
 
@@ -50,13 +50,13 @@ namespace NetTester.Net
 
         #endregion
 
-        public NetClient()
+        public NetClientService()
         {
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
             _listener.PeerDisconnectedEvent += OnPeerDisconnect;
         }
 
-        public bool Start(string pin, string playerName)
+        public async Task<bool> Start(string pin, string playerName)
         {
             Start();
 
@@ -72,7 +72,7 @@ namespace NetTester.Net
             Log.Information("[Client]Attempting to discover server with pin {pin}", _pin);
             for (int i = 0; i < 10; i++)
             {
-                Task.Delay(50).Wait();
+                await Task.Delay(50).ConfigureAwait(true);
                 if (IsConnected)
                 {
                     Log.Information("[Client]Connection delay (ms): {delay}", 50 * i);

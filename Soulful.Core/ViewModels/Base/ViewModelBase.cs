@@ -2,6 +2,7 @@
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
 using Serilog;
+using System;
 
 namespace Soulful.Core.ViewModels.Base
 {
@@ -15,6 +16,12 @@ namespace Soulful.Core.ViewModels.Base
             NavigationService = navigationService;
             Log.Verbose("Navigated to " + GetType().Name);
         }
+
+        /// <summary>
+        /// Provides a syntatic shortcut to <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
+        /// </summary>
+        /// <param name="action">The action to execute</param>
+        protected void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
     }
 
     public abstract class ViewModelBase : MvxViewModel, IViewModelBase
@@ -27,5 +34,11 @@ namespace Soulful.Core.ViewModels.Base
             NavigationService = navigationService;
             Log.Verbose("Navigated to " + GetType().Name);
         }
+
+        /// <summary>
+        /// Provides a syntatic shortcut to <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
+        /// </summary>
+        /// <param name="action">The action to execute</param>
+        protected void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
     }
 }

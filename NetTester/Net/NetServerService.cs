@@ -7,7 +7,7 @@ using System.Net;
 
 namespace NetTester.Net
 {
-    public sealed class NetServer : NetBase
+    public sealed class NetServerService : NetBase
     {
         #region Properties
 
@@ -47,7 +47,7 @@ namespace NetTester.Net
 
         #endregion
 
-        public NetServer()
+        public NetServerService()
         {
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;

@@ -17,7 +17,7 @@ namespace Soulful.Core.ViewModels
     {
         #region Fields
 
-        private readonly INetClientService _client;
+        private readonly NetClientService _client;
         private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
         private readonly ICardLoaderService _cardLoader;
@@ -116,7 +116,7 @@ namespace Soulful.Core.ViewModels
 
         public GameViewModel(
             IMvxNavigationService navigationService,
-            INetClientService client,
+            NetClientService client,
             IIntraMessenger messenger,
             IGameService gameService,
             ICardLoaderService cardLoader)
@@ -296,12 +296,6 @@ namespace Soulful.Core.ViewModels
 
             NavigationService.Navigate<HomeViewModel>();
         }
-
-        /// <summary>
-        /// Provides a syntatic shortcut to <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
-        /// </summary>
-        /// <param name="action">The action to execute</param>
-        private void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
 
         private void UnregisterEvents()
         {

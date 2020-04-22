@@ -57,22 +57,22 @@ namespace Soulful.Wpf
                 _otherProcess.CloseMainWindow();
             base.OnExit(e);
 
-            INetServerService server = Mvx.IoCProvider.Resolve<INetServerService>();
+            NetServerService server = Mvx.IoCProvider.Resolve<NetServerService>();
             if (server.IsRunning)
                 server.Stop();
 
-            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>();
+            NetClientService client = Mvx.IoCProvider.Resolve<NetClientService>();
             if (client.IsRunning)
                 client.Stop();
         }
 #else
         protected override void OnExit(ExitEventArgs e)
         {
-            INetServerService server = Mvx.IoCProvider.Resolve<INetServerService>().;
+            NetServerService server = Mvx.IoCProvider.Resolve<NetServerService>().;
             if (server.IsRunning)
                 server.Stop();
 
-            INetClientService client = Mvx.IoCProvider.Resolve<INetClientService>().;
+            NetClientService client = Mvx.IoCProvider.Resolve<NetClientService>().;
             if (client.IsRunning)
                 client.Stop();
         }

@@ -25,6 +25,10 @@ namespace Soulful.Core
                 .EndingWith("Service")
                 .AsInterfaces()
                 .RegisterAsLazySingleton();
+            CreatableTypes()
+                .EndingWith("Service")
+                .AsTypes()
+                .RegisterAsLazySingleton();
 
             RegisterAppStart<HomeViewModel>();
 

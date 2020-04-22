@@ -8,7 +8,7 @@ using System.Net;
 
 namespace Soulful.Core.Net
 {
-    public sealed class NetServer : NetBase
+    public sealed class NetServerService : NetBase
     {
         #region Properties
 
@@ -48,7 +48,7 @@ namespace Soulful.Core.Net
 
         #endregion
 
-        public NetServer()
+        public NetServerService()
         {
             _listener.ConnectionRequestEvent += OnConnectionRequested;
             _listener.PeerConnectedEvent += OnPeerConnected;
@@ -105,7 +105,7 @@ namespace Soulful.Core.Net
         {
             NetPeer peer = Players.Find(p => p.Id == playerId);
             peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked));
-            PlayerDisconnected?.Invoke(this, peer);
+            //PlayerDisconnected?.Invoke(this, peer);
             Log.Information("[Server]Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
         }
 

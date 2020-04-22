@@ -7,8 +7,8 @@ namespace NetTester
 {
     public static class Program
     {
-        private readonly static NetServer _server = new NetServer();
-        private readonly static NetClient _client = new NetClient();
+        private readonly static NetServerService _server = new NetServerService();
+        private readonly static NetClientService _client = new NetClientService();
 
         public static void Main()
         {
@@ -28,10 +28,10 @@ namespace NetTester
             } while (Console.ReadKey().Key == ConsoleKey.Enter);
         }
 
-        public static void Run()
+        public async static void Run()
         {
             _server.Start(1, "t");
-            _client.Start("t", "name");
+            await _client.Start("t", "name").ConfigureAwait(false);
 
             _server.Stop();
             _client.Stop();
