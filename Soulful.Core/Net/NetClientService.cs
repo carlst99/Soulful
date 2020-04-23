@@ -77,6 +77,7 @@ namespace Soulful.Core.Net
                 if (IsConnected)
                 {
                     Log.Verbose("[Client]Connection delay (ms): {delay}", 50 * i);
+                    ConnectedToServer?.Invoke(this, EventArgs.Empty);
                     return true;
                 }
             }
@@ -112,7 +113,6 @@ namespace Soulful.Core.Net
             if (key == GameKey.JoinedGame)
             {
                 IsConnected = true;
-                ConnectedToServer?.Invoke(this, EventArgs.Empty);
                 reader.Recycle();
                 Log.Information("[Client]Successfully connected to server at {endPoint}", peer.EndPoint);
             }

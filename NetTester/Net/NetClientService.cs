@@ -76,6 +76,7 @@ namespace NetTester.Net
                 if (IsConnected)
                 {
                     Log.Information("[Client]Connection delay (ms): {delay}", 50 * i);
+                    ConnectedToServer?.Invoke(this, EventArgs.Empty);
                     return true;
                 }
             }
@@ -110,7 +111,6 @@ namespace NetTester.Net
             if (key == GameKey.JoinedGame)
             {
                 IsConnected = true;
-                ConnectedToServer?.Invoke(this, EventArgs.Empty);
                 reader.Recycle();
                 Log.Information("[Client]Successfully connected to server at {endPoint}", peer.EndPoint);
             }

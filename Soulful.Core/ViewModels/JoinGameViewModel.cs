@@ -67,7 +67,6 @@ namespace Soulful.Core.ViewModels
         {
             _client = client;
             _messenger = messenger;
-            _client.ConnectedToServer += (s, e) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer += OnDisconnected;
             _client.GameEvent += OnGameEvent;
         }
@@ -127,7 +126,7 @@ namespace Soulful.Core.ViewModels
         private async Task JoinGame()
         {
             AttemptingConnection = true;
-            AttemptingConnection = await _client.Start(GamePin, _playerName).ConfigureAwait(false);
+            AttemptingConnection = ShowConfirmationLabel = await _client.Start(GamePin, _playerName).ConfigureAwait(false);
         }
 
         private void NavigateBack()
@@ -164,7 +163,6 @@ namespace Soulful.Core.ViewModels
 
         private void UnregisterEvents()
         {
-            _client.ConnectedToServer -= (s, a) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer -= OnDisconnected;
             _client.GameEvent -= OnGameEvent;
         }
