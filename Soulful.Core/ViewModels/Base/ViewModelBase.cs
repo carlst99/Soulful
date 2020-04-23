@@ -1,7 +1,7 @@
-﻿using Soulful.Core.Resources;
-using MvvmCross.Navigation;
+﻿using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
 using Serilog;
+using Soulful.Core.Resources;
 using System;
 
 namespace Soulful.Core.ViewModels.Base
@@ -21,7 +21,7 @@ namespace Soulful.Core.ViewModels.Base
         /// Provides a syntatic shortcut to <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
         /// </summary>
         /// <param name="action">The action to execute</param>
-        protected void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
+        protected void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action, false);
     }
 
     public abstract class ViewModelBase : MvxViewModel, IViewModelBase
