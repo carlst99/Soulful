@@ -2,6 +2,7 @@
 using LiteNetLib.Utils;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
+using Serilog;
 using Soulful.Core.Model;
 using Soulful.Core.Model.Cards;
 using Soulful.Core.Net;
@@ -13,15 +14,16 @@ using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
-    public class GameViewModel : Base.ViewModelBase<bool>
+    public class GameViewModel : Base.ViewModelBase<Tuple<bool, string>>
     {
         #region Fields
 
-        private readonly INetClientService _client;
+        private readonly NetClientService _client;
         private readonly IGameService _gameService;
         private readonly IIntraMessenger _messenger;
         private readonly ICardLoaderService _cardLoader;
 
+        private string _playerName;
         private bool _isServer;
         private ObservableCollection<LeaderboardEntry> _leaderboard;
         private ObservableCollection<WhiteCard> _whiteCards;
@@ -116,7 +118,7 @@ namespace Soulful.Core.ViewModels
 
         public GameViewModel(
             IMvxNavigationService navigationService,
-            INetClientService client,
+            NetClientService client,
             IIntraMessenger messenger,
             IGameService gameService,
             ICardLoaderService cardLoader)
@@ -135,7 +137,7 @@ namespace Soulful.Core.ViewModels
 
         public override Task Initialize()
         {
-            _client.GameEvent += (_, e) => EOMT(() => OnGameEvent(e));
+            _client.GameEvent += OnGameEvent;
             _client.DisconnectedFromServer += OnDisconnected;
             _client.Send(NetHelpers.GetKeyValue(GameKey.ClientReady));
 
@@ -147,53 +149,65 @@ namespace Soulful.Core.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void OnGameEvent(GameKeyPackage e)
+        private void OnGameEvent(object sender, GameKeyPackage e)
         {
-            switch (e.Key)
+            EOMT(async () =>
             {
-                case GameKey.SendWhiteCards:
-                    while (!e.Data.EndOfData)
-                        WhiteCards.Add(await _cardLoader.GetWhiteCardAsync(e.Data.GetInt()).ConfigureAwait(false));
-                    break;
-                case GameKey.SendBlackCard:
-                    BlackCard = await _cardLoader.GetBlackCardAsync(e.Data.GetInt()).ConfigureAwait(false);
-                    break;
-                case GameKey.InitiateCzar:
-                    CzarMode = true;
-                    SendButtonText = Resources.AppStrings.Command_CzarPickCards;
-                    break;
-                case GameKey.UpdatingLeaderboard:
-                    while (!e.Data.EndOfData)
-                    {
-                        int id = e.Data.GetInt();
-                        int score = e.Data.GetInt();
+                switch (e.Key)
+                {
+                    case GameKey.SendWhiteCards:
+                        while (!e.Data.EndOfData)
+                            WhiteCards.Add(await _cardLoader.GetWhiteCardAsync(e.Data.GetInt()).ConfigureAwait(false));
+                        Log.Verbose("[GameVM]Updated white cards");
+                        break;
+                    case GameKey.SendBlackCard:
+                        BlackCard = await _cardLoader.GetBlackCardAsync(e.Data.GetInt()).ConfigureAwait(false);
+                        Log.Verbose("[GameVM]Updated black card to {cardId}", BlackCard.Id);
+                        break;
+                    case GameKey.InitiateCzar:
+                        CzarMode = true;
+                        SendButtonText = Resources.AppStrings.Command_CzarPickCards;
+                        Log.Verbose("[Initated Czar mode");
+                        break;
+                    case GameKey.UpdatingLeaderboard:
+                        Log.Verbose("[GameVM]Updating Leaderboard");
+                        while (!e.Data.EndOfData)
+                        {
+                            int id = e.Data.GetInt();
+                            int score = e.Data.GetInt();
+                            Log.Verbose("[GameVM]Setting score of player {id} to {score}", id, score);
 
-                        if (Leaderboard.Any(l => l.PlayerId == id))
-                            Leaderboard.First(l => l.PlayerId == id).Score = score;
-                    }
-                    DoLeaderboardManipulation();
-                    break;
-                case GameKey.SendingInitialLeaderboard:
-                    while (!e.Data.EndOfData)
-                        Leaderboard.Add(new LeaderboardEntry(e.Data.GetInt(), e.Data.GetString()));
-                    break;
-            }
+                            if (Leaderboard.Any(l => l.PlayerId == id))
+                                Leaderboard.First(l => l.PlayerId == id).Score = score;
+                        }
+                        DoLeaderboardManipulation();
+                        break;
+                    case GameKey.SendingInitialLeaderboard:
+                        Log.Verbose("[GameVM]Constructing initial leaderboard");
+                        while (!e.Data.EndOfData)
+                            Leaderboard.Add(new LeaderboardEntry(e.Data.GetInt(), e.Data.GetString()));
+
+                        break;
+                }
+            });
         }
 
         /// <summary>
         /// Prepares the <see cref="GameViewModel"/>
         /// </summary>
         /// <param name="parameter">Indicates whether the game service should be started</param>
-        public override void Prepare(bool parameter)
+        public override void Prepare(Tuple<bool, string> parameter)
         {
             if (!_client.IsRunning)
                 NavigationService.Navigate<HomeViewModel>();
 
-            if (parameter)
+            _playerName = parameter.Item2;
+
+            if (parameter.Item1)
             {
                 _isServer = true;
                 _gameService.Start();
-                _gameService.GameStopped += (_, __) => UnsafeNavigateBack();
+                _gameService.GameStopped += UnsafeNavigateBack;
             }
         }
 
@@ -214,17 +228,16 @@ namespace Soulful.Core.ViewModels
             });
         }
 
-        private async void UnsafeNavigateBack()
+        private void UnsafeNavigateBack(object sender = null, EventArgs e = null)
         {
             UnregisterEvents();
 
             if (_gameService.IsRunning)
                 _gameService.Stop();
 
-            if (_client.IsRunning)
-                _client.Stop();
+            _client.Stop();
 
-            await NavigationService.Navigate<HomeViewModel>().ConfigureAwait(false);
+            NavigationService.Navigate<HomeViewModel, string>(_playerName);
         }
 
         private void PickCards()
@@ -265,7 +278,6 @@ namespace Soulful.Core.ViewModels
 
         private void OnDisconnected(object sender, NetKey e)
         {
-            UnregisterEvents();
             if (_isServer)
                 return;
 
@@ -287,32 +299,22 @@ namespace Soulful.Core.ViewModels
                     break;
             }
 
+            UnsafeNavigateBack();
             _messenger.Send(new DialogMessage
             {
                 Title = title,
                 Content = message,
                 Buttons = DialogMessage.Button.Ok
             });
-
-            NavigationService.Navigate<HomeViewModel>();
         }
-
-        /// <summary>
-        /// Provides a syntatic shortcut to <see cref="AsyncDispatcher.ExecuteOnMainThreadAsync"/>
-        /// </summary>
-        /// <param name="action">The action to execute</param>
-        private void EOMT(Action action) => AsyncDispatcher.ExecuteOnMainThreadAsync(action);
 
         private void UnregisterEvents()
         {
             if (_gameService.IsRunning)
-                _gameService.GameStopped -= (_, __) => UnsafeNavigateBack();
+                _gameService.GameStopped -= UnsafeNavigateBack;
 
-            if (_client.IsRunning)
-            {
-                _client.GameEvent -= (_, e) => EOMT(() => OnGameEvent(e));
-                _client.DisconnectedFromServer -= OnDisconnected;
-            }
+            _client.GameEvent -= OnGameEvent;
+            _client.DisconnectedFromServer -= OnDisconnected;
         }
     }
 }

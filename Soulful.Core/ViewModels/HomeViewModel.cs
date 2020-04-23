@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Soulful.Core.ViewModels
 {
-    public class HomeViewModel : Base.ViewModelBase
+    public class HomeViewModel : Base.ViewModelBase<string>
     {
         #region Fields
 
@@ -39,7 +39,11 @@ namespace Soulful.Core.ViewModels
         public IMvxCommand LaunchHyperlinkCommand => new MvxCommand<string>((l) =>
         {
             l = l.Replace("&", "^&");
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {l}") { CreateNoWindow = true });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = l,
+                UseShellExecute = true
+            });
         });
 
         #endregion
@@ -47,6 +51,11 @@ namespace Soulful.Core.ViewModels
         public HomeViewModel(IMvxNavigationService navigationService)
             : base(navigationService)
         {
+        }
+
+        public override void Prepare(string parameter)
+        {
+            PlayerName = parameter;
         }
     }
 }

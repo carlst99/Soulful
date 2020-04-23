@@ -26,11 +26,11 @@ namespace Soulful.Core.ViewModels
 
         #region Fields
 
-        private readonly INetServerService _server;
-        private readonly INetClientService _client;
+        private readonly NetServerService _server;
+        private readonly NetClientService _client;
         private readonly IIntraMessenger _messenger;
 
-        private int _gamePin;
+        private string _gamePin;
         private int _maxPlayers;
         private string _playerName;
         private ObservableCollection<Tuple<int, string>> _players;
@@ -49,7 +49,8 @@ namespace Soulful.Core.ViewModels
         /// </summary>
         public string GamePin
         {
-            get => _gamePin.ToString("000000");
+            get => _gamePin;
+            set => SetProperty(ref _gamePin, value);
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Gets a value indicating whether the game can be started
         /// </summary>
-        public bool CanStartGame => _server.Players.Count >= MIN_PLAYERS - 1;
+        public bool CanStartGame => _server.Players.Count >= MIN_PLAYERS;
 
         #endregion
 
@@ -96,7 +97,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Starts the game
         /// </summary>
-        public IMvxCommand StartGameCommand => new MvxCommand(StartGame);
+        public IMvxCommand StartGameCommand => new MvxAsyncCommand(StartGame);
 
         /// <summary>
         /// Kicks a connected player
@@ -106,8 +107,8 @@ namespace Soulful.Core.ViewModels
         #endregion
 
         public StartGameViewModel(IMvxNavigationService navigationService,
-            INetServerService server,
-            INetClientService client,
+            NetServerService server,
+            NetClientService client,
             IIntraMessenger messenger)
             : base(navigationService)
         {
@@ -115,27 +116,29 @@ namespace Soulful.Core.ViewModels
             _client = client;
             _messenger = messenger;
 
-            MaxPlayers = 20;
+            MaxPlayers = (int)MAX_PLAYERS;
             Players = new ObservableCollection<Tuple<int, string>>();
-            _server.PlayerConnected += (_, p) => OnPlayerCollectionChanged(p, true);
-            _server.PlayerDisconnected += (_, p) => OnPlayerCollectionChanged(p, false);
+            _server.PlayerConnected += OnPlayerConnected;
+            _server.PlayerDisconnected += OnPlayerDisconnected;
         }
 
-        public override Task Initialize()
+        public async override Task Initialize()
         {
             GenerateGamePin();
             _server.Start(MaxPlayers, GamePin);
-            _client.Start(GamePin, _playerName);
-            return base.Initialize();
+            await _client.Start(GamePin, _playerName).ConfigureAwait(false);
+            _clientId = _server.Players[0].Id;
+            await base.Initialize().ConfigureAwait(false);
+            return;
         }
 
-        private async void StartGame()
+        private async Task StartGame()
         {
             if (!CanStartGame)
                 return;
 
             UnregisterEvents();
-            await NavigationService.Navigate<GameViewModel, bool>(true).ConfigureAwait(false);
+            await NavigationService.Navigate<GameViewModel, Tuple<bool, string>>(new Tuple<bool, string>(true, _playerName)).ConfigureAwait(false);
         }
 
         private void KickPlayer(int playerId)
@@ -181,43 +184,37 @@ namespace Soulful.Core.ViewModels
 
         private void UnsafeNavigateBack()
         {
-            if (_client.IsRunning)
-                _client.Stop();
+            _client.Stop();
             if (_server.IsRunning)
                 _server.Stop();
 
             UnregisterEvents();
-            NavigationService.Navigate<HomeViewModel>();
+            NavigationService.Navigate<HomeViewModel, string>(_playerName);
         }
 
         private void GenerateGamePin()
         {
             Random r = new Random();
-            _gamePin = r.Next(100000, 999999);
-            RaisePropertyChanged(nameof(GamePin));
+            GamePin = r.Next(100000, 999999).ToString("000000");
             _server.ChangeConnectPin(GamePin);
         }
 
-        private async void OnPlayerCollectionChanged(NetPeer peer, bool connected)
+        private void OnPlayerConnected(object sender, NetPeer peer)
         {
-            if (connected)
-            {
-                // Should capture this client every time, preventing the host from kicking themselves.
-                // No one can join the game in 30ms (I hope lol)
-                if (_players.Count == 0)
-                    _clientId = peer.Id;
-                await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag))).ConfigureAwait(false);
-            } else
-            {
-                await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(Players.First(p => p.Item1 == peer.Id))).ConfigureAwait(false);
-            }
-            await base.RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
+            EOMT(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag)));
+        }
+
+        private void OnPlayerDisconnected(object sender, NetPeer peer)
+        {
+            Tuple<int, string> player = Players.First(p => p.Item1 == peer.Id);
+            if (player != null)
+                EOMT(() => Players.Remove(player));
         }
 
         private void UnregisterEvents()
         {
-            _server.PlayerConnected -= (_, p) => OnPlayerCollectionChanged(p, true);
-            _server.PlayerDisconnected -= (_, p) => OnPlayerCollectionChanged(p, false);
+            _server.PlayerConnected -= OnPlayerConnected;
+            _server.PlayerDisconnected -= OnPlayerDisconnected;
         }
 
         public override void Prepare(string parameter)

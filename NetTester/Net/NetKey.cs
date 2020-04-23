@@ -1,4 +1,4 @@
-﻿namespace Soulful.Core.Net
+﻿namespace NetTester.Net
 {
     /// <summary>
     /// Contains network-related keys

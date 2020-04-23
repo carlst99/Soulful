@@ -1,7 +1,7 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 
-namespace Soulful.Core.Model
+namespace NetTester.Net
 {
     public struct GameKeyPackage
     {

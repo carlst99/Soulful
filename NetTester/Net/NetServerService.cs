@@ -1,12 +1,11 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
-using Soulful.Core.Model;
 using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Soulful.Core.Net
+namespace NetTester.Net
 {
     public sealed class NetServerService : NetBase
     {
@@ -105,7 +104,7 @@ namespace Soulful.Core.Net
         {
             NetPeer peer = Players.Find(p => p.Id == playerId);
             peer.Disconnect(NetHelpers.GetKeyValue(NetKey.Kicked));
-            //PlayerDisconnected?.Invoke(this, peer);
+            PlayerDisconnected?.Invoke(this, peer);
             Log.Information("[Server]Kicked player '{name}' at {endPoint}", peer.Tag, peer.EndPoint);
         }
 
@@ -129,7 +128,7 @@ namespace Soulful.Core.Net
                 foreach (NetPeer peer in _networker.ConnectedPeerList)
                 {
                     peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged));
-                    //PlayerDisconnected?.Invoke(this, peer);
+                    PlayerDisconnected?.Invoke(this, peer);
                 }
             }
             else
@@ -138,7 +137,7 @@ namespace Soulful.Core.Net
                 {
                     NetPeer peer = _networker.ConnectedPeerList[_networker.PeersCount - 1];
                     peer.Disconnect(NetHelpers.GetKeyValue(NetKey.ServerLimitChanged));
-                    //PlayerDisconnected?.Invoke(this, peer);
+                    PlayerDisconnected?.Invoke(this, peer);
                 }
             }
         }

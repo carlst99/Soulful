@@ -3,6 +3,8 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
+using System;
+using System.Threading.Tasks;
 
 namespace Soulful.Core.ViewModels
 {
@@ -10,7 +12,7 @@ namespace Soulful.Core.ViewModels
     {
         #region Fields
 
-        private readonly INetClientService _client;
+        private readonly NetClientService _client;
         private readonly IIntraMessenger _messenger;
 
         private string _gamePin;
@@ -55,19 +57,17 @@ namespace Soulful.Core.ViewModels
 
         #region Commands
 
-        public IMvxCommand JoinGameCommand => new MvxCommand(JoinGame);
+        public IMvxCommand JoinGameCommand => new MvxAsyncCommand(JoinGame);
         public IMvxCommand NavigateBackCommand => new MvxCommand(NavigateBack);
 
         #endregion
 
-        public JoinGameViewModel(IMvxNavigationService navigationService, INetClientService client, IIntraMessenger messenger)
+        public JoinGameViewModel(IMvxNavigationService navigationService, NetClientService client, IIntraMessenger messenger)
             : base(navigationService)
         {
             _client = client;
             _messenger = messenger;
-            _client.ConnectedToServer += (s, e) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer += OnDisconnected;
-            _client.ConnectionFailed += (s, e) => AttemptingConnection = false;
             _client.GameEvent += OnGameEvent;
         }
 
@@ -119,14 +119,14 @@ namespace Soulful.Core.ViewModels
             if (e.Key == GameKey.GameStart)
             {
                 UnregisterEvents();
-                NavigationService.Navigate<GameViewModel, bool>(false);
+                NavigationService.Navigate<GameViewModel, Tuple<bool, string>>(new Tuple<bool, string>(false, _playerName));
             }
         }
 
-        private void JoinGame()
+        private async Task JoinGame()
         {
-            _client.Start(GamePin, _playerName);
             AttemptingConnection = true;
+            AttemptingConnection = ShowConfirmationLabel = await _client.Start(GamePin, _playerName).ConfigureAwait(false);
         }
 
         private void NavigateBack()
@@ -156,17 +156,14 @@ namespace Soulful.Core.ViewModels
         private void UnsafeNavigateBack()
         {
             UnregisterEvents();
-            if (_client.IsRunning)
-                _client.Stop();
+            _client.Stop();
 
-            NavigationService.Navigate<HomeViewModel>();
+            NavigationService.Navigate<HomeViewModel, string>(_playerName);
         }
 
         private void UnregisterEvents()
         {
-            _client.ConnectedToServer -= (s, a) => ShowConfirmationLabel = true;
             _client.DisconnectedFromServer -= OnDisconnected;
-            _client.ConnectionFailed -= (s, a) => AttemptingConnection = false;
             _client.GameEvent -= OnGameEvent;
         }
 

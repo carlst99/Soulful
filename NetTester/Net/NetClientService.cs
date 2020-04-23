@@ -1,12 +1,11 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
-using Soulful.Core.Model;
 using System;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Soulful.Core.Net
+namespace NetTester.Net
 {
     public sealed class NetClientService : NetBase
     {
@@ -76,7 +75,7 @@ namespace Soulful.Core.Net
                 await Task.Delay(50).ConfigureAwait(true);
                 if (IsConnected)
                 {
-                    Log.Verbose("[Client]Connection delay (ms): {delay}", 50 * i);
+                    Log.Information("[Client]Connection delay (ms): {delay}", 50 * i);
                     ConnectedToServer?.Invoke(this, EventArgs.Empty);
                     return true;
                 }
@@ -103,7 +102,6 @@ namespace Soulful.Core.Net
             if (!IsConnected)
                 throw App.CreateError<InvalidOperationException>("[Client]Cannot send data when the client is not connected");
 
-            Log.Verbose("[Client]Data packet size: {size}", data.Length);
             _serverPeer.Send(data, D_METHOD);
         }
 

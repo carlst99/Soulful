@@ -1,4 +1,4 @@
-﻿namespace Soulful.Core.Model
+﻿namespace NetTester.Net
 {
     /// <summary>
     /// Contains gameplay-related keys

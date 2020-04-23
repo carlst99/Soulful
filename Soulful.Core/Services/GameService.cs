@@ -18,7 +18,7 @@ namespace Soulful.Core.Services
 
         #region Service Fields
 
-        private readonly INetServerService _server;
+        private readonly NetServerService _server;
         private readonly ICardLoaderService _loader;
         private readonly Random rng;
         private readonly IIntraMessenger _messenger;
@@ -67,7 +67,7 @@ namespace Soulful.Core.Services
 
         #endregion
 
-        public GameService(INetServerService server, ICardLoaderService loader, IIntraMessenger messenger)
+        public GameService(NetServerService server, ICardLoaderService loader, IIntraMessenger messenger)
         {
             _server = server;
             _loader = loader;

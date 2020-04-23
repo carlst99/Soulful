@@ -25,6 +25,10 @@ namespace Soulful.Core
                 .EndingWith("Service")
                 .AsInterfaces()
                 .RegisterAsLazySingleton();
+            CreatableTypes()
+                .EndingWith("Service")
+                .AsTypes()
+                .RegisterAsLazySingleton();
 
             RegisterAppStart<HomeViewModel>();
 
@@ -32,7 +36,7 @@ namespace Soulful.Core
 
 #if DEBUG
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
+                .MinimumLevel.Verbose()
                 .WriteTo.Debug()
                 .CreateLogger();
 #else

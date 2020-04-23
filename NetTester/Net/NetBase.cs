@@ -1,10 +1,9 @@
 ﻿using LiteNetLib;
-using Soulful.Core.Model;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Soulful.Core.Net
+namespace NetTester.Net
 {
     public abstract class NetBase
     {
