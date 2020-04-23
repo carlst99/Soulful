@@ -202,6 +202,7 @@ namespace Soulful.Core.ViewModels
         private void OnPlayerConnected(object sender, NetPeer peer)
         {
             EOMT(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag)));
+            RaisePropertyChanged(nameof(CanStartGame));
         }
 
         private void OnPlayerDisconnected(object sender, NetPeer peer)
@@ -209,6 +210,7 @@ namespace Soulful.Core.ViewModels
             Tuple<int, string> player = Players.First(p => p.Item1 == peer.Id);
             if (player != null)
                 EOMT(() => Players.Remove(player));
+            RaisePropertyChanged(nameof(CanStartGame));
         }
 
         private void UnregisterEvents()
