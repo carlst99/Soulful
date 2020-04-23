@@ -97,7 +97,7 @@ namespace Soulful.Core.ViewModels
         /// <summary>
         /// Starts the game
         /// </summary>
-        public IMvxCommand StartGameCommand => new MvxCommand(StartGame);
+        public IMvxCommand StartGameCommand => new MvxAsyncCommand(StartGame);
 
         /// <summary>
         /// Kicks a connected player
@@ -118,8 +118,8 @@ namespace Soulful.Core.ViewModels
 
             MaxPlayers = (int)MAX_PLAYERS;
             Players = new ObservableCollection<Tuple<int, string>>();
-            _server.PlayerConnected += (_, p) => OnPlayerCollectionChanged(p, true);
-            _server.PlayerDisconnected += (_, p) => OnPlayerCollectionChanged(p, false);
+            _server.PlayerConnected += OnPlayerConnected;
+            _server.PlayerDisconnected += OnPlayerDisconnected;
         }
 
         public async override Task Initialize()
@@ -132,7 +132,7 @@ namespace Soulful.Core.ViewModels
             return;
         }
 
-        private async void StartGame()
+        private async Task StartGame()
         {
             if (!CanStartGame)
                 return;
@@ -199,24 +199,22 @@ namespace Soulful.Core.ViewModels
             _server.ChangeConnectPin(GamePin);
         }
 
-        private async void OnPlayerCollectionChanged(NetPeer peer, bool connected)
+        private void OnPlayerConnected(object sender, NetPeer peer)
         {
-            if (connected)
-            {
-                await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag))).ConfigureAwait(false);
-            } else
-            {
-                Tuple<int, string> player = Players.First(p => p.Item1 == peer.Id);
-                if (player != null)
-                    await AsyncDispatcher.ExecuteOnMainThreadAsync(() => Players.Remove(player)).ConfigureAwait(false);
-            }
-            await base.RaisePropertyChanged(nameof(CanStartGame)).ConfigureAwait(false);
+            EOMT(() => Players.Add(new Tuple<int, string>(peer.Id, (string)peer.Tag)));
+        }
+
+        private void OnPlayerDisconnected(object sender, NetPeer peer)
+        {
+            Tuple<int, string> player = Players.First(p => p.Item1 == peer.Id);
+            if (player != null)
+                EOMT(() => Players.Remove(player));
         }
 
         private void UnregisterEvents()
         {
-            _server.PlayerConnected -= (_, p) => OnPlayerCollectionChanged(p, true);
-            _server.PlayerDisconnected -= (_, p) => OnPlayerCollectionChanged(p, false);
+            _server.PlayerConnected -= OnPlayerConnected;
+            _server.PlayerDisconnected -= OnPlayerDisconnected;
         }
 
         public override void Prepare(string parameter)
