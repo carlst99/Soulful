@@ -4,56 +4,56 @@
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-                  xmlns:ui="clr-namespace:Soulful.Wpf.UI"
                   xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
                   d:DesignHeight="450"
                   d:DesignWidth="800"
                   mc:Ignorable="d">
+    <md:DialogHost>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="0.5*"/>
+            </Grid.ColumnDefinitions>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.5*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="0.5*"/>
-        </Grid.ColumnDefinitions>
+            <Button Margin="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Command="{Binding NavigateBackCommand}"
+                    Content="{md:PackIcon Kind=ArrowBack}"
+                    ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"/>
 
-        <Button Margin="8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Command="{Binding NavigateBackCommand}"
-                Content="{md:PackIcon Kind=ArrowBack}"
-                ToolTip="{Binding [ToolTip_NavigateBack], Mode=OneTime}"/>
+            <StackPanel Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+                <!-- Game pin -->
+                <TextBox x:Name="TxtBxPin"
+                         HorizontalContentAlignment="Center"
+                         md:HintAssist.Hint="{Binding [Hint_GamePin], Mode=OneTime}"
+                         FontSize="22"
+                         IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInverterConverter}}"
+                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                         Text="{Binding GamePin, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <StackPanel Grid.Column="1"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center">
-            <!-- Game pin -->
-            <TextBox x:Name="TxtBxPin"
-                     HorizontalContentAlignment="Center"
-                     md:HintAssist.Hint="{Binding [Hint_GamePin], Mode=OneTime}"
-                     FontSize="22"
-                     IsEnabled="{Binding AttemptingConnection, Converter={StaticResource BoolInverterConverter}}"
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                     Text="{Binding GamePin, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Margin="0,8,0,0"
+                        Command="{Binding JoinGameCommand}"
+                        Content="{Binding [Command_JoinGame], Mode=OneTime}"
+                        IsDefault="True"
+                        IsEnabled="{Binding CanJoinGame}"/>
 
-            <Button Margin="0,8,0,0"
-                    Command="{Binding JoinGameCommand}"
-                    Content="{Binding [Command_JoinGame], Mode=OneTime}"
-                    IsDefault="True"
-                    IsEnabled="{Binding CanJoinGame}"/>
+                <TextBlock Margin="0,8,0,0"
+                           HorizontalAlignment="Center"
+                           FontSize="20"
+                           Foreground="{StaticResource PrimaryHueMidBrush}"
+                           Text="{Binding [Label_ConnectedToServer], Mode=OneTime}"
+                           Visibility="{Binding ShowConfirmationLabel, Converter={StaticResource VisibilityConverter}}"/>
 
-            <TextBlock Margin="0,8,0,0"
-                       HorizontalAlignment="Center"
-                       FontSize="20"
-                       Foreground="{StaticResource PrimaryHueMidBrush}"
-                       Text="{Binding [Label_ConnectedToServer], Mode=OneTime}"
-                       Visibility="{Binding ShowConfirmationLabel, Converter={StaticResource VisibilityConverter}}"/>
-
-            <ProgressBar Margin="0,8,0,0"
-                         IsIndeterminate="True"
-                         Style="{StaticResource MaterialDesignCircularProgressBar}"
-                         Visibility="{Binding AttemptingConnection, Converter={StaticResource VisibilityConverter}}"
-                         Value="35"/>
-        </StackPanel>
-    </Grid>
+                <ProgressBar Margin="0,8,0,0"
+                             IsIndeterminate="True"
+                             Style="{StaticResource MaterialDesignCircularProgressBar}"
+                             Visibility="{Binding AttemptingConnection, Converter={StaticResource VisibilityConverter}}"
+                             Value="35"/>
+            </StackPanel>
+        </Grid>
+    </md:DialogHost>
 </views:MvxWpfView>

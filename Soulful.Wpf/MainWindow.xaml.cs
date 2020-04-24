@@ -6,7 +6,6 @@ using Soulful.Core.Model;
 using Soulful.Wpf.Views;
 using System;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace Soulful.Wpf
 {
@@ -24,9 +23,12 @@ namespace Soulful.Wpf
         {
             if (message is DialogMessage d)
             {
-                MessageDialog dialog = new MessageDialog(d.Message, d.Title, d.OkayButtonContent, d.CancelButtonContent, d.HelpUrl);
-                bool value = (bool)await DialogHost.Show(dialog, "MainDialogHost").ConfigureAwait(false);
-                d.Callback(value);
+                bool value = (bool)await Dispatcher.Invoke(async () =>
+                {
+                    MessageDialog dialog = new MessageDialog(d.Message, d.Title, d.OkayButtonContent, d.CancelButtonContent, d.HelpUrl);
+                    return await DialogHost.Show(dialog).ConfigureAwait(false);
+                }).ConfigureAwait(false);
+                d.Callback?.Invoke(value);
             }
         }
     }
