@@ -142,6 +142,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string DialogButton_Cancel {
+            get {
+                return ResourceManager.GetString("DialogButton_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         public static string DialogButton_No {
@@ -151,11 +160,29 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Okay.
+        /// </summary>
+        public static string DialogButton_Okay {
+            get {
+                return ResourceManager.GetString("DialogButton_Okay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         public static string DialogButton_Yes {
             get {
                 return ResourceManager.GetString("DialogButton_Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to quit? You&apos;ll ruin it for everyone else!.
+        /// </summary>
+        public static string DialogMessage_ClientLeavingGame {
+            get {
+                return ResourceManager.GetString("DialogMessage_ClientLeavingGame", resourceCulture);
             }
         }
         
@@ -223,6 +250,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to My god. Are you really this cruel? Are you even aware of the responsibility you shouldered when you took on the role of host?! Are you sure that you want to shut down the entire game for everyone else?!?!.
+        /// </summary>
+        public static string DialogMessage_ServerLeavingGame {
+            get {
+                return ResourceManager.GetString("DialogMessage_ServerLeavingGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?.
         /// </summary>
         public static string DialogMessage_ServerLeavingLobby {
@@ -246,6 +282,15 @@ namespace Soulful.Core.Resources {
         public static string DialogTitle_BlameServer {
             get {
                 return ResourceManager.GetString("DialogTitle_BlameServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alert.
+        /// </summary>
+        public static string DialogTitle_Default {
+            get {
+                return ResourceManager.GetString("DialogTitle_Default", resourceCulture);
             }
         }
         

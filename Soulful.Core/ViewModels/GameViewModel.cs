@@ -6,6 +6,7 @@ using Serilog;
 using Soulful.Core.Model;
 using Soulful.Core.Model.Cards;
 using Soulful.Core.Net;
+using Soulful.Core.Resources;
 using Soulful.Core.Services;
 using System;
 using System.Collections.ObjectModel;
@@ -213,17 +214,20 @@ namespace Soulful.Core.ViewModels
 
         private void NavigateBack()
         {
-            void callback(DialogMessage.Button b)
+            void callback(bool result)
             {
-                if (b == DialogMessage.Button.Yes)
+                if (result)
                     UnsafeNavigateBack();
             }
 
+            string message = _gameService.IsRunning ? AppStrings.DialogMessage_ServerLeavingGame : AppStrings.DialogMessage_ClientLeavingGame;
+
             _messenger.Send(new DialogMessage
             {
-                Title = "Sore loser",
-                Message = "Are you sure you want to quit?",
-                Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                Title = AppStrings.DialogTitle_LeavingGame,
+                Message = message,
+                OkayButtonContent = AppStrings.DialogButton_Yes,
+                CancelButtonContent = AppStrings.DialogButton_No,
                 Callback = callback
             });
         }
@@ -286,16 +290,16 @@ namespace Soulful.Core.ViewModels
             switch (e)
             {
                 case NetKey.Kicked:
-                    title = "What've you done!?!";
-                    message = "Congratulations! It looks like you've been kicked.";
+                    title = AppStrings.DialogTitle_BlameServer;
+                    message = AppStrings.DialogMessage_KickedFromServer;
                     break;
                 case NetKey.ServerClosed:
-                    title = "It wasn't me!";
-                    message = "Looks like the host quit the game.";
+                    title = AppStrings.DialogTitle_BlameServer;
+                    message = AppStrings.DialogMessage_ServerClosed;
                     break;
                 default:
-                    title = "That... might've been me?";
-                    message = "Looks like you've been disconnected from the server, and we don't know why.";
+                    title = AppStrings.DialogTitle_Disconnected;
+                    message = AppStrings.DialogMessage_Disconnected;
                     break;
             }
 
@@ -303,8 +307,7 @@ namespace Soulful.Core.ViewModels
             _messenger.Send(new DialogMessage
             {
                 Title = title,
-                Message = message,
-                Buttons = DialogMessage.Button.Ok
+                Message = message
             });
         }
 

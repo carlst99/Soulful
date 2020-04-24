@@ -172,8 +172,8 @@ namespace Soulful.Core.ViewModels
                 {
                     Title = AppStrings.DialogTitle_LeavingGame,
                     Message = AppStrings.DialogMessage_ServerLeavingLobby,
-                    OkayButtonContent = "Yes",
-                    CancelButtonContent = "No",
+                    OkayButtonContent = AppStrings.DialogButton_Yes,
+                    CancelButtonContent = AppStrings.DialogButton_No,
                     Callback = callback
                 });
             }

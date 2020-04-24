@@ -15,14 +15,14 @@ namespace Soulful.Wpf.Views
         public string CancelButtonContent { get; set; }
         public string HelpUrl { get; set; }
 
-        public MessageDialog(string message, string title = "Alert", string okayButton = "Okay", string cancelButton = null, string helpUrl = null)
+        public MessageDialog(string message, string title, string okayButton, string cancelButton = null, string helpUrl = null)
         {
             InitializeComponent();
             DataContext = this;
 
             Message = message;
-            Title = string.IsNullOrEmpty(title) ? title : "Alert";
-            OkayButtonContent = string.IsNullOrEmpty(okayButton) ? okayButton : "Okay";
+            Title = title;
+            OkayButtonContent = okayButton;
             CancelButtonContent = cancelButton;
             HelpUrl = string.IsNullOrEmpty(helpUrl) ? helpUrl : HelpUrls.Default;
         }

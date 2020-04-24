@@ -153,13 +153,25 @@
     <value>Start Game</value>
     <comment>This label appears on a control which starts a new game</comment>
   </data>
+  <data name="DialogButton_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>This label is for a 'Cancel' button in a dialog</comment>
+  </data>
   <data name="DialogButton_No" xml:space="preserve">
     <value>No</value>
     <comment>This label is for a 'No' button in a dialog</comment>
   </data>
+  <data name="DialogButton_Okay" xml:space="preserve">
+    <value>Okay</value>
+    <comment>This label is for a 'Okay' button in a dialog</comment>
+  </data>
   <data name="DialogButton_Yes" xml:space="preserve">
     <value>Yes</value>
     <comment>This label is for a 'Yes' button in a dialog</comment>
+  </data>
+  <data name="DialogMessage_ClientLeavingGame" xml:space="preserve">
+    <value>Are you sure you want to quit? You'll ruin it for everyone else!</value>
+    <comment>This dialog message is shown when a client tries to leave a game</comment>
   </data>
   <data name="DialogMessage_ClientLeavingLobby" xml:space="preserve">
     <value>The game hasn't even started yet! Are you sure you want to quit?</value>
@@ -189,6 +201,10 @@
     <value>Sorry bud, but this server's full. Try asking the host to increase the number of max players.</value>
     <comment>This dialog message is shown when the client tries to connect to a server that is full</comment>
   </data>
+  <data name="DialogMessage_ServerLeavingGame" xml:space="preserve">
+    <value>My god. Are you really this cruel? Are you even aware of the responsibility you shouldered when you took on the role of host?! Are you sure that you want to shut down the entire game for everyone else?!?!</value>
+    <comment>This dialog message is shown when the host tries to shut down the server</comment>
+  </data>
   <data name="DialogMessage_ServerLeavingLobby" xml:space="preserve">
     <value>People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?</value>
     <comment>This dialog message is shown when the host tries to close the server before beginning the game</comment>
@@ -200,6 +216,10 @@
   <data name="DialogTitle_BlameServer" xml:space="preserve">
     <value>He dunnit!</value>
     <comment>This dialog title appears when the server causes a client to disconnect</comment>
+  </data>
+  <data name="DialogTitle_Default" xml:space="preserve">
+    <value>Alert</value>
+    <comment>This is the default dialog title</comment>
   </data>
   <data name="DialogTitle_Disconnected" xml:space="preserve">
     <value>That... might've been us?</value>
