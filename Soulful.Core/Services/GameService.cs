@@ -444,7 +444,7 @@ namespace Soulful.Core.Services
                 _messenger.Send(new DialogMessage
                 {
                     Title = "All players quit",
-                    Content = "Guess nobody wants to play with you, huh?",
+                    Message = "Guess nobody wants to play with you, huh?",
                     Buttons = DialogMessage.Button.No
                 });
             }

@@ -222,7 +222,7 @@ namespace Soulful.Core.ViewModels
             _messenger.Send(new DialogMessage
             {
                 Title = "Sore loser",
-                Content = "Are you sure you want to quit?",
+                Message = "Are you sure you want to quit?",
                 Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
                 Callback = callback
             });
@@ -303,7 +303,7 @@ namespace Soulful.Core.ViewModels
             _messenger.Send(new DialogMessage
             {
                 Title = title,
-                Content = message,
+                Message = message,
                 Buttons = DialogMessage.Button.Ok
             });
         }

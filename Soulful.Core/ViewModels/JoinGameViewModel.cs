@@ -3,6 +3,7 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
+using Soulful.Core.Resources;
 using System;
 using System.Threading.Tasks;
 
@@ -77,40 +78,37 @@ namespace Soulful.Core.ViewModels
             ShowConfirmationLabel = false;
 
             string message;
-            string title;
+            string title = null;
             switch (e)
             {
                 case NetKey.Kicked:
-                    title = "What've you done!?!";
-                    message = "Congratulations! It looks like you've been kicked.";
+                    title = AppStrings.DialogTitle_BlameServer;
+                    message = AppStrings.DialogMessage_KickedFromServer;
                     break;
                 case NetKey.ServerClosed:
-                    title = "It was him!";
-                    message = "Looks like the host quit the game.";
+                    title = AppStrings.DialogTitle_BlameServer;
+                    message = AppStrings.DialogMessage_ServerClosed;
                     break;
                 case NetKey.InvalidPin:
-                    title = "Hacker alert";
-                    message = "We don't know how you've done it... but you've connected to the server with the wrong pin. Sorry bud, try again!";
+                    title = AppStrings.DialogTitle_InvalidPin;
+                    message = AppStrings.DialogMessage_InvalidPin;
                     break;
                 case NetKey.ServerFull:
-                    title = "Server full";
-                    message = "Sorry bud, but this server's full. Try asking the host to increase the number of max players.";
+                    message = AppStrings.DialogMessage_ServerFull;
                     break;
                 case NetKey.ServerLimitChanged:
-                    title = "Unlucky!";
-                    message = "The server host changed the number of maximum players, and you didn't make the cut. If you've got a problem, now would be a good time to take it up with the host.";
+                    message = AppStrings.DialogMessage_ServerLimitChanged;
                     break;
                 default:
-                    title = "That... might've been us?";
-                    message = "Looks like you've been disconnected from the server, and we don't know why.";
+                    title = AppStrings.DialogTitle_Disconnected;
+                    message = AppStrings.DialogMessage_Disconnected;
                     break;
             }
 
             _messenger.Send(new DialogMessage
             {
                 Title = title,
-                Content = message,
-                Buttons = DialogMessage.Button.Ok
+                Message = message
             });
         }
 
@@ -133,17 +131,18 @@ namespace Soulful.Core.ViewModels
         {
             if (_client.IsConnected)
             {
-                void callback(DialogMessage.Button b)
+                void callback(bool result)
                 {
-                    if (b == DialogMessage.Button.Yes)
+                    if (result)
                         UnsafeNavigateBack();
                 }
 
                 _messenger.Send(new DialogMessage
                 {
-                    Title = "WTF?!?",
-                    Content = "The game hasn't even started yet! Are you sure you want to quit?",
-                    Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                    Title = AppStrings.DialogTitle_LeavingGame,
+                    Message = AppStrings.DialogMessage_ClientLeavingLobby,
+                    OkayButtonContent = AppStrings.DialogButton_Yes,
+                    CancelButtonContent = AppStrings.DialogButton_No,
                     Callback = callback
                 });
             }

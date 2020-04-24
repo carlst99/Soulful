@@ -142,6 +142,123 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        public static string DialogButton_No {
+            get {
+                return ResourceManager.GetString("DialogButton_No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        public static string DialogButton_Yes {
+            get {
+                return ResourceManager.GetString("DialogButton_Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The game hasn&apos;t even started yet! Are you sure you want to quit?.
+        /// </summary>
+        public static string DialogMessage_ClientLeavingLobby {
+            get {
+                return ResourceManager.GetString("DialogMessage_ClientLeavingLobby", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Looks like you&apos;ve been disconnected from the server, and we don&apos;t know why..
+        /// </summary>
+        public static string DialogMessage_Disconnected {
+            get {
+                return ResourceManager.GetString("DialogMessage_Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to We don&apos;t know how you&apos;ve done it... but you&apos;ve connected to the server with the wrong pin. Sorry bud, try again!.
+        /// </summary>
+        public static string DialogMessage_InvalidPin {
+            get {
+                return ResourceManager.GetString("DialogMessage_InvalidPin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Congratulations! You&apos;ve been kicked from the game.
+        /// </summary>
+        public static string DialogMessage_KickedFromServer {
+            get {
+                return ResourceManager.GetString("DialogMessage_KickedFromServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Looks like the host quit the game. Sorry!.
+        /// </summary>
+        public static string DialogMessage_ServerClosed {
+            get {
+                return ResourceManager.GetString("DialogMessage_ServerClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sorry bud, but this server&apos;s full. Try asking the host to increase the number of max players..
+        /// </summary>
+        public static string DialogMessage_ServerFull {
+            get {
+                return ResourceManager.GetString("DialogMessage_ServerFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The server host changed the number of maximum players, and you didn&apos;t make the cut. If you&apos;ve got a problem, now would be a good time to take it up with the host..
+        /// </summary>
+        public static string DialogMessage_ServerLimitChanged {
+            get {
+                return ResourceManager.GetString("DialogMessage_ServerLimitChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to He dunnit!.
+        /// </summary>
+        public static string DialogTitle_BlameServer {
+            get {
+                return ResourceManager.GetString("DialogTitle_BlameServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to That... might&apos;ve been us?.
+        /// </summary>
+        public static string DialogTitle_Disconnected {
+            get {
+                return ResourceManager.GetString("DialogTitle_Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hacker alert!.
+        /// </summary>
+        public static string DialogTitle_InvalidPin {
+            get {
+                return ResourceManager.GetString("DialogTitle_InvalidPin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quitter!.
+        /// </summary>
+        public static string DialogTitle_LeavingGame {
+            get {
+                return ResourceManager.GetString("DialogTitle_LeavingGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Black Cards.
         /// </summary>
         public static string Header_BlackCards {

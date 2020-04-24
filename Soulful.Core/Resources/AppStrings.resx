@@ -153,6 +153,58 @@
     <value>Start Game</value>
     <comment>This label appears on a control which starts a new game</comment>
   </data>
+  <data name="DialogButton_No" xml:space="preserve">
+    <value>No</value>
+    <comment>This label is for a 'No' button in a dialog</comment>
+  </data>
+  <data name="DialogButton_Yes" xml:space="preserve">
+    <value>Yes</value>
+    <comment>This label is for a 'Yes' button in a dialog</comment>
+  </data>
+  <data name="DialogMessage_ClientLeavingLobby" xml:space="preserve">
+    <value>The game hasn't even started yet! Are you sure you want to quit?</value>
+    <comment>This message is shown when the user tries to leave the 'Join Game' lobby, after having connected to a match</comment>
+  </data>
+  <data name="DialogMessage_Disconnected" xml:space="preserve">
+    <value>Looks like you've been disconnected from the server, and we don't know why.</value>
+    <comment>This dialog message is shown when the client is disconnected from the server with a unknown reason</comment>
+  </data>
+  <data name="DialogMessage_InvalidPin" xml:space="preserve">
+    <value>We don't know how you've done it... but you've connected to the server with the wrong pin. Sorry bud, try again!</value>
+    <comment>This dialog message is shown when the client connects to a server with an invalid pin, and is consquently disconnected</comment>
+  </data>
+  <data name="DialogMessage_KickedFromServer" xml:space="preserve">
+    <value>Congratulations! You've been kicked from the game</value>
+    <comment>This dialog message is shown when a client is kicked from the game</comment>
+  </data>
+  <data name="DialogMessage_ServerClosed" xml:space="preserve">
+    <value>Looks like the host quit the game. Sorry!</value>
+    <comment>This dialog message is shown when the host closes the server</comment>
+  </data>
+  <data name="DialogMessage_ServerFull" xml:space="preserve">
+    <value>Sorry bud, but this server's full. Try asking the host to increase the number of max players.</value>
+    <comment>This dialog message is shown when the client tries to connect to a server that is full</comment>
+  </data>
+  <data name="DialogMessage_ServerLimitChanged" xml:space="preserve">
+    <value>The server host changed the number of maximum players, and you didn't make the cut. If you've got a problem, now would be a good time to take it up with the host.</value>
+    <comment>This dialog message is shown when the client is kicked from a server that has had it's maximum player limit decreased</comment>
+  </data>
+  <data name="DialogTitle_BlameServer" xml:space="preserve">
+    <value>He dunnit!</value>
+    <comment>This dialog title appears when the server causes a client to disconnect</comment>
+  </data>
+  <data name="DialogTitle_Disconnected" xml:space="preserve">
+    <value>That... might've been us?</value>
+    <comment>This dialog title is shown when the client is disconnected from the server with a unknown reason</comment>
+  </data>
+  <data name="DialogTitle_InvalidPin" xml:space="preserve">
+    <value>Hacker alert!</value>
+    <comment>This dialog title is shown when the client connects to a server with an invalid pin, and is consequently disconnected</comment>
+  </data>
+  <data name="DialogTitle_LeavingGame" xml:space="preserve">
+    <value>Quitter!</value>
+    <comment>This title is shown when the user tries to leave a game</comment>
+  </data>
   <data name="Header_BlackCards" xml:space="preserve">
     <value>Black Cards</value>
     <comment>This header appears above a list of black cards</comment>

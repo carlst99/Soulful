@@ -1,8 +1,11 @@
 ﻿using IntraMessaging;
+using MaterialDesignThemes.Wpf;
 using MvvmCross;
 using MvvmCross.Platforms.Wpf.Views;
 using Soulful.Core.Model;
+using Soulful.Wpf.Views;
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace Soulful.Wpf
@@ -14,44 +17,16 @@ namespace Soulful.Wpf
             InitializeComponent();
 
             IIntraMessenger messenger = Mvx.IoCProvider.Resolve<IIntraMessenger>();
-            messenger.Subscribe(OnMessage, new Type[] { typeof(DialogMessage) });
+            messenger.Subscribe(async (m) => await OnMessage(m).ConfigureAwait(false), new Type[] { typeof(DialogMessage) });
         }
 
-        private void OnMessage(IMessage message)
+        private async Task OnMessage(IMessage message)
         {
-            if (message is DialogMessage dMessage)
+            if (message is DialogMessage d)
             {
-                MessageBoxButton buttons = MessageBoxButton.OK;
-                if ((dMessage.Buttons & DialogMessage.Button.Ok) != 0)
-                {
-                    if ((dMessage.Buttons & DialogMessage.Button.Cancel) != 0)
-                        buttons = MessageBoxButton.OKCancel;
-                    else
-                        buttons = MessageBoxButton.OK;
-                }
-                else if ((dMessage.Buttons & DialogMessage.Button.Yes) != 0)
-                {
-                    if ((dMessage.Buttons & DialogMessage.Button.Cancel) != 0)
-                        buttons = MessageBoxButton.YesNoCancel;
-                    else
-                        buttons = MessageBoxButton.YesNo;
-                }
-
-                switch (Dispatcher.Invoke(() => MessageBox.Show(dMessage.Content, dMessage.Title, buttons)))
-                {
-                    case MessageBoxResult.Cancel:
-                        dMessage.Callback?.Invoke(DialogMessage.Button.Cancel);
-                        break;
-                    case MessageBoxResult.No:
-                        dMessage.Callback?.Invoke(DialogMessage.Button.No);
-                        break;
-                    case MessageBoxResult.OK:
-                        dMessage.Callback?.Invoke(DialogMessage.Button.Ok);
-                        break;
-                    case MessageBoxResult.Yes:
-                        dMessage.Callback?.Invoke(DialogMessage.Button.Yes);
-                        break;
-                }
+                MessageDialog dialog = new MessageDialog(d.Message, d.Title, d.OkayButtonContent, d.CancelButtonContent, d.HelpUrl);
+                bool value = (bool)await DialogHost.Show(dialog, "MainDialogHost").ConfigureAwait(false);
+                d.Callback(value);
             }
         }
     }

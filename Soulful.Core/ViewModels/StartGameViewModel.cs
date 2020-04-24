@@ -151,7 +151,7 @@ namespace Soulful.Core.ViewModels
             {
                 _messenger.Send(new DialogMessage
                 {
-                    Content = "You can't kick yourself doofus!",
+                    Message = "You can't kick yourself doofus!",
                     Buttons = DialogMessage.Button.Ok,
                     Title = "Insecurity lvl 100"
                 });
@@ -171,7 +171,7 @@ namespace Soulful.Core.ViewModels
                 _messenger.Send(new DialogMessage
                 {
                     Title = "Oh, come on...",
-                    Content = "People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?",
+                    Message = "People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?",
                     Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
                     Callback = callback
                 });
