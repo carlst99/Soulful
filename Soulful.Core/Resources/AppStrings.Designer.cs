@@ -196,6 +196,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You can&apos;t kick yourself, doofus.
+        /// </summary>
+        public static string DialogMessage_KickSelf {
+            get {
+                return ResourceManager.GetString("DialogMessage_KickSelf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Looks like the host quit the game. Sorry!.
         /// </summary>
         public static string DialogMessage_ServerClosed {
@@ -210,6 +219,15 @@ namespace Soulful.Core.Resources {
         public static string DialogMessage_ServerFull {
             get {
                 return ResourceManager.GetString("DialogMessage_ServerFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?.
+        /// </summary>
+        public static string DialogMessage_ServerLeavingLobby {
+            get {
+                return ResourceManager.GetString("DialogMessage_ServerLeavingLobby", resourceCulture);
             }
         }
         
@@ -246,6 +264,15 @@ namespace Soulful.Core.Resources {
         public static string DialogTitle_InvalidPin {
             get {
                 return ResourceManager.GetString("DialogTitle_InvalidPin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insecurity lvl 100.
+        /// </summary>
+        public static string DialogTitle_KickSelf {
+            get {
+                return ResourceManager.GetString("DialogTitle_KickSelf", resourceCulture);
             }
         }
         

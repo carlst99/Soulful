@@ -4,6 +4,7 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using Soulful.Core.Model;
 using Soulful.Core.Net;
+using Soulful.Core.Resources;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -151,9 +152,8 @@ namespace Soulful.Core.ViewModels
             {
                 _messenger.Send(new DialogMessage
                 {
-                    Message = "You can't kick yourself doofus!",
-                    Buttons = DialogMessage.Button.Ok,
-                    Title = "Insecurity lvl 100"
+                    Title = AppStrings.DialogTitle_KickSelf,
+                    Message = AppStrings.DialogMessage_KickSelf
                 });
             }
         }
@@ -162,17 +162,18 @@ namespace Soulful.Core.ViewModels
         {
             if (_server.Players.Count > 1)
             {
-                void callback(DialogMessage.Button button)
+                void callback(bool result)
                 {
-                    if (button == DialogMessage.Button.Yes)
+                    if (result)
                         UnsafeNavigateBack();
                 }
 
                 _messenger.Send(new DialogMessage
                 {
-                    Title = "Oh, come on...",
-                    Message = "People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?",
-                    Buttons = DialogMessage.Button.Yes | DialogMessage.Button.No,
+                    Title = AppStrings.DialogTitle_LeavingGame,
+                    Message = AppStrings.DialogMessage_ServerLeavingLobby,
+                    OkayButtonContent = "Yes",
+                    CancelButtonContent = "No",
                     Callback = callback
                 });
             }

@@ -177,6 +177,10 @@
     <value>Congratulations! You've been kicked from the game</value>
     <comment>This dialog message is shown when a client is kicked from the game</comment>
   </data>
+  <data name="DialogMessage_KickSelf" xml:space="preserve">
+    <value>You can't kick yourself, doofus</value>
+    <comment>This dialog message is shown when the host tries to kick themself from the game</comment>
+  </data>
   <data name="DialogMessage_ServerClosed" xml:space="preserve">
     <value>Looks like the host quit the game. Sorry!</value>
     <comment>This dialog message is shown when the host closes the server</comment>
@@ -184,6 +188,10 @@
   <data name="DialogMessage_ServerFull" xml:space="preserve">
     <value>Sorry bud, but this server's full. Try asking the host to increase the number of max players.</value>
     <comment>This dialog message is shown when the client tries to connect to a server that is full</comment>
+  </data>
+  <data name="DialogMessage_ServerLeavingLobby" xml:space="preserve">
+    <value>People are already queueing up to play! Are you sure you want to deprive them of this wonderful opportunity by closing the server?</value>
+    <comment>This dialog message is shown when the host tries to close the server before beginning the game</comment>
   </data>
   <data name="DialogMessage_ServerLimitChanged" xml:space="preserve">
     <value>The server host changed the number of maximum players, and you didn't make the cut. If you've got a problem, now would be a good time to take it up with the host.</value>
@@ -200,6 +208,10 @@
   <data name="DialogTitle_InvalidPin" xml:space="preserve">
     <value>Hacker alert!</value>
     <comment>This dialog title is shown when the client connects to a server with an invalid pin, and is consequently disconnected</comment>
+  </data>
+  <data name="DialogTitle_KickSelf" xml:space="preserve">
+    <value>Insecurity lvl 100</value>
+    <comment>This dialog title is shown when the host tries to kick themself from the game</comment>
   </data>
   <data name="DialogTitle_LeavingGame" xml:space="preserve">
     <value>Quitter!</value>
