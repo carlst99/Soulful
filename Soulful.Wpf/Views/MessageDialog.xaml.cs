@@ -1,4 +1,5 @@
-﻿using Soulful.Core.Resources;
+﻿using Soulful.Core.Model;
+using Soulful.Core.Resources;
 using System.Diagnostics;
 using System.Windows.Controls;
 
@@ -15,7 +16,7 @@ namespace Soulful.Wpf.Views
         public string CancelButtonContent { get; set; }
         public string HelpUrl { get; set; }
 
-        public MessageDialog(string message, string title, string okayButton, string cancelButton = null, string helpUrl = null)
+        public MessageDialog(string message, string title, string okayButton, string cancelButton, string helpUrl)
         {
             InitializeComponent();
             DataContext = this;
@@ -25,6 +26,12 @@ namespace Soulful.Wpf.Views
             OkayButtonContent = okayButton;
             CancelButtonContent = cancelButton;
             HelpUrl = string.IsNullOrEmpty(helpUrl) ? helpUrl : HelpUrls.Default;
+        }
+
+        public MessageDialog(DialogMessage dMessage)
+            : this(dMessage.Message, dMessage.Title, dMessage.OkayButtonContent, dMessage.CancelButtonContent, dMessage.HelpUrl)
+        {
+
         }
 
         private void OpenHelpUrl(object sender, System.Windows.RoutedEventArgs e)

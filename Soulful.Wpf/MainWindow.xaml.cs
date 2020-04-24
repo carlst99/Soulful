@@ -21,14 +21,14 @@ namespace Soulful.Wpf
 
         private async Task OnMessage(IMessage message)
         {
-            if (message is DialogMessage d)
+            if (message is DialogMessage dMessage)
             {
                 bool value = (bool)await Dispatcher.Invoke(async () =>
                 {
-                    MessageDialog dialog = new MessageDialog(d.Message, d.Title, d.OkayButtonContent, d.CancelButtonContent, d.HelpUrl);
+                    MessageDialog dialog = new MessageDialog(dMessage);
                     return await DialogHost.Show(dialog).ConfigureAwait(false);
                 }).ConfigureAwait(false);
-                d.Callback?.Invoke(value);
+                dMessage.Callback?.Invoke(value);
             }
         }
     }
