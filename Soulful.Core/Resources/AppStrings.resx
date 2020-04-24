@@ -193,6 +193,10 @@
     <value>You can't kick yourself, doofus</value>
     <comment>This dialog message is shown when the host tries to kick themself from the game</comment>
   </data>
+  <data name="DialogMessage_NotEnoughPlayers" xml:space="preserve">
+    <value>There aren't enough players left to continue the game</value>
+    <comment>This dialog message is shown when too many players have left the game for it to continue</comment>
+  </data>
   <data name="DialogMessage_ServerClosed" xml:space="preserve">
     <value>Looks like the host quit the game. Sorry!</value>
     <comment>This dialog message is shown when the host closes the server</comment>
@@ -236,6 +240,10 @@
   <data name="DialogTitle_LeavingGame" xml:space="preserve">
     <value>Quitter!</value>
     <comment>This title is shown when the user tries to leave a game</comment>
+  </data>
+  <data name="DialogTitle_NotEnoughPlayers" xml:space="preserve">
+    <value>Not enough players</value>
+    <comment>This dialog title is shown when too many players have left the game for it to continue</comment>
   </data>
   <data name="Header_BlackCards" xml:space="preserve">
     <value>Black Cards</value>

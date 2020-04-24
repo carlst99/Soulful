@@ -4,6 +4,8 @@ using LiteNetLib.Utils;
 using Soulful.Core.Model;
 using Soulful.Core.Model.Cards;
 using Soulful.Core.Net;
+using Soulful.Core.Resources;
+using Soulful.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -438,14 +440,13 @@ namespace Soulful.Core.Services
             }
             _players.RemoveAt(_players.FindIndex(p => p.Id == player.Id));
 
-            if (_players.Count <= 1)
+            if (_players.Count < StartGameViewModel.MIN_PLAYERS)
             {
                 Stop();
                 _messenger.Send(new DialogMessage
                 {
-                    Title = "All players quit",
-                    Message = "Guess nobody wants to play with you, huh?",
-                    Buttons = DialogMessage.Button.No
+                    Title = AppStrings.DialogTitle_NotEnoughPlayers,
+                    Message = AppStrings.DialogMessage_NotEnoughPlayers
                 });
             }
         }

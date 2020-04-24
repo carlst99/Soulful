@@ -232,6 +232,15 @@ namespace Soulful.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There aren&apos;t enough players left to continue the game.
+        /// </summary>
+        public static string DialogMessage_NotEnoughPlayers {
+            get {
+                return ResourceManager.GetString("DialogMessage_NotEnoughPlayers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Looks like the host quit the game. Sorry!.
         /// </summary>
         public static string DialogMessage_ServerClosed {
@@ -327,6 +336,15 @@ namespace Soulful.Core.Resources {
         public static string DialogTitle_LeavingGame {
             get {
                 return ResourceManager.GetString("DialogTitle_LeavingGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not enough players.
+        /// </summary>
+        public static string DialogTitle_NotEnoughPlayers {
+            get {
+                return ResourceManager.GetString("DialogTitle_NotEnoughPlayers", resourceCulture);
             }
         }
         
