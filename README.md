@@ -1,3 +1,6 @@
+:warning: **This repository is now archived.**
+Soulful was always a side project, and I set it down to prioritise other work a number of times. The last break has been by far my longest, and casting my eye back to Soulful I find that I've lost interest in the project, and indeed the game itself. I leave this repository open on the offchance that some inspired soul finds any part of it useful. If you do plan on building off it, it's likely that a lot of the code will need refactoring. In part due to inexperience and having to relearn the codebase every few months, what's here isn't great quality.
+
 # Soulful
 Ever wished that you didn't have to resort to crappy old paper cards to enjoy the wholesome experience that [Cards Against Humanity](https://www.cardsagainsthumanity.com/#download) offers? Well, that's what Soulful aims to solve, by bringing the light and joy of those innocuous cards to your device. 
 
